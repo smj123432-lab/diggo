@@ -26,6 +26,8 @@ export function useAuth() {
         reset()
       }
       setIsLoading(false)
+    }).catch(() => {
+      reset()
     })
 
     // 인증 상태 변경 구독

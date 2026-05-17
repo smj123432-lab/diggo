@@ -18,7 +18,7 @@ export default function HomePage() {
         <div className="flex flex-col gap-3">
           <Link
             href="/jobs"
-            className="w-full py-3 bg-amber-500 text-white rounded-xl font-semibold hover:bg-amber-600 transition-colors"
+            className="w-full py-3 bg-primary text-white rounded-xl font-semibold hover:bg-primary-dark transition-colors"
           >
             일감 보기
           </Link>
