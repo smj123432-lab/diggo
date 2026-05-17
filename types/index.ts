@@ -1,0 +1,185 @@
+export type UserRole = 'driver' | 'manager' | 'admin'
+
+export type EquipmentCode = '008' | '017' | '035' | '02' | '3w' | '6w' | '8w' | '10t'
+
+export type JobType = 'civil' | 'demolition'
+
+export type JobStatus = 'open' | 'closed' | 'in_progress' | 'completed'
+
+export type ApplicationStatus = 'pending' | 'reviewing' | 'accepted' | 'rejected'
+
+// 지급 예정일 유형
+export type PayDueType = 'same_day' | 'd3' | 'd7' | 'd14' | 'd30'
+
+export type CertificationStatus = 'pending' | 'approved' | 'rejected'
+
+export interface Profile {
+  id: string
+  name: string
+  role: UserRole
+  phone: string | null
+  experience_years: number | null
+  garage_address: string | null
+  latitude: number | null
+  longitude: number | null
+  rating_avg: number
+  is_certified: boolean
+  created_at: string
+}
+
+export interface Equipment {
+  id: string
+  owner_id: string
+  assigned_driver_id: string | null
+  type: string
+  model_code: EquipmentCode
+  license_number: string | null
+  created_at: string
+}
+
+export interface Job {
+  id: string
+  manager_id: string
+  title: string
+  job_type: JobType
+  equipment_code: EquipmentCode
+  description: string
+  attachments: string | null
+  caution: string | null
+  location: string
+  latitude: number | null
+  longitude: number | null
+  pay_amount: number
+  work_date: string
+  pay_due_type: PayDueType
+  pay_due_date: string | null
+  status: JobStatus
+  created_at: string
+}
+
+export interface JobWithManager extends Job {
+  profiles: Pick<Profile, 'id' | 'name' | 'rating_avg' | 'is_certified'>
+}
+
+export interface Application {
+  id: string
+  job_id: string
+  driver_id: string
+  equipment_id: string | null
+  status: ApplicationStatus
+  applied_at: string
+}
+
+export interface ApplicationWithDetails extends Application {
+  profiles: Pick<Profile, 'id' | 'name' | 'rating_avg' | 'is_certified' | 'experience_years'>
+  equipments: Pick<Equipment, 'id' | 'model_code' | 'license_number'> | null
+  jobs: Pick<Job, 'id' | 'title' | 'work_date' | 'pay_amount' | 'location'>
+}
+
+export interface LedgerExpense {
+  id: string
+  driver_id: string
+  job_id: string | null
+  expense_date: string
+  category: string
+  memo: string | null
+  amount: number
+  created_at: string
+}
+
+export interface Review {
+  id: string
+  job_id: string
+  reviewer_id: string
+  reviewee_id: string
+  rating: number
+  comment: string | null
+  created_at: string
+}
+
+export interface ReviewWithReviewer extends Review {
+  profiles: Pick<Profile, 'id' | 'name' | 'role'>
+}
+
+export interface Certification {
+  id: string
+  driver_id: string
+  cert_type: string
+  image_url: string
+  status: CertificationStatus
+  verified_at: string | null
+  created_at: string
+}
+
+export interface Chat {
+  id: string
+  job_id: string
+  application_id: string
+  created_at: string
+}
+
+export interface ChatWithDetails extends Chat {
+  jobs: Pick<Job, 'id' | 'title'>
+  applications: Pick<Application, 'id' | 'driver_id' | 'status'>
+}
+
+export interface Message {
+  id: string
+  chat_id: string
+  sender_id: string
+  content: string
+  is_read: boolean
+  created_at: string
+}
+
+export interface Notification {
+  id: string
+  user_id: string
+  type: string
+  message: string
+  is_read: boolean
+  created_at: string
+}
+
+// 장비 코드 한글 레이블
+export const EQUIPMENT_LABELS: Record<EquipmentCode, string> = {
+  '008': '008 (미니)',
+  '017': '017',
+  '035': '035',
+  '02': '02',
+  '3w': '3w (휠)',
+  '6w': '6w (휠)',
+  '8w': '8w (휠)',
+  '10t': '10t',
+}
+
+// 일감 유형 한글 레이블
+export const JOB_TYPE_LABELS: Record<JobType, string> = {
+  civil: '일반 토목',
+  demolition: '철거',
+}
+
+// 지급 예정일 한글 레이블
+export const PAY_DUE_LABELS: Record<PayDueType, string> = {
+  same_day: '완료 당일',
+  d3: 'D+3',
+  d7: 'D+7',
+  d14: 'D+14',
+  d30: 'D+30',
+}
+
+// 일감 상태 한글 레이블
+export const JOB_STATUS_LABELS: Record<JobStatus, string> = {
+  open: '모집중',
+  closed: '마감',
+  in_progress: '작업중',
+  completed: '완료',
+}
+
+// 지원 상태 한글 레이블
+export const APPLICATION_STATUS_LABELS: Record<ApplicationStatus, string> = {
+  pending: '지원완료',
+  reviewing: '검토중',
+  accepted: '수락',
+  rejected: '거절',
+}
