@@ -106,6 +106,58 @@ diggo/
 - 페이지 단위로 하나씩 완성한다
 - 작업 전 반드시 PLAN.md를 참고한다
 
+## 브랜치 전략
+
+- main: 배포용. 직접 커밋 금지. Vercel 자동 배포 연결.
+- dev: 개발 통합 브랜치. 기능 완성 후 여기에 머지.
+- feat/기능명: 기능 개발 (예: feat/login, feat/job-list)
+- fix/버그명: 버그 수정 (예: fix/auth-redirect)
+
+## 커밋 컨벤션
+
+- feat: 새 기능
+- fix: 버그 수정
+- style: UI/스타일 수정
+- refactor: 리팩토링
+- chore: 설정, 패키지
+- docs: 문서 수정
+- 예시: feat: 일감 목록 무한스크롤 구현
+- 커밋 메시지는 한국어로 작성
+
+## 컴포넌트 규칙
+
+- 서버 컴포넌트 기본, 'use client'는 꼭 필요할 때만
+- props 타입은 interface로 정의 (type 말고)
+- 컴포넌트 파일 상단에 역할 한 줄 주석 작성
+- 스타일은 Tailwind만 사용 (인라인 style 금지)
+- 로딩 상태와 에러 상태 UI 항상 포함
+
+## 네이밍 규칙
+
+- 컴포넌트 파일: PascalCase (JobCard.tsx)
+- 훅 파일: camelCase + use 접두사 (useJobList.ts)
+- 유틸 함수: camelCase (formatDate.ts)
+- 타입/인터페이스: PascalCase (interface Profile)
+- 상수: SCREAMING_SNAKE_CASE (EQUIPMENT_LABELS)
+- DB 컬럼: snake_case (manager_id, pay_amount)
+- 주석: 한국어
+
+## 에러 처리 패턴
+
+- API Route는 항상 try/catch 사용
+- 에러 응답: { error: '한국어 메시지' } + HTTP 상태코드
+- 성공 응답: { data: ... } (목록은 { data, count, page, limit })
+- 401: 로그인 필요, 403: 권한 없음, 404: 없음, 409: 중복
+
+## 금지 사항
+
+- any 타입 사용 금지 (unknown 사용)
+- console.log 금지 (console.error만 허용)
+- 인라인 style 금지
+- 코드 생략 금지 (항상 전체 코드 작성)
+- 하드코딩 금지 (상수는 types/index.ts에 정의)
+- TODO 주석 남기기 금지 (구현하거나 삭제)
+
 ## 언어
 
-모든 응답은 한국어로 작성한다.
+- 모든 응답과 주석은 한국어로 작성한다
