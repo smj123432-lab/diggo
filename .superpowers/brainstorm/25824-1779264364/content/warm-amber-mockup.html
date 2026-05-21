@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Warm Amber 목업</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f5f5f0; color: #1c1917; }
+
+  /* NAV */
+  nav {
+    background: rgba(255,251,235,0.92);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid #fde68a;
+    padding: 0 24px;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 50;
+  }
+  .logo { font-weight: 900; font-size: 18px; color: #92400e; }
+  .logo span { color: #f59e0b; }
+  .nav-links { display: flex; align-items: center; gap: 12px; }
+  .nav-link { font-size: 13px; color: #a16207; text-decoration: none; }
+  .btn-login { font-size: 13px; border: 1px solid #fcd34d; border-radius: 8px; padding: 6px 14px; color: #92400e; background: transparent; cursor: pointer; }
+  .btn-start { font-size: 13px; background: #f59e0b; border-radius: 8px; padding: 6px 14px; color: #000; font-weight: 700; cursor: pointer; }
+
+  /* HERO */
+  .hero {
+    background: linear-gradient(160deg, #fffbeb 0%, #fef3c7 40%, #fff7ed 100%);
+    padding: 80px 24px 60px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+    min-height: 520px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+  .hero::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(245,158,11,0.08) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(245,158,11,0.08) 1px, transparent 1px);
+    background-size: 40px 40px;
+  }
+  .hero-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: #fef3c7;
+    border: 1px solid #fde68a;
+    border-radius: 999px;
+    padding: 6px 14px;
+    font-size: 11px;
+    color: #92400e;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 28px;
+    position: relative;
+  }
+  .badge-dot { width: 6px; height: 6px; background: #f59e0b; border-radius: 50%; }
+  .hero h1 {
+    font-size: clamp(36px, 6vw, 64px);
+    font-weight: 900;
+    line-height: 1.08;
+    letter-spacing: -0.02em;
+    color: #1c1917;
+    margin-bottom: 20px;
+    position: relative;
+  }
+  .hero h1 span { color: #d97706; }
+  .hero p {
+    font-size: 15px;
+    color: #a16207;
+    max-width: 380px;
+    line-height: 1.7;
+    margin-bottom: 36px;
+    position: relative;
+  }
+  .hero-btns { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; position: relative; }
+  .btn-primary {
+    background: #f59e0b;
+    color: #000;
+    font-weight: 700;
+    font-size: 14px;
+    padding: 14px 28px;
+    border-radius: 12px;
+    border: none;
+    cursor: pointer;
+    box-shadow: 0 4px 20px rgba(245,158,11,0.35);
+  }
+  .btn-secondary {
+    background: #fff;
+    color: #92400e;
+    font-weight: 600;
+    font-size: 14px;
+    padding: 14px 28px;
+    border-radius: 12px;
+    border: 1px solid #fcd34d;
+    cursor: pointer;
+  }
+
+  /* STATS */
+  .stats {
+    background: #fff;
+    border-top: 1px solid #fde68a;
+    border-bottom: 1px solid #fde68a;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    divide: #fde68a;
+  }
+  .stat-item {
+    text-align: center;
+    padding: 28px 16px;
+    border-right: 1px solid #fde68a;
+  }
+  .stat-item:last-child { border-right: none; }
+  .stat-num { font-size: clamp(24px, 4vw, 36px); font-weight: 700; color: #d97706; font-variant-numeric: tabular-nums; }
+  .stat-label { font-size: 12px; color: #a16207; margin-top: 4px; }
+
+  /* FEATURES */
+  .features { background: #fffbeb; padding: 64px 24px; }
+  .features-inner { max-width: 900px; margin: 0 auto; }
+  .section-label { font-size: 11px; color: #d97706; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 10px; }
+  .section-title { font-size: clamp(22px, 3vw, 32px); font-weight: 900; color: #1c1917; margin-bottom: 40px; }
+  .feature-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; }
+  .feature-card {
+    background: #fff;
+    border: 1px solid #fde68a;
+    border-radius: 16px;
+    padding: 28px;
+    transition: all 0.2s;
+  }
+  .feature-card:hover { border-color: #f59e0b; box-shadow: 0 4px 20px rgba(245,158,11,0.12); }
+  .feature-num { font-size: 11px; color: #d97706; font-weight: 700; letter-spacing: 0.08em; margin-bottom: 16px; font-family: monospace; }
+  .feature-divider { width: 24px; height: 2px; background: #fcd34d; border-radius: 2px; margin-bottom: 16px; }
+  .feature-title { font-size: 16px; font-weight: 700; color: #1c1917; margin-bottom: 8px; }
+  .feature-desc { font-size: 13px; color: #a16207; line-height: 1.65; }
+
+  /* SPLIT CTA */
+  .split-cta { display: grid; grid-template-columns: 1fr 1fr; border-top: 1px solid #fde68a; }
+  .cta-driver {
+    background: #f59e0b;
+    padding: 60px 32px;
+    position: relative;
+    overflow: hidden;
+  }
+  .cta-driver::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image: linear-gradient(rgba(0,0,0,0.07) 1px, transparent 1px), linear-gradient(90deg, rgba(0,0,0,0.07) 1px, transparent 1px);
+    background-size: 24px 24px;
+  }
+  .cta-manager {
+    background: #fff7ed;
+    padding: 60px 32px;
+    border-left: 1px solid #fde68a;
+    position: relative;
+    overflow: hidden;
+  }
+  .cta-manager::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image: linear-gradient(rgba(245,158,11,0.07) 1px, transparent 1px), linear-gradient(90deg, rgba(245,158,11,0.07) 1px, transparent 1px);
+    background-size: 24px 24px;
+  }
+  .cta-inner { position: relative; }
+  .cta-sublabel { font-size: 10px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 20px; }
+  .cta-driver .cta-sublabel { color: rgba(0,0,0,0.45); }
+  .cta-manager .cta-sublabel { color: #d97706; }
+  .cta-title { font-size: clamp(22px, 3vw, 32px); font-weight: 900; line-height: 1.15; margin-bottom: 14px; }
+  .cta-driver .cta-title { color: #000; }
+  .cta-manager .cta-title { color: #1c1917; }
+  .cta-desc { font-size: 13px; line-height: 1.65; max-width: 280px; margin-bottom: 28px; }
+  .cta-driver .cta-desc { color: rgba(0,0,0,0.55); }
+  .cta-manager .cta-desc { color: #a16207; }
+  .btn-cta-driver { display: inline-flex; align-items: center; gap: 8px; background: #1c1917; color: #f59e0b; font-weight: 700; font-size: 13px; padding: 12px 20px; border-radius: 10px; border: none; cursor: pointer; }
+  .btn-cta-manager { display: inline-flex; align-items: center; gap: 8px; background: #f59e0b; color: #000; font-weight: 700; font-size: 13px; padding: 12px 20px; border-radius: 10px; border: none; cursor: pointer; }
+
+  /* FOOTER */
+  footer {
+    background: #fff;
+    border-top: 1px solid #fde68a;
+    padding: 28px 24px;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+  }
+  .footer-logo { font-weight: 900; font-size: 15px; color: #92400e; }
+  .footer-logo span { color: #f59e0b; }
+  .footer-desc { font-size: 12px; color: #a16207; }
+  .footer-links { display: flex; gap: 20px; }
+  .footer-link { font-size: 12px; color: #a16207; text-decoration: none; }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="logo">Diggo<span>.</span></div>
+  <div class="nav-links">
+    <a href="#" class="nav-link">일감 보기</a>
+    <button class="btn-login">로그인</button>
+    <button class="btn-start">시작하기</button>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-badge">
+    <div class="badge-dot"></div>
+    굴착기 배차 플랫폼
+  </div>
+  <h1>경력대로 일하고,<br><span>약속대로 받는다.</span></h1>
+  <p>나이가 아닌 실력으로 선택받는 배차 플랫폼.<br>검증된 기사와 신뢰할 수 있는 소장을 잇습니다.</p>
+  <div class="hero-btns">
+    <button class="btn-primary">기사로 시작하기 →</button>
+    <button class="btn-secondary">소장으로 시작하기 →</button>
+  </div>
+</section>
+
+<!-- STATS -->
+<div class="stats">
+  <div class="stat-item">
+    <div class="stat-num">1,200+</div>
+    <div class="stat-label">등록 기사</div>
+  </div>
+  <div class="stat-item">
+    <div class="stat-num">380+</div>
+    <div class="stat-label">등록 소장</div>
+  </div>
+  <div class="stat-item">
+    <div class="stat-num">4.8</div>
+    <div class="stat-label">평균 평점</div>
+  </div>
+</div>
+
+<!-- FEATURES -->
+<section class="features">
+  <div class="features-inner">
+    <div class="section-label">핵심 기능</div>
+    <div class="section-title">현장에서 필요한 것만</div>
+    <div class="feature-grid">
+      <div class="feature-card">
+        <div class="feature-num">01</div>
+        <div class="feature-divider"></div>
+        <div class="feature-title">정확한 배차</div>
+        <div class="feature-desc">장비 종류, 작업 일자, 지급 조건까지. 소장이 일감을 올리면 맞는 기사가 지원한다. 검토 → 채팅 → 수락까지 한 흐름으로.</div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-num">02</div>
+        <div class="feature-divider"></div>
+        <div class="feature-title">상호 신뢰 검증</div>
+        <div class="feature-desc">일 끝나면 기사와 소장이 서로 평가한다. 평점은 프로필에 쌓이고, 좋은 기사는 인증 뱃지를 받는다.</div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-num">03</div>
+        <div class="feature-divider"></div>
+        <div class="feature-title">전자장부</div>
+        <div class="feature-desc">작업 완료 시 수입이 자동으로 기록된다. 유류비, 소모품 지출을 입력하면 월별 순수익을 한눈에 확인.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SPLIT CTA -->
+<section class="split-cta">
+  <div class="cta-driver">
+    <div class="cta-inner">
+      <div class="cta-sublabel">기사라면</div>
+      <div class="cta-title">나이 말고<br>실력으로<br>평가받으세요.</div>
+      <div class="cta-desc">평점과 인증 뱃지로 경력을 증명하고, 전자장부로 수입을 투명하게 관리합니다.</div>
+      <button class="btn-cta-driver">기사로 가입하기 →</button>
+    </div>
+  </div>
+  <div class="cta-manager">
+    <div class="cta-inner">
+      <div class="cta-sublabel">소장이라면</div>
+      <div class="cta-title">검증된 기사를<br>직접 골라서<br>쓰세요.</div>
+      <div class="cta-desc">경력을 속인 기사로 인한 사고 걱정 없이, 평점과 뱃지로 검증된 기사를 선택합니다.</div>
+      <button class="btn-cta-manager">소장으로 가입하기 →</button>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-logo">Diggo<span>.</span></div>
+  <div class="footer-desc">굴착기 기사와 소장을 위한 배차 플랫폼</div>
+  <div class="footer-links">
+    <a href="#" class="footer-link">일감 보기</a>
+    <a href="#" class="footer-link">로그인</a>
+  </div>
+</footer>
+
+</body>
+</html>

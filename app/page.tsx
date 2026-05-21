@@ -41,27 +41,27 @@ const stats = [
 
 export default function HomePage() {
   return (
-    <div className="bg-[#080808] text-white min-h-screen">
+    <div className="bg-[#f5f5f0] text-stone-900 min-h-screen">
 
       {/* NAV */}
-      <nav className="fixed top-0 inset-x-0 z-50 border-b border-white/5 bg-[#080808]/80 backdrop-blur-md">
+      <nav className="fixed top-0 inset-x-0 z-50 border-b border-amber-200 bg-amber-50/90 backdrop-blur-md">
         <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
-          <span className="text-lg font-black tracking-tight">
-            Diggo<span className="text-primary">.</span>
+          <span className="text-lg font-black tracking-tight text-amber-900">
+            Diggo<span className="text-amber-500">.</span>
           </span>
           <div className="flex items-center gap-6">
-            <Link href="/jobs" className="text-sm text-gray-400 hover:text-white transition-colors hidden sm:block">
+            <Link href="/jobs" className="text-sm text-amber-700 hover:text-amber-900 transition-colors hidden sm:block">
               일감 보기
             </Link>
             <Link
               href="/login"
-              className="text-sm border border-white/10 hover:border-white/20 px-4 py-2 rounded-lg transition-colors"
+              className="text-sm border border-amber-300 hover:border-amber-400 text-amber-900 px-4 py-2 rounded-lg transition-colors bg-white/60"
             >
               로그인
             </Link>
             <Link
               href="/signup"
-              className="text-sm bg-primary hover:bg-primary-dark text-black font-bold px-4 py-2 rounded-lg transition-colors"
+              className="text-sm bg-amber-400 hover:bg-amber-500 text-black font-bold px-4 py-2 rounded-lg transition-colors"
             >
               시작하기
             </Link>
@@ -71,40 +71,41 @@ export default function HomePage() {
 
       {/* HERO */}
       <section
-        className="relative min-h-screen flex flex-col justify-center pt-16 overflow-hidden"
+        className="relative min-h-screen flex flex-col justify-center pt-16 overflow-hidden bg-gradient-to-br from-amber-50 via-yellow-50 to-orange-50"
         style={{
           backgroundImage: `
-            radial-gradient(ellipse 90% 60% at 50% -5%, rgba(245, 158, 11, 0.18) 0%, transparent 70%),
-            linear-gradient(rgba(245, 158, 11, 0.035) 1px, transparent 1px),
-            linear-gradient(90deg, rgba(245, 158, 11, 0.035) 1px, transparent 1px)
+            linear-gradient(160deg, #fffbeb 0%, #fef3c7 45%, #fff7ed 100%)
           `,
-          backgroundSize: 'auto, 64px 64px, 64px 64px',
         }}
       >
-        {/* 배경 노이즈 질감 */}
+        {/* 격자 패턴 */}
         <div
-          className="absolute inset-0 opacity-[0.03] pointer-events-none"
+          className="absolute inset-0 pointer-events-none"
           style={{
-            backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E")`,
+            backgroundImage: `
+              linear-gradient(rgba(245,158,11,0.08) 1px, transparent 1px),
+              linear-gradient(90deg, rgba(245,158,11,0.08) 1px, transparent 1px)
+            `,
+            backgroundSize: '40px 40px',
           }}
         />
 
         <div className="relative max-w-6xl mx-auto px-6 py-32 text-center">
           {/* 뱃지 */}
-          <div className="inline-flex items-center gap-2.5 border border-primary/20 bg-primary/8 px-4 py-2 rounded-full text-primary/80 text-xs font-mono tracking-widest uppercase mb-12">
-            <span className="w-1.5 h-1.5 bg-primary rounded-full animate-pulse" />
+          <div className="inline-flex items-center gap-2.5 border border-amber-200 bg-amber-100/80 px-4 py-2 rounded-full text-amber-800 text-xs font-mono tracking-widest uppercase mb-12">
+            <span className="w-1.5 h-1.5 bg-amber-500 rounded-full animate-pulse" />
             굴착기 배차 플랫폼
           </div>
 
           {/* 헤드라인 */}
-          <h1 className="text-5xl sm:text-7xl md:text-8xl font-black leading-[1.05] tracking-tight mb-8">
+          <h1 className="text-5xl sm:text-7xl md:text-8xl font-black leading-[1.05] tracking-tight mb-8 text-stone-900">
             경력대로 일하고,
             <br />
-            <span className="text-primary">약속대로 받는다.</span>
+            <span className="text-amber-600">약속대로 받는다.</span>
           </h1>
 
           {/* 서브텍스트 */}
-          <p className="text-gray-400 text-base sm:text-lg max-w-lg mx-auto leading-relaxed mb-14">
+          <p className="text-amber-800/70 text-base sm:text-lg max-w-lg mx-auto leading-relaxed mb-14">
             나이가 아닌 실력으로 선택받는 배차 플랫폼.
             <br />
             검증된 기사와 신뢰할 수 있는 소장을 잇습니다.
@@ -114,7 +115,7 @@ export default function HomePage() {
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
             <Link
               href="/signup?role=driver"
-              className="group w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-primary hover:bg-primary-dark text-black font-bold text-base px-8 py-4 rounded-xl transition-all duration-200 shadow-[0_0_40px_rgba(245,158,11,0.3)] hover:shadow-[0_0_60px_rgba(245,158,11,0.4)]"
+              className="group w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-amber-400 hover:bg-amber-500 text-black font-bold text-base px-8 py-4 rounded-xl transition-all duration-200 shadow-[0_4px_24px_rgba(245,158,11,0.35)] hover:shadow-[0_6px_32px_rgba(245,158,11,0.45)]"
             >
               기사로 시작하기
               <svg className="w-4 h-4 transition-transform group-hover:translate-x-0.5" viewBox="0 0 20 20" fill="currentColor">
@@ -123,7 +124,7 @@ export default function HomePage() {
             </Link>
             <Link
               href="/signup?role=manager"
-              className="group w-full sm:w-auto inline-flex items-center justify-center gap-2 border border-white/10 hover:border-white/20 text-white text-base px-8 py-4 rounded-xl transition-all duration-200 hover:bg-white/[0.03]"
+              className="group w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-white border border-amber-300 hover:border-amber-400 text-amber-900 font-semibold text-base px-8 py-4 rounded-xl transition-all duration-200 hover:bg-amber-50"
             >
               소장으로 시작하기
               <svg className="w-4 h-4 transition-transform group-hover:translate-x-0.5" viewBox="0 0 20 20" fill="currentColor">
@@ -134,7 +135,7 @@ export default function HomePage() {
         </div>
 
         {/* 하단 스크롤 힌트 */}
-        <div className="absolute bottom-10 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 text-gray-600 text-xs font-mono tracking-widest animate-bounce">
+        <div className="absolute bottom-10 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 text-amber-400 text-xs font-mono tracking-widest animate-bounce">
           <svg className="w-4 h-4" viewBox="0 0 20 20" fill="currentColor">
             <path fillRule="evenodd" d="M5.22 8.22a.75.75 0 0 1 1.06 0L10 11.94l3.72-3.72a.75.75 0 1 1 1.06 1.06l-4.25 4.25a.75.75 0 0 1-1.06 0L5.22 9.28a.75.75 0 0 1 0-1.06Z" clipRule="evenodd" />
           </svg>
@@ -142,58 +143,60 @@ export default function HomePage() {
       </section>
 
       {/* STATS */}
-      <div className="border-y border-white/5 bg-[#0C0C0C]">
-        <div className="max-w-6xl mx-auto px-6 py-14 grid grid-cols-3 divide-x divide-white/5">
+      <div className="border-y border-amber-200 bg-white">
+        <div className="max-w-6xl mx-auto px-6 py-14 grid grid-cols-3 divide-x divide-amber-200">
           {stats.map(({ num, label }) => (
             <div key={label} className="text-center px-4">
-              <div className="font-mono text-3xl sm:text-4xl font-medium text-primary tabular-nums">
+              <div className="font-mono text-3xl sm:text-4xl font-bold text-amber-600 tabular-nums">
                 {num}
               </div>
-              <div className="text-gray-500 text-sm mt-2 tracking-wide">{label}</div>
+              <div className="text-amber-700/60 text-sm mt-2 tracking-wide">{label}</div>
             </div>
           ))}
         </div>
       </div>
 
       {/* FEATURES */}
-      <section className="max-w-6xl mx-auto px-6 py-32">
-        <div className="mb-16">
-          <p className="font-mono text-primary/60 text-xs tracking-widest uppercase mb-4">핵심 기능</p>
-          <h2 className="text-3xl sm:text-4xl font-black tracking-tight">
-            현장에서 필요한 것만
-          </h2>
-        </div>
+      <section className="bg-amber-50 max-w-full px-6 py-32">
+        <div className="max-w-6xl mx-auto">
+          <div className="mb-16">
+            <p className="font-mono text-amber-600 text-xs tracking-widest uppercase mb-4">핵심 기능</p>
+            <h2 className="text-3xl sm:text-4xl font-black tracking-tight text-stone-900">
+              현장에서 필요한 것만
+            </h2>
+          </div>
 
-        <div className="grid md:grid-cols-3 gap-4">
-          {features.map(({ num, title, desc, icon }) => (
-            <div
-              key={num}
-              className="group relative border border-white/[0.06] bg-white/[0.02] hover:bg-white/[0.04] hover:border-primary/20 rounded-2xl p-8 transition-all duration-300"
-            >
-              {/* amber 왼쪽 라인 */}
-              <div className="absolute left-0 top-8 bottom-8 w-px bg-gradient-to-b from-transparent via-primary/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-full" />
+          <div className="grid md:grid-cols-3 gap-4">
+            {features.map(({ num, title, desc, icon }) => (
+              <div
+                key={num}
+                className="group relative border border-amber-200 bg-white hover:border-amber-400 hover:shadow-[0_4px_20px_rgba(245,158,11,0.12)] rounded-2xl p-8 transition-all duration-300"
+              >
+                {/* 앰버 왼쪽 라인 */}
+                <div className="absolute left-0 top-8 bottom-8 w-px bg-gradient-to-b from-transparent via-amber-400 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-full" />
 
-              <div className="flex items-start justify-between mb-8">
-                <span className="font-mono text-xs text-primary/50 tracking-widest">{num}</span>
-                <span className="text-gray-600 group-hover:text-primary/60 transition-colors duration-300">
-                  {icon}
-                </span>
+                <div className="flex items-start justify-between mb-8">
+                  <span className="font-mono text-xs text-amber-500 tracking-widest">{num}</span>
+                  <span className="text-amber-300 group-hover:text-amber-500 transition-colors duration-300">
+                    {icon}
+                  </span>
+                </div>
+
+                <div className="w-6 h-0.5 bg-amber-300 mb-6 group-hover:w-10 transition-all duration-300" />
+
+                <h3 className="text-lg font-bold text-stone-900 mb-3">{title}</h3>
+                <p className="text-amber-800/60 text-sm leading-relaxed">{desc}</p>
               </div>
-
-              <div className="w-6 h-px bg-primary/40 mb-6 group-hover:w-10 transition-all duration-300" />
-
-              <h3 className="text-lg font-bold text-white mb-3">{title}</h3>
-              <p className="text-gray-500 text-sm leading-relaxed">{desc}</p>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
       </section>
 
       {/* SPLIT CTA */}
-      <section className="border-t border-white/5">
+      <section className="border-t border-amber-200">
         <div className="grid md:grid-cols-2">
           {/* 기사 */}
-          <div className="relative bg-primary p-14 sm:p-20 overflow-hidden">
+          <div className="relative bg-amber-400 p-14 sm:p-20 overflow-hidden">
             <div
               className="absolute inset-0 opacity-10"
               style={{
@@ -202,16 +205,16 @@ export default function HomePage() {
               }}
             />
             <div className="relative">
-              <p className="font-mono text-black/50 text-xs tracking-widest uppercase mb-8">기사라면</p>
+              <p className="font-mono text-black/40 text-xs tracking-widest uppercase mb-8">기사라면</p>
               <h3 className="text-3xl sm:text-4xl font-black text-black leading-tight mb-5">
                 나이 말고<br />실력으로<br />평가받으세요.
               </h3>
-              <p className="text-black/60 text-sm leading-relaxed mb-10 max-w-xs">
+              <p className="text-black/55 text-sm leading-relaxed mb-10 max-w-xs">
                 평점과 인증 뱃지로 경력을 증명하고, 전자장부로 수입을 투명하게 관리합니다.
               </p>
               <Link
                 href="/signup?role=driver"
-                className="inline-flex items-center gap-2 bg-black text-primary font-bold text-sm px-6 py-3.5 rounded-xl hover:bg-black/80 transition-colors"
+                className="inline-flex items-center gap-2 bg-stone-900 text-amber-400 font-bold text-sm px-6 py-3.5 rounded-xl hover:bg-stone-800 transition-colors"
               >
                 기사로 가입하기
                 <svg className="w-4 h-4" viewBox="0 0 20 20" fill="currentColor">
@@ -222,25 +225,25 @@ export default function HomePage() {
           </div>
 
           {/* 소장 */}
-          <div className="relative bg-[#0F0F0F] border-l border-white/5 p-14 sm:p-20 overflow-hidden">
+          <div className="relative bg-orange-50 border-l border-amber-200 p-14 sm:p-20 overflow-hidden">
             <div
-              className="absolute inset-0 opacity-[0.03]"
+              className="absolute inset-0"
               style={{
-                backgroundImage: `linear-gradient(rgba(245,158,11,0.8) 1px, transparent 1px), linear-gradient(90deg, rgba(245,158,11,0.8) 1px, transparent 1px)`,
+                backgroundImage: `linear-gradient(rgba(245,158,11,0.06) 1px, transparent 1px), linear-gradient(90deg, rgba(245,158,11,0.06) 1px, transparent 1px)`,
                 backgroundSize: '32px 32px',
               }}
             />
             <div className="relative">
-              <p className="font-mono text-primary/40 text-xs tracking-widest uppercase mb-8">소장이라면</p>
-              <h3 className="text-3xl sm:text-4xl font-black text-white leading-tight mb-5">
+              <p className="font-mono text-amber-600 text-xs tracking-widest uppercase mb-8">소장이라면</p>
+              <h3 className="text-3xl sm:text-4xl font-black text-stone-900 leading-tight mb-5">
                 검증된 기사를<br />직접 골라서<br />쓰세요.
               </h3>
-              <p className="text-gray-500 text-sm leading-relaxed mb-10 max-w-xs">
+              <p className="text-amber-800/60 text-sm leading-relaxed mb-10 max-w-xs">
                 경력을 속인 기사로 인한 사고 걱정 없이, 평점과 뱃지로 검증된 기사를 선택합니다.
               </p>
               <Link
                 href="/signup?role=manager"
-                className="inline-flex items-center gap-2 border border-white/10 hover:border-primary/30 text-white hover:text-primary font-bold text-sm px-6 py-3.5 rounded-xl transition-all duration-200"
+                className="inline-flex items-center gap-2 bg-amber-400 hover:bg-amber-500 text-black font-bold text-sm px-6 py-3.5 rounded-xl transition-colors"
               >
                 소장으로 가입하기
                 <svg className="w-4 h-4" viewBox="0 0 20 20" fill="currentColor">
@@ -253,17 +256,17 @@ export default function HomePage() {
       </section>
 
       {/* FOOTER */}
-      <footer className="border-t border-white/5 bg-[#080808]">
+      <footer className="border-t border-amber-200 bg-white">
         <div className="max-w-6xl mx-auto px-6 py-10 flex flex-col sm:flex-row items-center justify-between gap-4">
-          <span className="text-sm font-black tracking-tight">
-            Diggo<span className="text-primary">.</span>
+          <span className="text-sm font-black tracking-tight text-amber-900">
+            Diggo<span className="text-amber-500">.</span>
           </span>
-          <p className="text-gray-600 text-xs text-center">
+          <p className="text-amber-700/50 text-xs text-center">
             굴착기 기사와 소장을 위한 배차 플랫폼
           </p>
-          <div className="flex items-center gap-6 text-xs text-gray-600">
-            <Link href="/jobs" className="hover:text-gray-400 transition-colors">일감 보기</Link>
-            <Link href="/login" className="hover:text-gray-400 transition-colors">로그인</Link>
+          <div className="flex items-center gap-6 text-xs text-amber-700/50">
+            <Link href="/jobs" className="hover:text-amber-700 transition-colors">일감 보기</Link>
+            <Link href="/login" className="hover:text-amber-700 transition-colors">로그인</Link>
           </div>
         </div>
       </footer>
