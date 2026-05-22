@@ -20,7 +20,9 @@ export function AnimatedSplitCTA() {
 
   const handleDriverClick = () => {
     if (role === "manager") {
-      toast.error(<>소장님, 이미 로그인되어 있어요!<br />공고 올리기로 이동해 보세요.</>);
+      toast.error(
+        "소장님, 이미 로그인되어 있어요! 공고 올리기로 이동해 보세요.",
+      );
       return;
     }
     router.push(role === "driver" ? "/jobs" : "/signup?role=driver");
@@ -28,7 +30,7 @@ export function AnimatedSplitCTA() {
 
   const handleManagerClick = () => {
     if (role === "driver") {
-      toast.error(<>기사님, 이미 로그인되어 있어요!<br />일감 찾기로 이동해 보세요.</>);
+      toast.error("기사님, 이미 로그인되어 있어요! 일감 찾기로 이동해 보세요.");
       return;
     }
     router.push(role === "manager" ? "/jobs/new" : "/signup?role=manager");
