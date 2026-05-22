@@ -339,13 +339,18 @@ export default function SignupPage() {
                     }}
                     placeholder="비밀번호 재입력"
                     className={`w-full px-4 py-3 border rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:border-transparent transition ${
-                      fieldErrors.confirmPassword
+                      confirmPassword && confirmPassword !== password
                         ? 'border-red-400 focus:ring-red-400'
-                        : 'border-gray-300 focus:ring-blue-500'
+                        : confirmPassword && confirmPassword === password
+                          ? 'border-green-400 focus:ring-green-400'
+                          : 'border-gray-300 focus:ring-blue-500'
                     }`}
                   />
-                  {fieldErrors.confirmPassword && (
-                    <p className="text-xs text-red-500 mt-1">{fieldErrors.confirmPassword}</p>
+                  {confirmPassword && (
+                    <p className={`flex items-center gap-1.5 text-xs mt-2 ${confirmPassword === password ? 'text-green-600' : 'text-red-500'}`}>
+                      <span>{confirmPassword === password ? '✅' : '❌'}</span>
+                      {confirmPassword === password ? '비밀번호가 일치합니다.' : '비밀번호가 일치하지 않습니다.'}
+                    </p>
                   )}
                 </div>
 
