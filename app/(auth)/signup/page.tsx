@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import React, { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
@@ -8,18 +8,18 @@ import type { UserRole } from '@/types'
 import { ExcavatorIcon } from '@/components/ui/ExcavatorIcon'
 
 // 역할 선택 카드 데이터
-const ROLE_OPTIONS: { role: UserRole; label: string; desc: string; icon: string }[] = [
+const ROLE_OPTIONS: { role: UserRole; label: string; desc: string; icon: React.ReactNode }[] = [
   {
     role: 'driver',
     label: '굴착기 기사',
     desc: '일감을 찾고 수입을 관리합니다',
-    icon: '🚜',
+    icon: <ExcavatorIcon className="w-9 h-7 text-slate-700" />,
   },
   {
     role: 'manager',
     label: '현장 소장',
     desc: '일감을 등록하고 기사를 구합니다',
-    icon: '📋',
+    icon: <span className="text-3xl">📋</span>,
   },
 ]
 
@@ -169,7 +169,7 @@ export default function SignupPage() {
                     onClick={() => handleRoleSelect(role)}
                     className="w-full flex items-center gap-4 p-5 border-2 border-gray-200 hover:border-blue-400 hover:bg-blue-50 rounded-xl transition group text-left"
                   >
-                    <span className="text-3xl">{icon}</span>
+                    <div className="flex-shrink-0">{icon}</div>
                     <div>
                       <p className="font-semibold text-gray-900 group-hover:text-blue-700">{label}</p>
                       <p className="text-sm text-gray-500">{desc}</p>
@@ -193,9 +193,11 @@ export default function SignupPage() {
               </button>
               <h2 className="text-xl font-bold text-gray-900 mb-1">정보를 입력해주세요</h2>
               <div className="flex items-center gap-2 mb-6">
-                <span className="text-lg">
-                  {ROLE_OPTIONS.find((o) => o.role === selectedRole)?.icon}
-                </span>
+                <div className="w-6 h-5 flex items-center justify-center">
+                  {selectedRole === 'driver'
+                    ? <ExcavatorIcon className="w-6 h-5 text-blue-600" />
+                    : <span className="text-base">📋</span>}
+                </div>
                 <span className="text-sm font-medium text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full">
                   {ROLE_OPTIONS.find((o) => o.role === selectedRole)?.label}
                 </span>
