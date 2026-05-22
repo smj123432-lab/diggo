@@ -12,40 +12,27 @@ export function useAuth() {
   useEffect(() => {
     const supabase = createClient()
 
-    // 현재 세션 확인
-    supabase.auth.getUser().then(async ({ data: { user } }) => {
-      if (user) {
-        setUser(user)
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('*')
-          .eq('id', user.id)
-          .single()
-        setProfile(profile)
-      } else {
-        reset()
-      }
-      setIsLoading(false)
-    }).catch(() => {
-      reset()
-    })
+    const fetchProfile = async (userId: string) => {
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', userId)
+        .single()
+      if (profile) setProfile(profile)
+    }
 
-    // 인증 상태 변경 구독
+    // onAuthStateChange가 INITIAL_SESSION 이벤트로 즉시 현재 세션을 알려줌
+    // → 세션 확인 즉시 isLoading(false), 프로필은 백그라운드 fetch
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (event, session) => {
+    } = supabase.auth.onAuthStateChange((event, session) => {
       if (session?.user) {
         setUser(session.user)
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('*')
-          .eq('id', session.user.id)
-          .single()
-        setProfile(profile)
+        setIsLoading(false)
+        fetchProfile(session.user.id)
       } else {
         reset()
       }
-      setIsLoading(false)
     })
 
     return () => {

@@ -1,7 +1,7 @@
 'use client'
 
-import React, { useState } from 'react'
-import { useRouter } from 'next/navigation'
+import React, { useState, useEffect, Suspense } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 import type { UserRole, JobType, EquipmentCode } from '@/types'
@@ -66,11 +66,21 @@ function Chip({ label, selected, onClick }: { label: string; selected: boolean; 
   )
 }
 
-export default function SignupPage() {
+function SignupPageInner() {
   const router = useRouter()
+  const searchParams = useSearchParams()
 
   const [step, setStep] = useState<1 | 2 | 3>(1)
   const [selectedRole, setSelectedRole] = useState<UserRole | null>(null)
+
+  // ?role=driver 또는 ?role=manager 쿼리파라미터로 Step 2 자동 이동
+  useEffect(() => {
+    const roleParam = searchParams.get('role') as UserRole | null
+    if (roleParam === 'driver' || roleParam === 'manager') {
+      setSelectedRole(roleParam)
+      setStep(2)
+    }
+  }, [searchParams])
 
   // Step 2 — 기본 정보
   const [name, setName] = useState('')
@@ -507,5 +517,13 @@ export default function SignupPage() {
         </div>
       </div>
     </main>
+  )
+}
+
+export default function SignupPage() {
+  return (
+    <Suspense>
+      <SignupPageInner />
+    </Suspense>
   )
 }

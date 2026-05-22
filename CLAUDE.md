@@ -169,3 +169,59 @@ diggo/
 ## 언어
 
 - 모든 응답과 주석은 한국어로 작성한다
+
+## 트러블슈팅
+
+### Supabase 회원가입 500 에러 — Database error saving new user
+
+**증상**: `POST /auth/v1/signup` → 500, `{"error_code":"unexpected_failure","msg":"Database error saving new user"}`
+
+**원인**: `handle_new_user` 트리거 함수에 `search_path`가 지정되지 않아, Supabase Auth 환경에서 `profiles` 테이블을 찾지 못해 실패.
+
+**해결**: 트리거 함수 정의에 `set search_path = public` 추가
+
+```sql
+create or replace function handle_new_user()
+returns trigger
+language plpgsql
+security definer
+set search_path = public
+as $$
+...
+$$;
+```
+
+> Supabase에서 `security definer` 함수는 반드시 `set search_path = public`을 명시해야 Auth 환경에서 정상 동작한다.
+
+### Supabase profiles 조회 403 에러
+
+**증상**: `GET /rest/v1/profiles` → 403, role이 null이라 UI 업데이트 안 됨
+
+**원인**: RLS 정책만 있고 `anon`/`authenticated` 롤에 테이블 SELECT 권한이 없음. SQL로 직접 테이블 생성 시 권한을 별도로 부여해야 함.
+
+**해결**: Supabase SQL Editor에서 실행
+```sql
+grant select on profiles to anon, authenticated;
+```
+
+> Supabase UI로 테이블 생성 시 권한이 자동 부여되지만, SQL로 직접 생성하면 반드시 수동으로 grant 해야 한다.
+
+### sonner 토스트에서 줄바꿈
+
+**증상**: `\n` 문자가 줄바꿈으로 렌더링되지 않음
+
+**해결**: 문자열 대신 JSX 사용
+```tsx
+toast.error(<>첫 번째 줄<br />두 번째 줄</>)
+```
+
+### AuthInitializer 전역 초기화 패턴
+
+Supabase 인증 구독(`useAuth`)은 앱 전체에서 한 번만 호출해야 중복 API 요청이 없다.
+`components/features/auth/AuthInitializer.tsx`를 만들고 `providers.tsx`에 삽입.
+나머지 컴포넌트는 `useAuthStore()`로 Zustand 상태만 읽는다.
+
+### useAuth — isLoading 빠른 해제
+
+`onAuthStateChange`가 로컬 세션을 즉시 확인하므로, 프로필 fetch 완료를 기다리지 않고 세션 확인 직후 `setIsLoading(false)` 호출.
+프로필(role)은 백그라운드에서 별도 fetch해 store에 업데이트한다.

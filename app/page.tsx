@@ -4,6 +4,7 @@ import { AnimatedHero } from "@/components/features/home/AnimatedHero";
 import { AnimatedStats } from "@/components/features/home/AnimatedStats";
 import { AnimatedFeatures } from "@/components/features/home/AnimatedFeatures";
 import { AnimatedSplitCTA } from "@/components/features/home/AnimatedSplitCTA";
+import { NavButtons } from "@/components/features/home/NavButtons";
 
 export default function HomePage() {
   return (
@@ -25,18 +26,7 @@ export default function HomePage() {
             >
               일감 보기
             </Link>
-            <Link
-              href="/login"
-              className="text-sm border border-white/20 hover:border-white/40 text-white px-4 py-2 rounded-lg transition-colors bg-white/5"
-            >
-              로그인
-            </Link>
-            <Link
-              href="/signup"
-              className="text-sm bg-blue-500 hover:bg-blue-400 text-white font-bold px-4 py-2 rounded-lg transition-colors"
-            >
-              시작하기
-            </Link>
+            <NavButtons />
           </div>
         </div>
       </nav>
