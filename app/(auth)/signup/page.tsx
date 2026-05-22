@@ -23,6 +23,24 @@ const ROLE_OPTIONS: { role: UserRole; label: string; desc: string; icon: React.R
   },
 ]
 
+// 눈 아이콘 — 비밀번호 보기/숨기기
+function EyeIcon({ open }: { open: boolean }) {
+  return open ? (
+    // 눈 뜬 상태
+    <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+      <circle cx="12" cy="12" r="3" />
+    </svg>
+  ) : (
+    // 눈 감은 상태
+    <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+      <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94" />
+      <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19" />
+      <line x1="1" y1="1" x2="23" y2="23" />
+    </svg>
+  )
+}
+
 export default function SignupPage() {
   const router = useRouter()
 
@@ -34,8 +52,14 @@ export default function SignupPage() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
-  const [fieldErrors, setFieldErrors] = useState({ email: '', confirmPassword: '' })
+
+  const [emailTouched, setEmailTouched] = useState(false)
+  const [emailError, setEmailError] = useState('')
   const [pwTouched, setPwTouched] = useState(false)
+
+  const [showPw, setShowPw] = useState(false)
+  const [showConfirmPw, setShowConfirmPw] = useState(false)
+
   const [error, setError] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [isSuccess, setIsSuccess] = useState(false)
@@ -49,24 +73,24 @@ export default function SignupPage() {
       ).length >= 2,
   }
   const isPwValid = pwRules.length && pwRules.combo
+  const isPwMatch = password.length > 0 && confirmPassword.length > 0 && confirmPassword === password
 
-  // 이메일 형식 검사 — blur 시
+  // 모든 조건이 충족돼야 버튼 활성화
+  const isFormValid =
+    name.trim().length > 0 &&
+    email.length > 0 &&
+    !emailError &&
+    isPwValid &&
+    isPwMatch
+
+  // 이메일 유효성 검사
   const validateEmail = (value: string) => {
-    if (!value) return
-    const ok = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)
-    setFieldErrors((prev) => ({ ...prev, email: ok ? '' : '올바른 이메일 형식이 아닙니다.' }))
-  }
-
-  // 비밀번호 확인 — change 시 즉시 반응
-  const validateConfirmPassword = (value: string) => {
     if (!value) {
-      setFieldErrors((prev) => ({ ...prev, confirmPassword: '' }))
+      setEmailError('')
       return
     }
-    setFieldErrors((prev) => ({
-      ...prev,
-      confirmPassword: value === password ? '' : '비밀번호가 일치하지 않습니다.',
-    }))
+    const ok = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)
+    setEmailError(ok ? '' : '올바른 이메일 형식이 아닙니다.')
   }
 
   const handleRoleSelect = (role: UserRole) => {
@@ -83,17 +107,10 @@ export default function SignupPage() {
       return
     }
 
-    // 필드 에러 또는 비밀번호 규칙 미충족 시 제출 차단
-    if (fieldErrors.email || fieldErrors.confirmPassword) return
-    if (!isPwValid) {
-      setPwTouched(true)
-      return
-    }
-
-    if (password !== confirmPassword) {
-      setFieldErrors((prev) => ({ ...prev, confirmPassword: '비밀번호가 일치하지 않습니다.' }))
-      return
-    }
+    // 유효성 미충족 시 각 필드에 피드백 표시 후 차단
+    if (!isPwValid) { setPwTouched(true); return }
+    if (emailError || !email) return
+    if (!isPwMatch) return
 
     setIsLoading(true)
 
@@ -109,7 +126,10 @@ export default function SignupPage() {
       })
 
       if (authError) {
-        if (authError.message.includes('already registered') || authError.message.includes('User already registered')) {
+        if (
+          authError.message.includes('already registered') ||
+          authError.message.includes('User already registered')
+        ) {
           setError('이미 사용 중인 이메일입니다.')
         } else {
           setError('회원가입 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.')
@@ -237,6 +257,7 @@ export default function SignupPage() {
               </div>
 
               <form onSubmit={handleSubmit} className="space-y-4">
+                {/* 이름 */}
                 <div className="space-y-1">
                   <label htmlFor="name" className="block text-sm font-medium text-gray-700">
                     이름
@@ -246,6 +267,7 @@ export default function SignupPage() {
                     type="text"
                     required
                     autoComplete="name"
+                    maxLength={10}
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                     placeholder="홍길동"
@@ -253,6 +275,7 @@ export default function SignupPage() {
                   />
                 </div>
 
+                {/* 이메일 */}
                 <div className="space-y-1">
                   <label htmlFor="email" className="block text-sm font-medium text-gray-700">
                     이메일
@@ -263,51 +286,66 @@ export default function SignupPage() {
                     required
                     autoComplete="email"
                     value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    onBlur={(e) => validateEmail(e.target.value)}
+                    onChange={(e) => {
+                      setEmail(e.target.value)
+                      // blur 이후에는 change마다 실시간 재검사
+                      if (emailTouched) validateEmail(e.target.value)
+                    }}
+                    onBlur={(e) => {
+                      setEmailTouched(true)
+                      validateEmail(e.target.value)
+                    }}
                     placeholder="example@email.com"
                     className={`w-full px-4 py-3 border rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:border-transparent transition ${
-                      fieldErrors.email
+                      emailError
                         ? 'border-red-400 focus:ring-red-400'
-                        : 'border-gray-300 focus:ring-blue-500'
-                    }`}
-                  />
-                  {fieldErrors.email && (
-                    <p className="text-xs text-red-500 mt-1">{fieldErrors.email}</p>
-                  )}
-                </div>
-
-                <div className="space-y-1">
-                  <label htmlFor="password" className="block text-sm font-medium text-gray-700">
-                    비밀번호
-                  </label>
-                  <input
-                    id="password"
-                    type="password"
-                    required
-                    autoComplete="new-password"
-                    value={password}
-                    onChange={(e) => {
-                      setPassword(e.target.value)
-                      setPwTouched(true)
-                      // 비밀번호 바뀌면 확인란 재검사
-                      if (confirmPassword) {
-                        setFieldErrors((prev) => ({
-                          ...prev,
-                          confirmPassword:
-                            e.target.value === confirmPassword ? '' : '비밀번호가 일치하지 않습니다.',
-                        }))
-                      }
-                    }}
-                    placeholder="8~16자, 영문/숫자/특수문자 중 2가지 이상"
-                    className={`w-full px-4 py-3 border rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:border-transparent transition ${
-                      pwTouched && !isPwValid
-                        ? 'border-red-400 focus:ring-red-400'
-                        : pwTouched && isPwValid
+                        : emailTouched && email && !emailError
                           ? 'border-green-400 focus:ring-green-400'
                           : 'border-gray-300 focus:ring-blue-500'
                     }`}
                   />
+                  {emailError && (
+                    <p className="flex items-center gap-1.5 text-xs text-red-500 mt-1">
+                      <span>❌</span>{emailError}
+                    </p>
+                  )}
+                </div>
+
+                {/* 비밀번호 */}
+                <div className="space-y-1">
+                  <label htmlFor="password" className="block text-sm font-medium text-gray-700">
+                    비밀번호
+                  </label>
+                  <div className="relative">
+                    <input
+                      id="password"
+                      type={showPw ? 'text' : 'password'}
+                      required
+                      autoComplete="new-password"
+                      maxLength={16}
+                      value={password}
+                      onChange={(e) => {
+                        setPassword(e.target.value)
+                        setPwTouched(true)
+                      }}
+                      placeholder="8~16자, 영문/숫자/특수문자 중 2가지 이상"
+                      className={`w-full px-4 py-3 pr-11 border rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:border-transparent transition ${
+                        pwTouched && !isPwValid
+                          ? 'border-red-400 focus:ring-red-400'
+                          : pwTouched && isPwValid
+                            ? 'border-green-400 focus:ring-green-400'
+                            : 'border-gray-300 focus:ring-blue-500'
+                      }`}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPw((v) => !v)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition"
+                      tabIndex={-1}
+                    >
+                      <EyeIcon open={showPw} />
+                    </button>
+                  </div>
                   {/* 비밀번호 규칙 체크리스트 — 타이핑 시작 후 표시 */}
                   {pwTouched && (
                     <ul className="mt-2 space-y-1">
@@ -323,33 +361,44 @@ export default function SignupPage() {
                   )}
                 </div>
 
+                {/* 비밀번호 확인 */}
                 <div className="space-y-1">
                   <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700">
                     비밀번호 확인
                   </label>
-                  <input
-                    id="confirmPassword"
-                    type="password"
-                    required
-                    autoComplete="new-password"
-                    value={confirmPassword}
-                    onChange={(e) => {
-                      setConfirmPassword(e.target.value)
-                      validateConfirmPassword(e.target.value)
-                    }}
-                    placeholder="비밀번호 재입력"
-                    className={`w-full px-4 py-3 border rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:border-transparent transition ${
-                      confirmPassword && confirmPassword !== password
-                        ? 'border-red-400 focus:ring-red-400'
-                        : confirmPassword && confirmPassword === password
-                          ? 'border-green-400 focus:ring-green-400'
-                          : 'border-gray-300 focus:ring-blue-500'
-                    }`}
-                  />
-                  {confirmPassword && (
-                    <p className={`flex items-center gap-1.5 text-xs mt-2 ${confirmPassword === password ? 'text-green-600' : 'text-red-500'}`}>
-                      <span>{confirmPassword === password ? '✅' : '❌'}</span>
-                      {confirmPassword === password ? '비밀번호가 일치합니다.' : '비밀번호가 일치하지 않습니다.'}
+                  <div className="relative">
+                    <input
+                      id="confirmPassword"
+                      type={showConfirmPw ? 'text' : 'password'}
+                      required
+                      autoComplete="new-password"
+                      maxLength={16}
+                      value={confirmPassword}
+                      onChange={(e) => setConfirmPassword(e.target.value)}
+                      placeholder="비밀번호 재입력"
+                      className={`w-full px-4 py-3 pr-11 border rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:border-transparent transition ${
+                        // password가 비어있으면 상태 없음, 입력 시작 후 일치/불일치 판단
+                        confirmPassword && password.length > 0 && confirmPassword !== password
+                          ? 'border-red-400 focus:ring-red-400'
+                          : confirmPassword && password.length > 0 && confirmPassword === password
+                            ? 'border-green-400 focus:ring-green-400'
+                            : 'border-gray-300 focus:ring-blue-500'
+                      }`}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowConfirmPw((v) => !v)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition"
+                      tabIndex={-1}
+                    >
+                      <EyeIcon open={showConfirmPw} />
+                    </button>
+                  </div>
+                  {/* password와 confirmPassword 둘 다 비어있을 때는 메시지 숨김 */}
+                  {confirmPassword && password.length > 0 && (
+                    <p className={`flex items-center gap-1.5 text-xs mt-2 ${isPwMatch ? 'text-green-600' : 'text-red-500'}`}>
+                      <span>{isPwMatch ? '✅' : '❌'}</span>
+                      {isPwMatch ? '비밀번호가 일치합니다.' : '비밀번호가 일치하지 않습니다.'}
                     </p>
                   )}
                 </div>
@@ -360,10 +409,15 @@ export default function SignupPage() {
                   </div>
                 )}
 
+                {/* 모든 조건 충족 시에만 파란색, 미충족 시 회색 */}
                 <button
                   type="submit"
-                  disabled={isLoading}
-                  className="w-full py-3 bg-blue-500 hover:bg-blue-600 disabled:bg-blue-300 text-white font-semibold rounded-xl transition focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                  disabled={isLoading || !isFormValid}
+                  className={`w-full py-3 text-white font-semibold rounded-xl transition focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${
+                    isFormValid && !isLoading
+                      ? 'bg-blue-500 hover:bg-blue-600 cursor-pointer'
+                      : 'bg-gray-300 cursor-not-allowed'
+                  }`}
                 >
                   {isLoading ? '가입 중...' : '가입하기'}
                 </button>
