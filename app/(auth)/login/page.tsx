@@ -4,6 +4,7 @@ import { useState, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
+import { ExcavatorIcon } from '@/components/ui/ExcavatorIcon'
 
 // useSearchParams는 Suspense 경계 안에서 사용
 function LoginForm() {
@@ -57,7 +58,7 @@ function LoginForm() {
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           placeholder="example@email.com"
-          className="w-full px-4 py-3 border border-gray-300 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent transition"
+          className="w-full px-4 py-3 border border-gray-300 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
         />
       </div>
 
@@ -73,7 +74,7 @@ function LoginForm() {
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           placeholder="비밀번호 입력"
-          className="w-full px-4 py-3 border border-gray-300 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent transition"
+          className="w-full px-4 py-3 border border-gray-300 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
         />
       </div>
 
@@ -86,14 +87,14 @@ function LoginForm() {
       <button
         type="submit"
         disabled={isLoading}
-        className="w-full py-3 bg-amber-500 hover:bg-amber-600 disabled:bg-amber-300 text-white font-semibold rounded-xl transition focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2"
+        className="w-full py-3 bg-blue-500 hover:bg-blue-600 disabled:bg-blue-300 text-white font-semibold rounded-xl transition focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
       >
         {isLoading ? '로그인 중...' : '로그인'}
       </button>
 
       <p className="text-center text-sm text-gray-500">
         아직 계정이 없으신가요?{' '}
-        <Link href="/signup" className="text-amber-600 font-medium hover:underline">
+        <Link href="/signup" className="text-blue-600 font-medium hover:underline">
           회원가입
         </Link>
       </p>
@@ -105,13 +106,15 @@ export default function LoginPage() {
   return (
     <main className="min-h-screen flex items-center justify-center px-4 bg-gray-50">
       <div className="w-full max-w-md">
-        {/* 로고 영역 */}
-        <div className="text-center mb-10">
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-amber-500 rounded-2xl mb-4">
-            <span className="text-3xl">⛏️</span>
+        {/* 로고 영역 — 홈과 동일한 slate-900 + blue 조합 */}
+        <div className="flex flex-col items-center mb-10">
+          <div className="inline-flex items-center gap-2.5 bg-slate-900 px-6 py-3 rounded-2xl mb-3">
+            <ExcavatorIcon className="w-8 h-6 text-blue-400" />
+            <span className="text-xl font-black tracking-tight text-white">
+              Diggo<span className="text-blue-400">.</span>
+            </span>
           </div>
-          <h1 className="text-2xl font-bold text-gray-900">DIGGO</h1>
-          <p className="text-gray-500 text-sm mt-1">굴착기 배차 플랫폼</p>
+          <p className="text-gray-500 text-sm">굴착기 배차 플랫폼</p>
         </div>
 
         {/* 로그인 카드 */}

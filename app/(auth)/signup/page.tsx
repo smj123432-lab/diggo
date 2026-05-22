@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 import type { UserRole } from '@/types'
+import { ExcavatorIcon } from '@/components/ui/ExcavatorIcon'
 
 // 역할 선택 카드 데이터
 const ROLE_OPTIONS: { role: UserRole; label: string; desc: string; icon: string }[] = [
@@ -113,7 +114,7 @@ export default function SignupPage() {
             </p>
             <Link
               href="/login"
-              className="inline-block w-full py-3 bg-amber-500 hover:bg-amber-600 text-white font-semibold rounded-xl transition text-center"
+              className="inline-block w-full py-3 bg-blue-500 hover:bg-blue-600 text-white font-semibold rounded-xl transition text-center"
             >
               로그인 페이지로
             </Link>
@@ -126,27 +127,29 @@ export default function SignupPage() {
   return (
     <main className="min-h-screen flex items-center justify-center px-4 bg-gray-50">
       <div className="w-full max-w-md">
-        {/* 로고 영역 */}
-        <div className="text-center mb-10">
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-amber-500 rounded-2xl mb-4">
-            <span className="text-3xl">⛏️</span>
+        {/* 로고 영역 — 홈과 동일한 slate-900 + blue 조합 */}
+        <div className="flex flex-col items-center mb-10">
+          <div className="inline-flex items-center gap-2.5 bg-slate-900 px-6 py-3 rounded-2xl mb-3">
+            <ExcavatorIcon className="w-8 h-6 text-blue-400" />
+            <span className="text-xl font-black tracking-tight text-white">
+              Diggo<span className="text-blue-400">.</span>
+            </span>
           </div>
-          <h1 className="text-2xl font-bold text-gray-900">DIGGO</h1>
-          <p className="text-gray-500 text-sm mt-1">굴착기 배차 플랫폼</p>
+          <p className="text-gray-500 text-sm">굴착기 배차 플랫폼</p>
         </div>
 
         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8">
           {/* 단계 표시 */}
           <div className="flex items-center gap-2 mb-6">
             <div className="flex items-center gap-2">
-              <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold ${step >= 1 ? 'bg-amber-500 text-white' : 'bg-gray-200 text-gray-400'}`}>
+              <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold ${step >= 1 ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-400'}`}>
                 1
               </div>
               <span className={`text-sm font-medium ${step === 1 ? 'text-gray-900' : 'text-gray-400'}`}>역할 선택</span>
             </div>
             <div className="flex-1 h-px bg-gray-200" />
             <div className="flex items-center gap-2">
-              <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold ${step >= 2 ? 'bg-amber-500 text-white' : 'bg-gray-200 text-gray-400'}`}>
+              <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold ${step >= 2 ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-400'}`}>
                 2
               </div>
               <span className={`text-sm font-medium ${step === 2 ? 'text-gray-900' : 'text-gray-400'}`}>정보 입력</span>
@@ -164,14 +167,14 @@ export default function SignupPage() {
                     key={role}
                     type="button"
                     onClick={() => handleRoleSelect(role)}
-                    className="w-full flex items-center gap-4 p-5 border-2 border-gray-200 hover:border-amber-400 hover:bg-amber-50 rounded-xl transition group text-left"
+                    className="w-full flex items-center gap-4 p-5 border-2 border-gray-200 hover:border-blue-400 hover:bg-blue-50 rounded-xl transition group text-left"
                   >
                     <span className="text-3xl">{icon}</span>
                     <div>
-                      <p className="font-semibold text-gray-900 group-hover:text-amber-700">{label}</p>
+                      <p className="font-semibold text-gray-900 group-hover:text-blue-700">{label}</p>
                       <p className="text-sm text-gray-500">{desc}</p>
                     </div>
-                    <div className="ml-auto text-gray-300 group-hover:text-amber-400">→</div>
+                    <div className="ml-auto text-gray-300 group-hover:text-blue-400">→</div>
                   </button>
                 ))}
               </div>
@@ -193,7 +196,7 @@ export default function SignupPage() {
                 <span className="text-lg">
                   {ROLE_OPTIONS.find((o) => o.role === selectedRole)?.icon}
                 </span>
-                <span className="text-sm font-medium text-amber-600 bg-amber-50 px-2 py-0.5 rounded-full">
+                <span className="text-sm font-medium text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full">
                   {ROLE_OPTIONS.find((o) => o.role === selectedRole)?.label}
                 </span>
               </div>
@@ -211,7 +214,7 @@ export default function SignupPage() {
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                     placeholder="홍길동"
-                    className="w-full px-4 py-3 border border-gray-300 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent transition"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
                   />
                 </div>
 
@@ -227,7 +230,7 @@ export default function SignupPage() {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="example@email.com"
-                    className="w-full px-4 py-3 border border-gray-300 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent transition"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
                   />
                 </div>
 
@@ -243,7 +246,7 @@ export default function SignupPage() {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="6자 이상"
-                    className="w-full px-4 py-3 border border-gray-300 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent transition"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
                   />
                 </div>
 
@@ -259,7 +262,7 @@ export default function SignupPage() {
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
                     placeholder="비밀번호 재입력"
-                    className="w-full px-4 py-3 border border-gray-300 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent transition"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
                   />
                 </div>
 
@@ -272,7 +275,7 @@ export default function SignupPage() {
                 <button
                   type="submit"
                   disabled={isLoading}
-                  className="w-full py-3 bg-amber-500 hover:bg-amber-600 disabled:bg-amber-300 text-white font-semibold rounded-xl transition focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2"
+                  className="w-full py-3 bg-blue-500 hover:bg-blue-600 disabled:bg-blue-300 text-white font-semibold rounded-xl transition focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
                 >
                   {isLoading ? '가입 중...' : '가입하기'}
                 </button>
@@ -282,7 +285,7 @@ export default function SignupPage() {
 
           <p className="text-center text-sm text-gray-500 mt-6">
             이미 계정이 있으신가요?{' '}
-            <Link href="/login" className="text-amber-600 font-medium hover:underline">
+            <Link href="/login" className="text-blue-600 font-medium hover:underline">
               로그인
             </Link>
           </p>
