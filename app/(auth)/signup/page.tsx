@@ -34,32 +34,27 @@ export default function SignupPage() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
-  const [fieldErrors, setFieldErrors] = useState({ email: '', password: '', confirmPassword: '' })
+  const [fieldErrors, setFieldErrors] = useState({ email: '', confirmPassword: '' })
+  const [pwTouched, setPwTouched] = useState(false)
   const [error, setError] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [isSuccess, setIsSuccess] = useState(false)
+
+  // 비밀번호 규칙: 8~16자, 영문/숫자/특수문자 중 2가지 이상
+  const pwRules = {
+    length: password.length >= 8 && password.length <= 16,
+    combo:
+      [/[a-zA-Z]/.test(password), /[0-9]/.test(password), /[^a-zA-Z0-9]/.test(password)].filter(
+        Boolean
+      ).length >= 2,
+  }
+  const isPwValid = pwRules.length && pwRules.combo
 
   // 이메일 형식 검사 — blur 시
   const validateEmail = (value: string) => {
     if (!value) return
     const ok = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)
     setFieldErrors((prev) => ({ ...prev, email: ok ? '' : '올바른 이메일 형식이 아닙니다.' }))
-  }
-
-  // 비밀번호 길이 검사 — blur 시
-  const validatePassword = (value: string) => {
-    if (!value) return
-    setFieldErrors((prev) => ({
-      ...prev,
-      password: value.length >= 6 ? '' : '비밀번호는 6자 이상이어야 합니다.',
-    }))
-    // 비밀번호가 바뀌면 확인란도 재검사
-    if (confirmPassword) {
-      setFieldErrors((prev) => ({
-        ...prev,
-        confirmPassword: value === confirmPassword ? '' : '비밀번호가 일치하지 않습니다.',
-      }))
-    }
   }
 
   // 비밀번호 확인 — change 시 즉시 반응
@@ -88,16 +83,15 @@ export default function SignupPage() {
       return
     }
 
-    // 필드 에러가 남아있으면 제출 차단
-    if (fieldErrors.email || fieldErrors.password || fieldErrors.confirmPassword) return
-
-    if (password !== confirmPassword) {
-      setFieldErrors((prev) => ({ ...prev, confirmPassword: '비밀번호가 일치하지 않습니다.' }))
+    // 필드 에러 또는 비밀번호 규칙 미충족 시 제출 차단
+    if (fieldErrors.email || fieldErrors.confirmPassword) return
+    if (!isPwValid) {
+      setPwTouched(true)
       return
     }
 
-    if (password.length < 6) {
-      setFieldErrors((prev) => ({ ...prev, password: '비밀번호는 6자 이상이어야 합니다.' }))
+    if (password !== confirmPassword) {
+      setFieldErrors((prev) => ({ ...prev, confirmPassword: '비밀번호가 일치하지 않습니다.' }))
       return
     }
 
@@ -293,17 +287,39 @@ export default function SignupPage() {
                     required
                     autoComplete="new-password"
                     value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    onBlur={(e) => validatePassword(e.target.value)}
-                    placeholder="6자 이상"
+                    onChange={(e) => {
+                      setPassword(e.target.value)
+                      setPwTouched(true)
+                      // 비밀번호 바뀌면 확인란 재검사
+                      if (confirmPassword) {
+                        setFieldErrors((prev) => ({
+                          ...prev,
+                          confirmPassword:
+                            e.target.value === confirmPassword ? '' : '비밀번호가 일치하지 않습니다.',
+                        }))
+                      }
+                    }}
+                    placeholder="8~16자, 영문/숫자/특수문자 중 2가지 이상"
                     className={`w-full px-4 py-3 border rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:border-transparent transition ${
-                      fieldErrors.password
+                      pwTouched && !isPwValid
                         ? 'border-red-400 focus:ring-red-400'
-                        : 'border-gray-300 focus:ring-blue-500'
+                        : pwTouched && isPwValid
+                          ? 'border-green-400 focus:ring-green-400'
+                          : 'border-gray-300 focus:ring-blue-500'
                     }`}
                   />
-                  {fieldErrors.password && (
-                    <p className="text-xs text-red-500 mt-1">{fieldErrors.password}</p>
+                  {/* 비밀번호 규칙 체크리스트 — 타이핑 시작 후 표시 */}
+                  {pwTouched && (
+                    <ul className="mt-2 space-y-1">
+                      <li className={`flex items-center gap-1.5 text-xs ${pwRules.length ? 'text-green-600' : 'text-red-500'}`}>
+                        <span>{pwRules.length ? '✅' : '❌'}</span>
+                        8~16자
+                      </li>
+                      <li className={`flex items-center gap-1.5 text-xs ${pwRules.combo ? 'text-green-600' : 'text-red-500'}`}>
+                        <span>{pwRules.combo ? '✅' : '❌'}</span>
+                        영문/숫자/특수문자 중 2가지 이상 조합
+                      </li>
+                    </ul>
                   )}
                 </div>
 
