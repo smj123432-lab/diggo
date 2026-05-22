@@ -15,6 +15,9 @@ create table profiles (
   longitude double precision,
   rating_avg numeric(3,2) default 0,
   is_certified boolean default false,
+  preferred_job_types text[] default '{}',
+  preferred_equipment_codes text[] default '{}',
+  preferred_regions text[] default '{}',
   created_at timestamptz default now() not null
 );
 
@@ -130,11 +133,26 @@ create table notifications (
 create or replace function handle_new_user()
 returns trigger as $$
 begin
-  insert into profiles (id, name, role)
+  insert into profiles (id, name, role, preferred_job_types, preferred_equipment_codes, preferred_regions)
   values (
     new.id,
     coalesce(new.raw_user_meta_data->>'name', ''),
-    coalesce(new.raw_user_meta_data->>'role', 'driver')
+    coalesce(new.raw_user_meta_data->>'role', 'driver'),
+    case
+      when new.raw_user_meta_data ? 'preferred_job_types'
+      then array(select jsonb_array_elements_text(new.raw_user_meta_data->'preferred_job_types'))
+      else '{}'::text[]
+    end,
+    case
+      when new.raw_user_meta_data ? 'preferred_equipment_codes'
+      then array(select jsonb_array_elements_text(new.raw_user_meta_data->'preferred_equipment_codes'))
+      else '{}'::text[]
+    end,
+    case
+      when new.raw_user_meta_data ? 'preferred_regions'
+      then array(select jsonb_array_elements_text(new.raw_user_meta_data->'preferred_regions'))
+      else '{}'::text[]
+    end
   );
   return new;
 end;
@@ -378,3 +396,12 @@ create policy "본인 알림만 읽음 처리" on notifications
 -- ============================================================
 alter publication supabase_realtime add table messages;
 alter publication supabase_realtime add table notifications;
+
+-- ============================================================
+-- 마이그레이션: 선호 설정 컬럼 추가
+-- 이미 schema.sql을 실행한 Supabase 프로젝트는 아래만 별도 실행
+-- ============================================================
+-- alter table profiles
+--   add column if not exists preferred_job_types text[] default '{}',
+--   add column if not exists preferred_equipment_codes text[] default '{}',
+--   add column if not exists preferred_regions text[] default '{}';

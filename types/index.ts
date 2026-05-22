@@ -24,6 +24,9 @@ export interface Profile {
   longitude: number | null
   rating_avg: number
   is_certified: boolean
+  preferred_job_types: JobType[]
+  preferred_equipment_codes: EquipmentCode[]
+  preferred_regions: string[]
   created_at: string
 }
 
