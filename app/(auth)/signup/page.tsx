@@ -94,6 +94,19 @@ export default function SignupPage() {
   }
 
   const handleRoleSelect = (role: UserRole) => {
+    // 역할이 바뀌면 2단계 폼 전체 초기화
+    if (role !== selectedRole) {
+      setName('')
+      setEmail('')
+      setPassword('')
+      setConfirmPassword('')
+      setEmailTouched(false)
+      setEmailError('')
+      setPwTouched(false)
+      setShowPw(false)
+      setShowConfirmPw(false)
+      setError('')
+    }
     setSelectedRole(role)
     setStep(2)
   }
