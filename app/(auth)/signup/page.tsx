@@ -34,9 +34,45 @@ export default function SignupPage() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
+  const [fieldErrors, setFieldErrors] = useState({ email: '', password: '', confirmPassword: '' })
   const [error, setError] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [isSuccess, setIsSuccess] = useState(false)
+
+  // 이메일 형식 검사 — blur 시
+  const validateEmail = (value: string) => {
+    if (!value) return
+    const ok = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)
+    setFieldErrors((prev) => ({ ...prev, email: ok ? '' : '올바른 이메일 형식이 아닙니다.' }))
+  }
+
+  // 비밀번호 길이 검사 — blur 시
+  const validatePassword = (value: string) => {
+    if (!value) return
+    setFieldErrors((prev) => ({
+      ...prev,
+      password: value.length >= 6 ? '' : '비밀번호는 6자 이상이어야 합니다.',
+    }))
+    // 비밀번호가 바뀌면 확인란도 재검사
+    if (confirmPassword) {
+      setFieldErrors((prev) => ({
+        ...prev,
+        confirmPassword: value === confirmPassword ? '' : '비밀번호가 일치하지 않습니다.',
+      }))
+    }
+  }
+
+  // 비밀번호 확인 — change 시 즉시 반응
+  const validateConfirmPassword = (value: string) => {
+    if (!value) {
+      setFieldErrors((prev) => ({ ...prev, confirmPassword: '' }))
+      return
+    }
+    setFieldErrors((prev) => ({
+      ...prev,
+      confirmPassword: value === password ? '' : '비밀번호가 일치하지 않습니다.',
+    }))
+  }
 
   const handleRoleSelect = (role: UserRole) => {
     setSelectedRole(role)
@@ -52,13 +88,16 @@ export default function SignupPage() {
       return
     }
 
+    // 필드 에러가 남아있으면 제출 차단
+    if (fieldErrors.email || fieldErrors.password || fieldErrors.confirmPassword) return
+
     if (password !== confirmPassword) {
-      setError('비밀번호가 일치하지 않습니다.')
+      setFieldErrors((prev) => ({ ...prev, confirmPassword: '비밀번호가 일치하지 않습니다.' }))
       return
     }
 
     if (password.length < 6) {
-      setError('비밀번호는 6자 이상이어야 합니다.')
+      setFieldErrors((prev) => ({ ...prev, password: '비밀번호는 6자 이상이어야 합니다.' }))
       return
     }
 
@@ -231,9 +270,17 @@ export default function SignupPage() {
                     autoComplete="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
+                    onBlur={(e) => validateEmail(e.target.value)}
                     placeholder="example@email.com"
-                    className="w-full px-4 py-3 border border-gray-300 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+                    className={`w-full px-4 py-3 border rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:border-transparent transition ${
+                      fieldErrors.email
+                        ? 'border-red-400 focus:ring-red-400'
+                        : 'border-gray-300 focus:ring-blue-500'
+                    }`}
                   />
+                  {fieldErrors.email && (
+                    <p className="text-xs text-red-500 mt-1">{fieldErrors.email}</p>
+                  )}
                 </div>
 
                 <div className="space-y-1">
@@ -247,9 +294,17 @@ export default function SignupPage() {
                     autoComplete="new-password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
+                    onBlur={(e) => validatePassword(e.target.value)}
                     placeholder="6자 이상"
-                    className="w-full px-4 py-3 border border-gray-300 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+                    className={`w-full px-4 py-3 border rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:border-transparent transition ${
+                      fieldErrors.password
+                        ? 'border-red-400 focus:ring-red-400'
+                        : 'border-gray-300 focus:ring-blue-500'
+                    }`}
                   />
+                  {fieldErrors.password && (
+                    <p className="text-xs text-red-500 mt-1">{fieldErrors.password}</p>
+                  )}
                 </div>
 
                 <div className="space-y-1">
@@ -262,10 +317,20 @@ export default function SignupPage() {
                     required
                     autoComplete="new-password"
                     value={confirmPassword}
-                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    onChange={(e) => {
+                      setConfirmPassword(e.target.value)
+                      validateConfirmPassword(e.target.value)
+                    }}
                     placeholder="비밀번호 재입력"
-                    className="w-full px-4 py-3 border border-gray-300 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+                    className={`w-full px-4 py-3 border rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:border-transparent transition ${
+                      fieldErrors.confirmPassword
+                        ? 'border-red-400 focus:ring-red-400'
+                        : 'border-gray-300 focus:ring-blue-500'
+                    }`}
                   />
+                  {fieldErrors.confirmPassword && (
+                    <p className="text-xs text-red-500 mt-1">{fieldErrors.confirmPassword}</p>
+                  )}
                 </div>
 
                 {error && (
