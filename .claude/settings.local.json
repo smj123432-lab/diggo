@@ -9,7 +9,12 @@
       "Bash(curl -v http://localhost:3000)",
       "Bash(git commit *)",
       "Bash(git push *)",
-      "Skill(superpowers:brainstorming)"
+      "Skill(superpowers:brainstorming)",
+      "Read(//Users/saminjae/.claude/plugins/cache/claude-plugins-official/superpowers/**)",
+      "Read(//Users/saminjae/.claude/plugins/**)",
+      "Bash(/Users/saminjae/.claude/plugins/cache/claude-plugins-official/superpowers/5.1.0/skills/brainstorming/scripts/start-server.sh *)",
+      "Bash(open *)",
+      "Bash(bun add *)"
     ]
   }
 }
