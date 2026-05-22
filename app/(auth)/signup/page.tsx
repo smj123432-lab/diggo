@@ -206,7 +206,7 @@ export default function SignupPage() {
 
         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8">
           {/* 단계 표시 */}
-          <div className="flex items-center gap-2 mb-6">
+          <div className="flex items-center gap-2 mb-10">
             <div className="flex items-center gap-2">
               <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold ${step >= 1 ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-400'}`}>
                 1
@@ -253,12 +253,12 @@ export default function SignupPage() {
               <button
                 type="button"
                 onClick={() => setStep(1)}
-                className="flex items-center gap-1 text-sm text-gray-500 hover:text-gray-700 mb-4"
+                className="flex items-center gap-1 text-sm text-gray-500 hover:text-gray-700 mb-6"
               >
                 ← 역할 다시 선택
               </button>
               <h2 className="text-xl font-bold text-gray-900 mb-1">정보를 입력해주세요</h2>
-              <div className="flex items-center gap-2 mb-6">
+              <div className="flex items-center gap-2 mb-8">
                 <div className="w-6 h-5 flex items-center justify-center">
                   {selectedRole === 'driver'
                     ? <ExcavatorIcon className="w-6 h-5 text-blue-600" />
