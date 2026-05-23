@@ -2,6 +2,7 @@
 
 // 일감 목록 — 모바일: 칩 필터 + 1열 / 데스크톱: 사이드바 + 2열 그리드
 import { useState, useEffect, useRef } from 'react'
+import Link from 'next/link'
 import { useAuthStore } from '@/store/auth'
 import { useJobs, DEFAULT_FILTERS } from '@/hooks/useJobs'
 import type { JobFilters } from '@/hooks/useJobs'
@@ -11,7 +12,7 @@ import { JobCard } from './JobCard'
 import { JobFilters as JobFiltersPanel } from './JobFilters'
 
 export function JobList() {
-  const { profile } = useAuthStore()
+  const { profile, role } = useAuthStore()
   const [filters, setFilters] = useState<JobFilters>(DEFAULT_FILTERS)
   const loadMoreRef = useRef<HTMLDivElement>(null)
 
@@ -113,14 +114,25 @@ export function JobList() {
 
         {/* 메인 콘텐츠 */}
         <div className="flex-1 min-w-0">
-          {/* 일감 수 */}
-          <div className="mb-4">
+          {/* 헤더: 일감 수 + 소장 일감 올리기 버튼 */}
+          <div className="flex items-center justify-between mb-4">
             {isLoading ? (
               <div className="h-5 w-24 bg-gray-200 rounded animate-pulse" />
             ) : (
               <p className="text-sm text-gray-500">
                 일감 <span className="text-gray-900 font-bold">{totalCount.toLocaleString()}</span>개
               </p>
+            )}
+            {role === 'manager' && (
+              <Link
+                href="/jobs/new"
+                className="inline-flex items-center gap-1.5 bg-blue-500 hover:bg-blue-600 text-white text-sm font-semibold px-4 py-2 rounded-xl transition-colors"
+              >
+                <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5}>
+                  <line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" />
+                </svg>
+                일감 올리기
+              </Link>
             )}
           </div>
 
