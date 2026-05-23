@@ -1,11 +1,19 @@
 // 일감 목록 카드 컴포넌트
 import Link from 'next/link'
-import type { JobWithManager, JobType } from '@/types'
+import type { JobWithManager, JobType, JobStatus } from '@/types'
 import { EQUIPMENT_LABELS, JOB_TYPE_LABELS, PAY_DUE_LABELS } from '@/types'
 
 interface JobCardProps {
   job: JobWithManager
   isPreferred?: boolean
+}
+
+// 일감 상태 배지
+const STATUS_BADGE: Record<JobStatus, { label: string; className: string }> = {
+  open: { label: '모집중', className: 'text-emerald-500' },
+  closed: { label: '마감', className: 'text-gray-400' },
+  in_progress: { label: '작업중', className: 'text-blue-500' },
+  completed: { label: '완료', className: 'text-violet-500' },
 }
 
 // 일 종류별 배지 색상
@@ -21,9 +29,16 @@ export function JobCard({ job, isPreferred }: JobCardProps) {
     weekday: 'short',
   })
 
+  const status = STATUS_BADGE[job.status]
+  const isClosed = job.status !== 'open'
+
   return (
     <Link href={`/jobs/${job.id}`} className="block h-full">
-      <div className="bg-white border border-gray-200 rounded-2xl p-5 hover:border-blue-300 hover:shadow-md transition-all group cursor-pointer h-full flex flex-col">
+      <div className={`bg-white border rounded-2xl p-5 transition-all group cursor-pointer h-full flex flex-col ${
+        isClosed
+          ? 'border-gray-100 opacity-70'
+          : 'border-gray-200 hover:border-blue-300 hover:shadow-md'
+      }`}>
 
         {/* 배지 행 */}
         <div className="flex items-center gap-1.5 flex-wrap mb-3">
@@ -40,7 +55,7 @@ export function JobCard({ job, isPreferred }: JobCardProps) {
               선호
             </span>
           )}
-          <span className="ml-auto text-emerald-500 text-xs font-semibold shrink-0">모집중</span>
+          <span className={`ml-auto text-xs font-semibold shrink-0 ${status.className}`}>{status.label}</span>
         </div>
 
         {/* 제목 */}

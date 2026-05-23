@@ -18,7 +18,7 @@ interface JobsPage {
 }
 
 async function fetchJobs({ pageParam, filters }: { pageParam: number; filters: JobFilters }): Promise<JobsPage> {
-  const params = new URLSearchParams({ page: String(pageParam), limit: '12', status: 'open' })
+  const params = new URLSearchParams({ page: String(pageParam), limit: '12' })
   filters.equipment_codes.forEach((code) => params.append('equipment_code', code))
   filters.job_types.forEach((type) => params.append('job_type', type))
 

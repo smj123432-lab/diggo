@@ -12,7 +12,7 @@ export async function GET(request: NextRequest) {
     const limit = parseInt(searchParams.get('limit') ?? '10')
     const equipment_codes = searchParams.getAll('equipment_code')
     const job_types = searchParams.getAll('job_type')
-    const status = searchParams.get('status') ?? 'open'
+    const status = searchParams.get('status')
 
     const from = (page - 1) * limit
     const to = from + limit - 1
@@ -20,9 +20,15 @@ export async function GET(request: NextRequest) {
     let query = supabase
       .from('jobs')
       .select('*, profiles(id, name, rating_avg, is_certified)', { count: 'exact' })
-      .eq('status', status)
       .order('created_at', { ascending: false })
       .range(from, to)
+
+    // status 명시 시 해당 값만, 기본은 open+closed 노출
+    if (status) {
+      query = query.eq('status', status)
+    } else {
+      query = query.in('status', ['open', 'closed'])
+    }
 
     if (equipment_codes.length > 0) query = query.in('equipment_code', equipment_codes)
     if (job_types.length > 0) query = query.in('job_type', job_types)
