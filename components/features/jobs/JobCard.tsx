@@ -1,7 +1,7 @@
 // 일감 목록 카드 컴포넌트
 import Link from 'next/link'
 import type { JobWithManager, JobType, JobStatus } from '@/types'
-import { EQUIPMENT_LABELS, JOB_TYPE_LABELS, PAY_DUE_LABELS } from '@/types'
+import { EQUIPMENT_LABELS, JOB_TYPE_LABELS, PAY_DUE_LABELS, WORK_DURATION_LABELS } from '@/types'
 
 interface JobCardProps {
   job: JobWithManager
@@ -107,6 +107,10 @@ export function JobCard({ job, isPreferred }: JobCardProps) {
                 <line x1="16" y1="2" x2="16" y2="6" /><line x1="8" y1="2" x2="8" y2="6" /><line x1="3" y1="10" x2="21" y2="10" />
               </svg>
               {workDate}
+              {job.work_duration && (
+                <span className="text-gray-300">·</span>
+              )}
+              {job.work_duration && WORK_DURATION_LABELS[job.work_duration]}
             </div>
             <div className="flex items-center gap-1">
               <svg className="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>

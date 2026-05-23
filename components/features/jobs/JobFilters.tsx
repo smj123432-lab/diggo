@@ -36,7 +36,7 @@ export function JobFilters({ filters, onChange }: JobFiltersProps) {
           <span className="text-sm font-bold text-gray-900">필터</span>
           {hasActiveFilters && (
             <button
-              onClick={() => onChange({ equipment_codes: [], job_types: [] })}
+              onClick={() => onChange({ ...filters, equipment_codes: [], job_types: [] })}
               className="text-xs text-brand-blue hover:text-brand-blue-deep transition-colors"
             >
               초기화
