@@ -11,6 +11,9 @@ export type ApplicationStatus = 'pending' | 'reviewing' | 'accepted' | 'rejected
 // 지급 예정일 유형
 export type PayDueType = 'same_day' | 'd3' | 'd7' | 'd14' | 'd30'
 
+// 작업 기간 유형
+export type WorkDuration = 'half_day' | 'day_1' | 'week_1' | 'week_2' | 'week_3' | 'month_1' | 'month_1plus'
+
 export type CertificationStatus = 'pending' | 'approved' | 'rejected'
 
 export interface Profile {
@@ -54,6 +57,7 @@ export interface Job {
   longitude: number | null
   pay_amount: number
   work_date: string
+  work_duration: WorkDuration | null
   pay_due_type: PayDueType
   pay_due_date: string | null
   status: JobStatus
@@ -174,6 +178,21 @@ export const PAY_DUE_LABELS: Record<PayDueType, string> = {
   d14: '14일 후 지급',
   d30: '30일 후 지급',
 }
+
+export const PAY_DUE_TYPES_LIST: PayDueType[] = ['same_day', 'd3', 'd7', 'd14', 'd30']
+
+// 작업 기간 한글 레이블
+export const WORK_DURATION_LABELS: Record<WorkDuration, string> = {
+  half_day: '반나절',
+  day_1: '하루',
+  week_1: '1주일 이내',
+  week_2: '2주일 이내',
+  week_3: '3주일 이내',
+  month_1: '한달 이내',
+  month_1plus: '한달 이상',
+}
+
+export const WORK_DURATION_LIST: WorkDuration[] = ['half_day', 'day_1', 'week_1', 'week_2', 'week_3', 'month_1', 'month_1plus']
 
 // 일감 상태 한글 레이블
 export const JOB_STATUS_LABELS: Record<JobStatus, string> = {

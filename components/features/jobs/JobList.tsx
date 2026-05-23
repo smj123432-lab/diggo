@@ -117,9 +117,9 @@ export function JobList() {
   return (
     <div>
       {/* ── 모바일 전용 칩 필터 ── */}
-      <div className="md:hidden mb-4">
+      <div className="md:hidden mb-4 -mx-6">
         <div className="overflow-x-auto no-scrollbar">
-          <div className="flex gap-2 pb-1 w-max">
+          <div className="flex gap-2 pb-1 w-max pl-6 pr-12">
             {hasActiveFilters && (
               <button
                 onClick={() => setFilters(DEFAULT_FILTERS)}
@@ -176,25 +176,29 @@ export function JobList() {
                 value={searchInput}
                 onChange={(e) => setSearchInput(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-                placeholder="지역 또는 현장 주소를 검색해 보세요 (예: 성수동, 수원)"
+                placeholder="지역 또는 현장 주소 검색 (예: 성수동, 수원)"
                 className="w-full pl-4 pr-10 py-2.5 bg-white border border-gray-200 rounded-xl text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-blue focus:border-transparent transition shadow-sm"
               />
-              {/* 초기화 버튼 — 검색어 있을 때만 */}
-              {searchInput && (
-                <button
-                  onClick={handleClearSearch}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-300 hover:text-gray-500 transition-colors"
-                >
+              {/* 모바일: 돋보기 아이콘(검색) 또는 X(초기화) — 인풋 내부 오른쪽 */}
+              <button
+                onClick={searchInput ? handleClearSearch : handleSearch}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+              >
+                {searchInput ? (
                   <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
                     <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
                   </svg>
-                </button>
-              )}
+                ) : (
+                  <svg className="w-4 h-4 md:hidden" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5}>
+                    <circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" />
+                  </svg>
+                )}
+              </button>
             </div>
-            {/* 검색 버튼 — 인풋과 동일 높이 */}
+            {/* 검색 버튼 — 데스크톱만 */}
             <button
               onClick={handleSearch}
-              className="shrink-0 flex items-center gap-1.5 bg-brand-blue hover:bg-brand-blue-dark text-white text-sm font-semibold px-4 py-2.5 rounded-xl transition-colors shadow-sm"
+              className="hidden md:flex shrink-0 items-center gap-1.5 bg-brand-blue hover:bg-brand-blue-dark text-white text-sm font-semibold px-4 py-2.5 rounded-xl transition-colors shadow-sm"
             >
               <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5}>
                 <circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" />
@@ -226,7 +230,7 @@ export function JobList() {
               {role === 'manager' && (
                 <Link
                   href="/jobs/new"
-                  className="inline-flex items-center gap-1.5 bg-brand-blue hover:bg-brand-blue-dark text-white text-sm font-semibold px-4 py-2 rounded-xl transition-colors shadow-sm"
+                  className="hidden md:inline-flex items-center gap-1.5 bg-brand-blue hover:bg-brand-blue-dark text-white text-sm font-semibold px-4 py-2 rounded-xl transition-colors shadow-sm"
                 >
                   <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5}>
                     <line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" />
@@ -307,6 +311,19 @@ export function JobList() {
           </div>
         </div>
       </div>
+
+      {/* ── 모바일 FAB — 소장 전용 ── */}
+      {role === 'manager' && (
+        <Link
+          href="/jobs/new"
+          className="md:hidden fixed bottom-6 right-6 z-50 flex items-center justify-center w-14 h-14 bg-brand-blue hover:bg-brand-blue-dark text-white rounded-full shadow-xl shadow-blue-500/30 active:scale-95 transition-all"
+          aria-label="일감 등록"
+        >
+          <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5}>
+            <line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" />
+          </svg>
+        </Link>
+      )}
     </div>
   )
 }

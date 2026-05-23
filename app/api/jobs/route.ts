@@ -75,9 +75,31 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json()
+
+    // 허용 필드만 명시적으로 추출 (mass assignment 방지)
+    const {
+      title, job_type, equipment_code, description,
+      attachments, caution, location, latitude, longitude,
+      pay_amount, work_date, work_duration, pay_due_type,
+    } = body
+
+    if (!title || !job_type || !equipment_code || !description || !location || !pay_amount || !work_date || !pay_due_type) {
+      return NextResponse.json({ error: '필수 항목을 모두 입력해주세요.' }, { status: 400 })
+    }
+
     const { data, error } = await supabase
       .from('jobs')
-      .insert({ ...body, manager_id: user.id })
+      .insert({
+        manager_id: user.id,
+        title, job_type, equipment_code, description,
+        attachments: attachments ?? null,
+        caution: caution ?? null,
+        location, latitude, longitude,
+        pay_amount, work_date,
+        work_duration: work_duration ?? null,
+        pay_due_type,
+        status: 'open',
+      })
       .select()
       .single()
 

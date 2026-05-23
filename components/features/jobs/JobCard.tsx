@@ -1,7 +1,7 @@
 // 일감 목록 카드 컴포넌트
 import Link from 'next/link'
 import type { JobWithManager, JobType, JobStatus } from '@/types'
-import { EQUIPMENT_LABELS, JOB_TYPE_LABELS, PAY_DUE_LABELS } from '@/types'
+import { EQUIPMENT_LABELS, JOB_TYPE_LABELS, PAY_DUE_LABELS, WORK_DURATION_LABELS } from '@/types'
 
 interface JobCardProps {
   job: JobWithManager
@@ -72,7 +72,7 @@ export function JobCard({ job, isPreferred }: JobCardProps) {
         </h3>
 
         {/* 위치 */}
-        <p className="text-gray-400 text-xs mb-4 flex items-center gap-1 truncate">
+        <p className="text-gray-400 text-xs mb-1 flex items-center gap-1 truncate">
           <svg className="w-3 h-3 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
             <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
             <circle cx="12" cy="10" r="3" />
@@ -80,42 +80,46 @@ export function JobCard({ job, isPreferred }: JobCardProps) {
           {job.location}
         </p>
 
-        {/* 소장 정보 */}
-        <div className="flex items-center gap-1.5 mb-3 mt-auto">
-          <span className="text-xs font-medium text-gray-700">
-            {job.profiles.name} 소장
-          </span>
-          {job.profiles.is_certified && (
-            <span className="inline-flex items-center justify-center bg-brand-blue text-white w-4 h-4 rounded-full leading-none shrink-0">
-              <svg className="w-2.5 h-2.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={3}>
-                <path d="M20 6L9 17l-5-5" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
-            </span>
-          )}
-          <span className="text-xs text-gray-400 flex items-center gap-0.5">
-            <span className="text-yellow-400">★</span>
-            {job.profiles.rating_avg.toFixed(1)}
-          </span>
+        {/* 날짜 + 지급일 */}
+        <div className="text-xs text-gray-400 mb-3">
+          <div className="flex items-center gap-1">
+            <svg className="w-3 h-3 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+              <rect x="3" y="4" width="18" height="18" rx="2" />
+              <line x1="16" y1="2" x2="16" y2="6" /><line x1="8" y1="2" x2="8" y2="6" /><line x1="3" y1="10" x2="21" y2="10" />
+            </svg>
+            {workDate}
+            {job.work_duration && (
+              <><span className="text-gray-300">·</span>{WORK_DURATION_LABELS[job.work_duration]}</>
+            )}
+          </div>
+          <div className="flex items-center gap-1">
+            <svg className="w-3 h-3 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+              <circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" />
+            </svg>
+            {PAY_DUE_LABELS[job.pay_due_type]}
+          </div>
         </div>
 
-        {/* 날짜 + 지급 + 가격 */}
-        <div className="flex items-end justify-between">
-          <div className="text-xs text-gray-400 space-y-0.5">
-            <div className="flex items-center gap-1">
-              <svg className="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
-                <rect x="3" y="4" width="18" height="18" rx="2" />
-                <line x1="16" y1="2" x2="16" y2="6" /><line x1="8" y1="2" x2="8" y2="6" /><line x1="3" y1="10" x2="21" y2="10" />
-              </svg>
-              {workDate}
-            </div>
-            <div className="flex items-center gap-1">
-              <svg className="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
-                <circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" />
-              </svg>
-              {PAY_DUE_LABELS[job.pay_due_type]}
-            </div>
+        {/* 소장 정보 + 가격 */}
+        <div className="flex items-center justify-between mt-auto">
+          <div className="flex items-center gap-1.5">
+            <span className="text-xs font-medium text-gray-700">
+              {job.profiles.name} 소장
+            </span>
+            {job.profiles.is_certified && (
+              <span className="inline-flex items-center justify-center bg-brand-blue text-white w-4 h-4 rounded-full leading-none shrink-0">
+                <svg className="w-2.5 h-2.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={3}>
+                  <path d="M20 6L9 17l-5-5" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+              </span>
+            )}
+            <span className="text-gray-300 text-xs mx-0.5">|</span>
+            <span className="text-xs text-gray-400 flex items-center gap-0.5">
+              <span className="text-yellow-400">★</span>
+              {job.profiles.rating_avg.toFixed(1)}
+            </span>
           </div>
-          <div className="text-brand-blue-dark font-black text-lg leading-none">
+          <div className="text-brand-blue-dark font-black text-lg leading-none shrink-0">
             {job.pay_amount.toLocaleString()}원
           </div>
         </div>
