@@ -56,12 +56,6 @@ export default async function JobsPage() {
               일감 찾기
             </Link>
             <Link
-              href="/mypage"
-              className="px-4 py-2 text-sm text-slate-400 hover:text-white hover:bg-white/5 rounded-lg transition-colors"
-            >
-              마이페이지
-            </Link>
-            <Link
               href="/mypage/ledger"
               className="px-4 py-2 text-sm text-slate-400 hover:text-white hover:bg-white/5 rounded-lg transition-colors"
             >

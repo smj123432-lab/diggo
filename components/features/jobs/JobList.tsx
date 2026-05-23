@@ -1,7 +1,7 @@
 'use client'
 
 // 일감 목록 — 모바일: 칩 필터 + 1열 / 데스크톱: 사이드바 + 2열 그리드
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useMemo } from 'react'
 import Link from 'next/link'
 import { useAuthStore } from '@/store/auth'
 import { useJobs, DEFAULT_FILTERS } from '@/hooks/useJobs'
@@ -18,8 +18,25 @@ export function JobList() {
 
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading, isError } = useJobs(filters)
 
-  const jobs = data?.pages.flatMap((page) => page.data) ?? []
+  const rawJobs = data?.pages.flatMap((page) => page.data) ?? []
   const totalCount = data?.pages[0]?.count ?? 0
+
+  // 기사 선호 기반 상위 정렬 — 선호 일감 먼저, 그 안에서 최신순
+  const jobs = useMemo(() => {
+    if (!profile || profile.role !== 'driver') return rawJobs
+
+    const preferred = (job: (typeof rawJobs)[0]) =>
+      profile.preferred_job_types?.includes(job.job_type) ||
+      profile.preferred_equipment_codes?.includes(job.equipment_code)
+
+    return [...rawJobs].sort((a, b) => {
+      const aP = preferred(a)
+      const bP = preferred(b)
+      if (aP && !bP) return -1
+      if (!aP && bP) return 1
+      return new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+    })
+  }, [rawJobs, profile])
 
   useEffect(() => {
     const el = loadMoreRef.current
