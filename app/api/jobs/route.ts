@@ -13,6 +13,7 @@ export async function GET(request: NextRequest) {
     const equipment_codes = searchParams.getAll('equipment_code')
     const job_types = searchParams.getAll('job_type')
     const status = searchParams.get('status')
+    const keyword = searchParams.get('keyword')
 
     const from = (page - 1) * limit
     const to = from + limit - 1
@@ -32,6 +33,7 @@ export async function GET(request: NextRequest) {
 
     if (equipment_codes.length > 0) query = query.in('equipment_code', equipment_codes)
     if (job_types.length > 0) query = query.in('job_type', job_types)
+    if (keyword) query = query.ilike('location', `%${keyword}%`)
 
     const { data, error, count } = await query
 

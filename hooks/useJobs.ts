@@ -6,6 +6,7 @@ import type { EquipmentCode, JobType, JobWithManager } from '@/types'
 export interface JobFilters {
   equipment_codes: EquipmentCode[]
   job_types: JobType[]
+  keyword?: string
 }
 
 export const DEFAULT_FILTERS: JobFilters = { equipment_codes: [], job_types: [] }
@@ -21,6 +22,7 @@ async function fetchJobs({ pageParam, filters }: { pageParam: number; filters: J
   const params = new URLSearchParams({ page: String(pageParam), limit: '12' })
   filters.equipment_codes.forEach((code) => params.append('equipment_code', code))
   filters.job_types.forEach((type) => params.append('job_type', type))
+  if (filters.keyword) params.set('keyword', filters.keyword)
 
   const res = await fetch(`/api/jobs?${params}`)
   if (!res.ok) throw new Error('일감 목록을 불러오지 못했습니다.')
