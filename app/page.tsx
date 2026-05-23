@@ -4,7 +4,8 @@ import { AnimatedHero } from "@/components/features/home/AnimatedHero";
 import { AnimatedStats } from "@/components/features/home/AnimatedStats";
 import { AnimatedFeatures } from "@/components/features/home/AnimatedFeatures";
 import { AnimatedSplitCTA } from "@/components/features/home/AnimatedSplitCTA";
-import { NavButtons } from "@/components/features/home/NavButtons";
+import { NavButtons } from "@/components/features/home/NavButtons"
+import { FooterAuthLink } from "@/components/features/home/FooterAuthLink";
 
 export default function HomePage() {
   return (
@@ -113,9 +114,7 @@ export default function HomePage() {
             <Link href="/jobs" className="hover:text-blue-700 transition-colors">
               일감 보기
             </Link>
-            <Link href="/login" className="hover:text-blue-700 transition-colors">
-              로그인
-            </Link>
+            <FooterAuthLink />
           </div>
         </div>
       </footer>

@@ -144,6 +144,10 @@ export interface Notification {
   created_at: string
 }
 
+// 장비 코드 / 일감 유형 순서 배열 (필터 UI 순서 고정)
+export const EQUIPMENT_CODES_LIST: EquipmentCode[] = ['008', '017', '035', '02', '3w', '6w', '8w', '10t']
+export const JOB_TYPES_LIST: JobType[] = ['civil', 'demolition']
+
 // 장비 코드 한글 레이블
 export const EQUIPMENT_LABELS: Record<EquipmentCode, string> = {
   '008': '008 (미니)',
@@ -164,11 +168,11 @@ export const JOB_TYPE_LABELS: Record<JobType, string> = {
 
 // 지급 예정일 한글 레이블
 export const PAY_DUE_LABELS: Record<PayDueType, string> = {
-  same_day: '완료 당일',
-  d3: 'D+3',
-  d7: 'D+7',
-  d14: 'D+14',
-  d30: 'D+30',
+  same_day: '당일 지급',
+  d3: '3일 후 지급',
+  d7: '7일 후 지급',
+  d14: '14일 후 지급',
+  d30: '30일 후 지급',
 }
 
 // 일감 상태 한글 레이블

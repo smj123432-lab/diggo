@@ -392,6 +392,21 @@ create policy "본인 알림만 읽음 처리" on notifications
   for update using (auth.uid() = user_id);
 
 -- ============================================================
+-- 테이블 권한 부여 (SQL로 생성 시 anon/authenticated 롤에 수동 grant 필요)
+-- ============================================================
+grant select on jobs to anon, authenticated;
+grant select on profiles to anon, authenticated;
+grant select on reviews to anon, authenticated;
+grant all on applications to authenticated;
+grant all on ledger_expenses to authenticated;
+grant all on certifications to authenticated;
+grant all on chats to authenticated;
+grant all on messages to authenticated;
+grant all on notifications to authenticated;
+grant insert, update on jobs to authenticated;
+grant delete on jobs to authenticated;
+
+-- ============================================================
 -- Realtime 활성화 (채팅, 알림)
 -- ============================================================
 alter publication supabase_realtime add table messages;
