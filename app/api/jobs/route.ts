@@ -8,21 +8,27 @@ export async function GET(request: NextRequest) {
     const supabase = await createClient()
     const { searchParams } = new URL(request.url)
 
-    const page = parseInt(searchParams.get('page') ?? '1')
-    const limit = parseInt(searchParams.get('limit') ?? '10')
+    const offset = parseInt(searchParams.get('offset') ?? '0')
+    const limit = parseInt(searchParams.get('limit') ?? '12')
     const equipment_codes = searchParams.getAll('equipment_code')
     const job_types = searchParams.getAll('job_type')
     const status = searchParams.get('status')
     const keyword = searchParams.get('keyword')
 
-    const from = (page - 1) * limit
+    const sortBy = searchParams.get('sortBy') ?? 'latest'
+    const from = offset
     const to = from + limit - 1
 
     let query = supabase
       .from('jobs')
       .select('*, profiles(id, name, rating_avg, is_certified)', { count: 'exact' })
-      .order('created_at', { ascending: false })
       .range(from, to)
+
+    if (sortBy === 'deadline') {
+      query = query.order('work_date', { ascending: true })
+    } else {
+      query = query.order('created_at', { ascending: false })
+    }
 
     // status 명시 시 해당 값만, 기본은 open+closed 노출
     if (status) {
@@ -39,7 +45,7 @@ export async function GET(request: NextRequest) {
 
     if (error) throw error
 
-    return NextResponse.json({ data, count, page, limit })
+    return NextResponse.json({ data, count, offset, limit })
   } catch (error) {
     console.error('[GET /api/jobs]', error)
     return NextResponse.json({ error: '일감 목록을 불러오지 못했습니다.' }, { status: 500 })

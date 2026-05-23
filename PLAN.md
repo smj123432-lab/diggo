@@ -343,6 +343,11 @@ using (
 
 ```
 GET  /api/jobs                    일감 목록 (필터, 페이지네이션)
+                                  ?page=1&limit=12
+                                  &equipment_code=035&equipment_code=008   (다중 선택)
+                                  &job_type=civil&job_type=demolition       (다중 선택)
+                                  &keyword=성수동                           (위치 텍스트 검색)
+                                  &sortBy=latest|deadline                   (정렬: 기본 latest)
 GET  /api/jobs/[id]               일감 상세
 POST /api/applications            지원 신청
 GET  /api/applications            내 지원 목록

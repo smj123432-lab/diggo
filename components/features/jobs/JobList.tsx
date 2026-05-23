@@ -5,7 +5,7 @@ import { useState, useEffect, useRef, useMemo } from 'react'
 import Link from 'next/link'
 import { useAuthStore } from '@/store/auth'
 import { useJobs, DEFAULT_FILTERS } from '@/hooks/useJobs'
-import type { JobFilters } from '@/hooks/useJobs'
+import type { JobFilters, SortBy } from '@/hooks/useJobs'
 import type { EquipmentCode, JobType, JobWithManager } from '@/types'
 import { EQUIPMENT_LABELS, EQUIPMENT_CODES_LIST, JOB_TYPE_LABELS, JOB_TYPES_LIST } from '@/types'
 import { JobCard } from './JobCard'
@@ -27,27 +27,53 @@ export function JobList() {
     setFilters((f) => ({ ...f, keyword: undefined }))
   }
 
-  const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading, isError } = useJobs(filters)
+  const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading, isFetching, isError } = useJobs(filters)
+
+  // 필터/정렬 변경 시 리패치 중 (기존 데이터 있는 상태)
+  const isRefetching = isFetching && !isLoading && !isFetchingNextPage
 
   const rawJobs = data?.pages.flatMap((page) => page.data) ?? []
   const totalCount = data?.pages[0]?.count ?? 0
 
-  // 기사 선호 기반 상위 정렬 — 선호 일감 먼저, 그 안에서 최신순
+  // 정렬 처리 — 모든 모드에서 모집중이 마감보다 항상 상단
   const jobs = useMemo(() => {
-    if (!profile || profile.role !== 'driver') return rawJobs
+    const isOpen = (job: (typeof rawJobs)[0]) => job.status === 'open'
 
-    const preferred = (job: (typeof rawJobs)[0]) =>
-      profile.preferred_job_types?.includes(job.job_type) ||
-      profile.preferred_equipment_codes?.includes(job.equipment_code)
+    if (filters.sortBy === 'deadline') {
+      return [...rawJobs].sort((a, b) => {
+        if (isOpen(a) && !isOpen(b)) return -1
+        if (!isOpen(a) && isOpen(b)) return 1
+        // 같은 상태 내에서 마감 임박순 (서버가 work_date ASC 정렬 → 상대 순서 유지)
+        return new Date(a.work_date).getTime() - new Date(b.work_date).getTime()
+      })
+    }
 
+    if (filters.sortBy === 'preferred' && profile?.role === 'driver') {
+      const isPreferredJob = (job: (typeof rawJobs)[0]) =>
+        profile.preferred_job_types?.includes(job.job_type) ||
+        profile.preferred_equipment_codes?.includes(job.equipment_code)
+
+      return [...rawJobs].sort((a, b) => {
+        // 1순위: 모집중 > 마감
+        if (isOpen(a) && !isOpen(b)) return -1
+        if (!isOpen(a) && isOpen(b)) return 1
+        // 2순위: 선호 > 비선호
+        const aP = isPreferredJob(a)
+        const bP = isPreferredJob(b)
+        if (aP && !bP) return -1
+        if (!aP && bP) return 1
+        // 3순위: 최신순
+        return new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+      })
+    }
+
+    // latest (기본) — 모집중 먼저, 각 그룹 내 최신순
     return [...rawJobs].sort((a, b) => {
-      const aP = preferred(a)
-      const bP = preferred(b)
-      if (aP && !bP) return -1
-      if (!aP && bP) return 1
+      if (isOpen(a) && !isOpen(b)) return -1
+      if (!isOpen(a) && isOpen(b)) return 1
       return new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
     })
-  }, [rawJobs, profile])
+  }, [rawJobs, profile, filters.sortBy])
 
   useEffect(() => {
     const el = loadMoreRef.current
@@ -108,8 +134,8 @@ export function JobList() {
                 onClick={() => toggleEquipment(code)}
                 className={`shrink-0 px-3 py-1.5 rounded-full text-xs font-medium border transition-all ${
                   filters.equipment_codes.includes(code)
-                    ? 'bg-blue-500 border-blue-500 text-white'
-                    : 'bg-white border-gray-200 text-gray-600 hover:border-blue-300'
+                    ? 'bg-brand-blue border-brand-blue text-white'
+                    : 'bg-white border-gray-200 text-gray-600 hover:border-brand-blue-light'
                 }`}
               >
                 {EQUIPMENT_LABELS[code]}
@@ -122,8 +148,8 @@ export function JobList() {
                 onClick={() => toggleJobType(type)}
                 className={`shrink-0 px-3 py-1.5 rounded-full text-xs font-medium border transition-all ${
                   filters.job_types.includes(type)
-                    ? 'bg-blue-500 border-blue-500 text-white'
-                    : 'bg-white border-gray-200 text-gray-600 hover:border-blue-300'
+                    ? 'bg-brand-blue border-brand-blue text-white'
+                    : 'bg-white border-gray-200 text-gray-600 hover:border-brand-blue-light'
                 }`}
               >
                 {JOB_TYPE_LABELS[type]}
@@ -135,48 +161,50 @@ export function JobList() {
 
       {/* ── 데스크톱: 사이드바 + 그리드 / 모바일: 그리드만 ── */}
       <div className="flex gap-6">
-        {/* 사이드바 — 데스크톱만 */}
-        <div className="hidden md:block">
+        {/* 사이드바 — 데스크톱만, 헤더(h-16) 아래 sticky */}
+        <div className="hidden md:block sticky top-20 self-start max-h-[calc(100vh-5rem)] overflow-y-auto">
           <JobFiltersPanel filters={filters} onChange={setFilters} />
         </div>
 
         {/* 메인 콘텐츠 */}
         <div className="flex-1 min-w-0">
           {/* 검색 바 */}
-          <div className="relative mb-5">
-            <input
-              type="text"
-              value={searchInput}
-              onChange={(e) => setSearchInput(e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-              placeholder="지역 또는 현장 주소를 검색해 보세요 (예: 성수동, 수원)"
-              className="w-full pl-4 pr-24 py-3 bg-white border border-gray-200 rounded-xl text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition shadow-sm"
-            />
-            {/* 초기화 버튼 — 검색어 있을 때만 */}
-            {searchInput && (
-              <button
-                onClick={handleClearSearch}
-                className="absolute right-14 top-1/2 -translate-y-1/2 text-gray-300 hover:text-gray-500 transition-colors"
-              >
-                <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
-                  <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
-                </svg>
-              </button>
-            )}
-            {/* 검색 버튼 */}
+          <div className="flex items-center gap-2 mb-5">
+            <div className="relative flex-1">
+              <input
+                type="text"
+                value={searchInput}
+                onChange={(e) => setSearchInput(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
+                placeholder="지역 또는 현장 주소를 검색해 보세요 (예: 성수동, 수원)"
+                className="w-full pl-4 pr-10 py-2.5 bg-white border border-gray-200 rounded-xl text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-blue focus:border-transparent transition shadow-sm"
+              />
+              {/* 초기화 버튼 — 검색어 있을 때만 */}
+              {searchInput && (
+                <button
+                  onClick={handleClearSearch}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-300 hover:text-gray-500 transition-colors"
+                >
+                  <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+                    <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
+                  </svg>
+                </button>
+              )}
+            </div>
+            {/* 검색 버튼 — 인풋과 동일 높이 */}
             <button
               onClick={handleSearch}
-              className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1.5 bg-blue-500 hover:bg-blue-600 text-white text-xs font-semibold px-3 py-1.5 rounded-lg transition-colors"
+              className="shrink-0 flex items-center gap-1.5 bg-brand-blue hover:bg-brand-blue-dark text-white text-sm font-semibold px-4 py-2.5 rounded-xl transition-colors shadow-sm"
             >
-              <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5}>
+              <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5}>
                 <circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" />
               </svg>
               검색
             </button>
           </div>
 
-          {/* 헤더: 일감 수 + 소장 일감 올리기 버튼 */}
-          <div className="flex items-center justify-between mb-4">
+          {/* 일감 수 + 정렬 드롭다운 행 */}
+          <div className="flex items-center justify-between mb-6">
             {isLoading ? (
               <div className="h-5 w-24 bg-gray-200 rounded animate-pulse" />
             ) : (
@@ -184,21 +212,33 @@ export function JobList() {
                 일감 <span className="text-gray-900 font-bold">{totalCount.toLocaleString()}</span>개
               </p>
             )}
-            {role === 'manager' && (
-              <Link
-                href="/jobs/new"
-                className="inline-flex items-center gap-1.5 bg-blue-500 hover:bg-blue-600 text-white text-sm font-semibold px-4 py-2 rounded-xl transition-colors"
+            <div className="flex items-center gap-2">
+              {/* 정렬 드롭다운 */}
+              <select
+                value={filters.sortBy}
+                onChange={(e) => setFilters((f) => ({ ...f, sortBy: e.target.value as SortBy }))}
+                className="text-sm text-gray-600 border border-gray-200 rounded-xl px-3 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-brand-blue focus:border-transparent cursor-pointer shadow-sm"
               >
-                <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5}>
-                  <line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" />
-                </svg>
-                일감 올리기
-              </Link>
-            )}
+                <option value="latest">최신순</option>
+                <option value="deadline">마감 임박순</option>
+                <option value="preferred">내 선호순</option>
+              </select>
+              {role === 'manager' && (
+                <Link
+                  href="/jobs/new"
+                  className="inline-flex items-center gap-1.5 bg-brand-blue hover:bg-brand-blue-dark text-white text-sm font-semibold px-4 py-2 rounded-xl transition-colors shadow-sm"
+                >
+                  <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5}>
+                    <line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" />
+                  </svg>
+                  일감 올리기
+                </Link>
+              )}
+            </div>
           </div>
 
-          {/* 로딩 스켈레톤 */}
-          {isLoading && (
+          {/* 로딩 스켈레톤 — 초기 로딩 또는 필터/정렬 변경 시 */}
+          {(isLoading || isRefetching) && (
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {Array.from({ length: 6 }).map((_, i) => (
                 <div key={i} className="bg-white border border-gray-200 rounded-2xl h-44 animate-pulse" />
@@ -215,7 +255,7 @@ export function JobList() {
           )}
 
           {/* 빈 목록 */}
-          {!isLoading && !isError && jobs.length === 0 && (
+          {!isLoading && !isRefetching && !isError && jobs.length === 0 && (
             <div className="text-center py-20">
               {filters.keyword ? (
                 <>
@@ -226,7 +266,7 @@ export function JobList() {
                   <p className="text-gray-400 text-sm">다른 지역을 검색해 보세요.</p>
                   <button
                     onClick={handleClearSearch}
-                    className="mt-4 text-blue-500 text-sm hover:underline"
+                    className="mt-4 text-brand-blue text-sm hover:underline"
                   >
                     전체 목록 보기
                   </button>
@@ -241,10 +281,14 @@ export function JobList() {
           )}
 
           {/* 카드 그리드 — 모바일 1열 / sm 이상 2열 */}
-          {jobs.length > 0 && (
+          {!isRefetching && jobs.length > 0 && (
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {jobs.map((job) => (
-                <JobCard key={job.id} job={job} isPreferred={isPreferred(job)} />
+                <JobCard
+                  key={job.id}
+                  job={job}
+                  isPreferred={isPreferred(job)}
+                />
               ))}
             </div>
           )}
@@ -253,7 +297,7 @@ export function JobList() {
           <div ref={loadMoreRef} className="py-8 flex justify-center">
             {isFetchingNextPage && (
               <div className="flex items-center gap-2 text-gray-400 text-sm">
-                <div className="w-4 h-4 border-2 border-gray-300 border-t-blue-500 rounded-full animate-spin" />
+                <div className="w-4 h-4 border-2 border-gray-300 border-t-brand-blue rounded-full animate-spin" />
                 불러오는 중...
               </div>
             )}

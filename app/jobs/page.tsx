@@ -12,26 +12,26 @@ export const revalidate = 30
 export default async function JobsPage() {
   const queryClient = new QueryClient()
 
-  // 서버에서 첫 페이지 프리페치
+  // 서버에서 첫 페이지 프리페치 (offset 기반, 12개)
   await queryClient.prefetchInfiniteQuery({
     queryKey: ['jobs', DEFAULT_FILTERS],
     queryFn: async ({ pageParam }) => {
       const supabase = await createClient()
-      const page = pageParam as number
+      const offset = pageParam as number
       const limit = 12
-      const from = (page - 1) * limit
+      const from = offset
       const to = from + limit - 1
 
       const { data, count } = await supabase
         .from('jobs')
         .select('*, profiles(id, name, rating_avg, is_certified)', { count: 'exact' })
-        .eq('status', 'open')
+        .in('status', ['open', 'closed'])
         .order('created_at', { ascending: false })
         .range(from, to)
 
-      return { data: data ?? [], count: count ?? 0, page, limit }
+      return { data: data ?? [], count: count ?? 0, offset, limit }
     },
-    initialPageParam: 1,
+    initialPageParam: 0,
   })
 
   return (
