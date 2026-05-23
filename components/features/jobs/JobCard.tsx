@@ -33,11 +33,15 @@ export function JobCard({ job, isPreferred }: JobCardProps) {
   const isClosed = job.status !== 'open'
 
   return (
-    <Link href={`/jobs/${job.id}`} className="block h-full">
-      <div className={`bg-white border rounded-2xl p-5 transition-all group cursor-pointer h-full flex flex-col ${
+    <Link
+      href={isClosed ? '#' : `/jobs/${job.id}`}
+      onClick={isClosed ? (e) => e.preventDefault() : undefined}
+      className={`block h-full ${isClosed ? 'cursor-not-allowed' : ''}`}
+    >
+      <div className={`bg-white border rounded-2xl p-5 transition-all h-full flex flex-col ${
         isClosed
-          ? 'border-gray-100 opacity-70'
-          : 'border-gray-200 hover:border-blue-300 hover:shadow-md'
+          ? 'border-gray-100 opacity-60'
+          : 'border-gray-200 hover:border-blue-300 hover:shadow-md group cursor-pointer'
       }`}>
 
         {/* 배지 행 */}
@@ -78,11 +82,10 @@ export function JobCard({ job, isPreferred }: JobCardProps) {
             {job.profiles.name} 소장
           </span>
           {job.profiles.is_certified && (
-            <span className="inline-flex items-center gap-0.5 bg-blue-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full leading-none">
+            <span className="inline-flex items-center justify-center bg-blue-500 text-white w-4 h-4 rounded-full leading-none shrink-0">
               <svg className="w-2.5 h-2.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={3}>
                 <path d="M20 6L9 17l-5-5" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
-              인증
             </span>
           )}
           <span className="text-xs text-gray-400 flex items-center gap-0.5">
