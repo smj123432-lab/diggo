@@ -113,6 +113,7 @@ export function JobCard({ job, isPreferred }: JobCardProps) {
                 </svg>
               </span>
             )}
+            <span className="text-gray-300 text-xs mx-0.5">|</span>
             <span className="text-xs text-gray-400 flex items-center gap-0.5">
               <span className="text-yellow-400">★</span>
               {job.profiles.rating_avg.toFixed(1)}
