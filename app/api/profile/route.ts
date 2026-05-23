@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 
 // GET /api/profile — 내 프로필 조회
-export async function GET(_: NextRequest) {
+export async function GET() {
   try {
     const supabase = await createClient()
     const {
@@ -43,7 +43,10 @@ export async function PATCH(request: NextRequest) {
     const body = await request.json()
 
     // 변경 불가 필드 제거
-    const { id: _, role: __, rating_avg: ___, is_certified: ____, ...updateData } = body
+    const IMMUTABLE = ['id', 'role', 'rating_avg', 'is_certified']
+    const updateData = Object.fromEntries(
+      Object.entries(body).filter(([key]) => !IMMUTABLE.includes(key))
+    )
 
     const { data, error } = await supabase
       .from('profiles')

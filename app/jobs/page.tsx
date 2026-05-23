@@ -1,11 +1,81 @@
-// 일감 목록 — SSR + 30초 revalidate
+// 일감 목록 — SSR + 30초 revalidate + TanStack Query HydrationBoundary
+import { dehydrate, HydrationBoundary, QueryClient } from '@tanstack/react-query'
+import { createClient } from '@/lib/supabase/server'
+import Link from 'next/link'
+import { ExcavatorIcon } from '@/components/ui/ExcavatorIcon'
+import { NavButtons } from '@/components/features/home/NavButtons'
+import { JobList } from '@/components/features/jobs/JobList'
+import { DEFAULT_FILTERS } from '@/hooks/useJobs'
+
 export const revalidate = 30
 
-export default function JobsPage() {
+export default async function JobsPage() {
+  const queryClient = new QueryClient()
+
+  // 서버에서 첫 페이지 프리페치 (offset 기반, 12개)
+  await queryClient.prefetchInfiniteQuery({
+    queryKey: ['jobs', DEFAULT_FILTERS],
+    queryFn: async ({ pageParam }) => {
+      const supabase = await createClient()
+      const offset = pageParam as number
+      const limit = 12
+      const from = offset
+      const to = from + limit - 1
+
+      const { data, count } = await supabase
+        .from('jobs')
+        .select('*, profiles(id, name, rating_avg, is_certified)', { count: 'exact' })
+        .in('status', ['open', 'closed'])
+        .order('created_at', { ascending: false })
+        .range(from, to)
+
+      return { data: data ?? [], count: count ?? 0, offset, limit }
+    },
+    initialPageParam: 0,
+  })
+
   return (
-    <main className="min-h-screen px-4 py-6 max-w-lg mx-auto">
-      <h1 className="text-xl font-bold mb-4">일감 목록</h1>
-      <p className="text-gray-500">구현 예정</p>
-    </main>
+    <div className="min-h-screen bg-gray-50">
+      {/* NAV */}
+      <nav className="fixed top-0 inset-x-0 z-50 border-b border-white/10 bg-slate-900/90 backdrop-blur-md">
+        <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
+          {/* 로고 */}
+          <Link href="/" className="flex items-center gap-2.5">
+            <ExcavatorIcon className="w-8 h-6 text-blue-400" />
+            <span className="text-lg font-black tracking-tight text-white">
+              Diggo<span className="text-blue-400">.</span>
+            </span>
+          </Link>
+
+          {/* 중앙 네비게이션 */}
+          <div className="hidden md:flex items-center gap-1">
+            <Link
+              href="/jobs"
+              className="px-4 py-2 text-sm font-semibold text-white bg-white/10 rounded-lg"
+            >
+              일감 찾기
+            </Link>
+            <Link
+              href="/mypage/ledger"
+              className="px-4 py-2 text-sm text-slate-400 hover:text-white hover:bg-white/5 rounded-lg transition-colors"
+            >
+              장부
+            </Link>
+          </div>
+
+          {/* 우측 버튼 */}
+          <NavButtons />
+        </div>
+      </nav>
+
+      {/* 콘텐츠 */}
+      <div className="pt-16">
+        <div className="max-w-6xl mx-auto px-6 py-8">
+          <HydrationBoundary state={dehydrate(queryClient)}>
+            <JobList />
+          </HydrationBoundary>
+        </div>
+      </div>
+    </div>
   )
 }

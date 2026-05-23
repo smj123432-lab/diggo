@@ -15,6 +15,9 @@ create table profiles (
   longitude double precision,
   rating_avg numeric(3,2) default 0,
   is_certified boolean default false,
+  preferred_job_types text[] default '{}',
+  preferred_equipment_codes text[] default '{}',
+  preferred_regions text[] default '{}',
   created_at timestamptz default now() not null
 );
 
@@ -130,11 +133,26 @@ create table notifications (
 create or replace function handle_new_user()
 returns trigger as $$
 begin
-  insert into profiles (id, name, role)
+  insert into profiles (id, name, role, preferred_job_types, preferred_equipment_codes, preferred_regions)
   values (
     new.id,
     coalesce(new.raw_user_meta_data->>'name', ''),
-    coalesce(new.raw_user_meta_data->>'role', 'driver')
+    coalesce(new.raw_user_meta_data->>'role', 'driver'),
+    case
+      when new.raw_user_meta_data ? 'preferred_job_types'
+      then array(select jsonb_array_elements_text(new.raw_user_meta_data->'preferred_job_types'))
+      else '{}'::text[]
+    end,
+    case
+      when new.raw_user_meta_data ? 'preferred_equipment_codes'
+      then array(select jsonb_array_elements_text(new.raw_user_meta_data->'preferred_equipment_codes'))
+      else '{}'::text[]
+    end,
+    case
+      when new.raw_user_meta_data ? 'preferred_regions'
+      then array(select jsonb_array_elements_text(new.raw_user_meta_data->'preferred_regions'))
+      else '{}'::text[]
+    end
   );
   return new;
 end;
@@ -374,7 +392,31 @@ create policy "본인 알림만 읽음 처리" on notifications
   for update using (auth.uid() = user_id);
 
 -- ============================================================
+-- 테이블 권한 부여 (SQL로 생성 시 anon/authenticated 롤에 수동 grant 필요)
+-- ============================================================
+grant select on jobs to anon, authenticated;
+grant select on profiles to anon, authenticated;
+grant select on reviews to anon, authenticated;
+grant all on applications to authenticated;
+grant all on ledger_expenses to authenticated;
+grant all on certifications to authenticated;
+grant all on chats to authenticated;
+grant all on messages to authenticated;
+grant all on notifications to authenticated;
+grant insert, update on jobs to authenticated;
+grant delete on jobs to authenticated;
+
+-- ============================================================
 -- Realtime 활성화 (채팅, 알림)
 -- ============================================================
 alter publication supabase_realtime add table messages;
 alter publication supabase_realtime add table notifications;
+
+-- ============================================================
+-- 마이그레이션: 선호 설정 컬럼 추가
+-- 이미 schema.sql을 실행한 Supabase 프로젝트는 아래만 별도 실행
+-- ============================================================
+-- alter table profiles
+--   add column if not exists preferred_job_types text[] default '{}',
+--   add column if not exists preferred_equipment_codes text[] default '{}',
+--   add column if not exists preferred_regions text[] default '{}';

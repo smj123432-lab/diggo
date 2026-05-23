@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 
 // GET /api/applications — 내 지원 목록 (기사)
-export async function GET(_: NextRequest) {
+export async function GET() {
   try {
     const supabase = await createClient()
     const {

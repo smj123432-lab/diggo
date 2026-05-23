@@ -1,8 +1,8 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 
 // GET /api/jobs/mine — 소장의 내 등록 일감 목록
-export async function GET(_: NextRequest) {
+export async function GET() {
   try {
     const supabase = await createClient()
     const {

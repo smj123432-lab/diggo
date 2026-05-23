@@ -190,6 +190,20 @@ Next.js 14 App Router 프로젝트를 Bun 기반으로 완전히 세팅했다. `
 - [ x ] 인증 페이지 placeholder (`/login`, `/signup`)
 - [ x ] 전체 도메인 페이지 placeholder (캐싱 전략 상수 포함)
 
+### 세션 2 (2026-05-22) — feat/auth 브랜치
+
+**완료된 항목:**
+
+- [ x ] 로그인 페이지 (`/login`) — Supabase signInWithPassword, redirect 쿼리 파라미터, 비밀번호 눈 아이콘
+- [ x ] 회원가입 페이지 (`/signup`) — 3단계 플로우
+  - 1단계: 역할 선택 (기사 / 소장), ExcavatorIcon 적용
+  - 2단계: 이름·이메일·비밀번호 입력 (인라인 유효성 검사, 눈 아이콘, 버튼 조건부 활성화)
+  - 3단계: 선호 설정 (기사: 작업유형·지역 / 소장: 장비종류) — 스킵 가능
+- [ x ] 디자인 시스템 통일 — 홈과 동일한 blue 포인트 컬러, ExcavatorIcon + slate-900 로고
+- [ x ] profiles 테이블 컬럼 추가 — preferred_job_types[], preferred_equipment_codes[], preferred_regions[]
+- [ x ] on_auth_user_created 트리거 업데이트 — 선호 설정 raw_user_meta_data에서 추출 저장
+- [ x ] Profile 타입 업데이트 (`types/index.ts`)
+
 **구현 완료된 API Routes:**
 
 | 엔드포인트 | 메서드 | 내용 |
@@ -228,7 +242,7 @@ Next.js 14 App Router 프로젝트를 Bun 기반으로 완전히 세팅했다. `
 | 순서 | 작업 | 상태 |
 |------|------|------|
 | 1 | 프로젝트 세팅 + Supabase 테이블 + RLS | **완료** |
-| 2 | 인증 (로그인 / 회원가입 / 역할 선택) | 미구현 |
+| 2 | 인증 (로그인 / 회원가입 / 역할 선택) | **완료** |
 | 3 | 일감 목록 + 필터 + 무한스크롤 | 미구현 |
 | 4 | 일감 등록 폼 + 카카오맵 | 미구현 |
 | 5 | 일감 상세 + 지원 신청 | 미구현 |
