@@ -2,7 +2,7 @@
 
 // 일감 목록 사이드바 필터 — 장비 코드, 일감 유형 다중 선택
 import type { EquipmentCode, JobType } from '@/types'
-import { EQUIPMENT_LABELS, JOB_TYPE_LABELS } from '@/types'
+import { EQUIPMENT_LABELS, JOB_TYPE_LABELS, EQUIPMENT_CODES_LIST, JOB_TYPES_LIST } from '@/types'
 import type { JobFilters } from '@/hooks/useJobs'
 
 interface JobFiltersProps {
@@ -10,8 +10,6 @@ interface JobFiltersProps {
   onChange: (filters: JobFilters) => void
 }
 
-const EQUIPMENT_CODES: EquipmentCode[] = ['008', '017', '035', '02', '3w', '6w', '8w', '10t']
-const JOB_TYPES: JobType[] = ['civil', 'demolition']
 
 export function JobFilters({ filters, onChange }: JobFiltersProps) {
   const toggleEquipment = (code: EquipmentCode) => {
@@ -50,7 +48,7 @@ export function JobFilters({ filters, onChange }: JobFiltersProps) {
         <div className="mb-5">
           <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2.5">장비</p>
           <div className="space-y-2">
-            {EQUIPMENT_CODES.map((code) => {
+            {EQUIPMENT_CODES_LIST.map((code) => {
               const checked = filters.equipment_codes.includes(code)
               return (
                 <label key={code} className="flex items-center gap-2 cursor-pointer group">
@@ -82,11 +80,14 @@ export function JobFilters({ filters, onChange }: JobFiltersProps) {
           </div>
         </div>
 
+        {/* 구분선 */}
+        <hr className="border-gray-100 mb-5" />
+
         {/* 일감 유형 */}
         <div>
           <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2.5">유형</p>
           <div className="space-y-2">
-            {JOB_TYPES.map((type) => {
+            {JOB_TYPES_LIST.map((type) => {
               const checked = filters.job_types.includes(type)
               return (
                 <label key={type} className="flex items-center gap-2 cursor-pointer group">

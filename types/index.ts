@@ -144,6 +144,10 @@ export interface Notification {
   created_at: string
 }
 
+// 장비 코드 / 일감 유형 순서 배열 (필터 UI 순서 고정)
+export const EQUIPMENT_CODES_LIST: EquipmentCode[] = ['008', '017', '035', '02', '3w', '6w', '8w', '10t']
+export const JOB_TYPES_LIST: JobType[] = ['civil', 'demolition']
+
 // 장비 코드 한글 레이블
 export const EQUIPMENT_LABELS: Record<EquipmentCode, string> = {
   '008': '008 (미니)',
