@@ -56,7 +56,7 @@ function Label({ children, required }: { children: React.ReactNode; required?: b
 }
 
 // 공통 인풋 클래스
-const inputCls = 'w-full px-4 py-3 border border-gray-200 rounded-xl text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-blue focus:border-transparent transition'
+const inputCls = 'w-full px-4 py-3.5 border border-gray-200 rounded-xl text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-blue focus:border-transparent transition'
 
 export function JobForm() {
   const router = useRouter()
@@ -135,7 +135,7 @@ export function JobForm() {
                 key={type}
                 type="button"
                 onClick={() => set('job_type', type)}
-                className={`py-3 rounded-xl border-2 text-sm font-semibold transition-all ${
+                className={`py-3.5 rounded-xl border-2 text-sm font-semibold transition-all ${
                   form.job_type === type
                     ? 'border-brand-blue bg-brand-blue text-white shadow-sm'
                     : 'border-gray-200 text-gray-500 hover:border-gray-300 hover:text-gray-700'
@@ -158,7 +158,7 @@ export function JobForm() {
                 key={code}
                 type="button"
                 onClick={() => set('equipment_code', code)}
-                className={`py-2.5 rounded-xl border-2 text-xs font-bold transition-all ${
+                className={`py-3 rounded-xl border-2 text-xs font-bold transition-all ${
                   form.equipment_code === code
                     ? 'border-brand-blue bg-brand-blue text-white shadow-sm'
                     : 'border-gray-200 text-gray-500 hover:border-gray-300 hover:text-gray-700'
@@ -242,7 +242,7 @@ export function JobForm() {
           <button
             type="button"
             onClick={() => setShowAddressSearch(true)}
-            className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl border text-sm text-left transition-all ${
+            className={`w-full flex items-center gap-3 px-4 py-3.5 rounded-xl border text-sm text-left transition-all ${
               form.location
                 ? 'border-brand-blue bg-blue-50 text-gray-900 font-medium'
                 : 'border-gray-200 text-gray-400 hover:border-gray-300'
@@ -286,7 +286,7 @@ export function JobForm() {
             <select
               value={form.work_duration}
               onChange={(e) => set('work_duration', e.target.value as WorkDuration)}
-              className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-brand-blue focus:border-transparent transition bg-white appearance-none cursor-pointer"
+              className="w-full px-4 py-3.5 border border-gray-200 rounded-xl text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-brand-blue focus:border-transparent transition bg-white appearance-none cursor-pointer"
             >
               <option value="">미정</option>
               {WORK_DURATION_LIST.map((d) => (
@@ -309,7 +309,7 @@ export function JobForm() {
                 value={form.pay_amount}
                 onChange={(e) => set('pay_amount', formatPayAmount(e.target.value))}
                 placeholder="0"
-                className="w-full pl-4 pr-8 py-3 border border-gray-200 rounded-xl text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-blue focus:border-transparent transition"
+                className="w-full pl-4 pr-8 py-3.5 border border-gray-200 rounded-xl text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-blue focus:border-transparent transition"
               />
               <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-gray-400 pointer-events-none">원</span>
             </div>
@@ -319,7 +319,7 @@ export function JobForm() {
             <select
               value={form.pay_due_type}
               onChange={(e) => set('pay_due_type', e.target.value as PayDueType)}
-              className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-brand-blue focus:border-transparent transition bg-white appearance-none cursor-pointer"
+              className="w-full px-4 py-3.5 border border-gray-200 rounded-xl text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-brand-blue focus:border-transparent transition bg-white appearance-none cursor-pointer"
             >
               <option value="">선택</option>
               {PAY_DUE_TYPES_LIST.map((type) => (
@@ -336,7 +336,7 @@ export function JobForm() {
         type="button"
         onClick={handleSubmit}
         disabled={!isValid || isSubmitting}
-        className={`w-full mt-4 py-4 rounded-2xl font-bold text-base transition-all ${
+        className={`w-full mt-4 py-4 rounded-xl font-bold text-base transition-all ${
           isValid && !isSubmitting
             ? 'bg-brand-blue hover:bg-brand-blue-dark text-white shadow-md active:scale-[0.98]'
             : 'bg-gray-100 text-gray-400 cursor-not-allowed'

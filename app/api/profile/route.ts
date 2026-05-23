@@ -42,11 +42,24 @@ export async function PATCH(request: NextRequest) {
 
     const body = await request.json()
 
-    // 변경 불가 필드 제거
-    const IMMUTABLE = ['id', 'role', 'rating_avg', 'is_certified']
-    const updateData = Object.fromEntries(
-      Object.entries(body).filter(([key]) => !IMMUTABLE.includes(key))
-    )
+    // 허용 필드만 명시적으로 추출 (mass assignment 방지)
+    const {
+      name, phone, experience_years, garage_address,
+      latitude, longitude, preferred_job_types,
+      preferred_equipment_codes, preferred_regions,
+    } = body
+
+    const updateData = {
+      ...(name !== undefined && { name }),
+      ...(phone !== undefined && { phone }),
+      ...(experience_years !== undefined && { experience_years }),
+      ...(garage_address !== undefined && { garage_address }),
+      ...(latitude !== undefined && { latitude }),
+      ...(longitude !== undefined && { longitude }),
+      ...(preferred_job_types !== undefined && { preferred_job_types }),
+      ...(preferred_equipment_codes !== undefined && { preferred_equipment_codes }),
+      ...(preferred_regions !== undefined && { preferred_regions }),
+    }
 
     const { data, error } = await supabase
       .from('profiles')
