@@ -10,8 +10,8 @@ export async function GET(request: NextRequest) {
 
     const page = parseInt(searchParams.get('page') ?? '1')
     const limit = parseInt(searchParams.get('limit') ?? '10')
-    const equipment_code = searchParams.get('equipment_code')
-    const job_type = searchParams.get('job_type')
+    const equipment_codes = searchParams.getAll('equipment_code')
+    const job_types = searchParams.getAll('job_type')
     const status = searchParams.get('status') ?? 'open'
 
     const from = (page - 1) * limit
@@ -24,8 +24,8 @@ export async function GET(request: NextRequest) {
       .order('created_at', { ascending: false })
       .range(from, to)
 
-    if (equipment_code) query = query.eq('equipment_code', equipment_code)
-    if (job_type) query = query.eq('job_type', job_type)
+    if (equipment_codes.length > 0) query = query.in('equipment_code', equipment_codes)
+    if (job_types.length > 0) query = query.in('job_type', job_types)
 
     const { data, error, count } = await query
 

@@ -4,9 +4,11 @@ import { useInfiniteQuery } from '@tanstack/react-query'
 import type { EquipmentCode, JobType, JobWithManager } from '@/types'
 
 export interface JobFilters {
-  equipment_code?: EquipmentCode | ''
-  job_type?: JobType | ''
+  equipment_codes: EquipmentCode[]
+  job_types: JobType[]
 }
+
+export const DEFAULT_FILTERS: JobFilters = { equipment_codes: [], job_types: [] }
 
 interface JobsPage {
   data: JobWithManager[]
@@ -16,16 +18,16 @@ interface JobsPage {
 }
 
 async function fetchJobs({ pageParam, filters }: { pageParam: number; filters: JobFilters }): Promise<JobsPage> {
-  const params = new URLSearchParams({ page: String(pageParam), limit: '10', status: 'open' })
-  if (filters.equipment_code) params.set('equipment_code', filters.equipment_code)
-  if (filters.job_type) params.set('job_type', filters.job_type)
+  const params = new URLSearchParams({ page: String(pageParam), limit: '12', status: 'open' })
+  filters.equipment_codes.forEach((code) => params.append('equipment_code', code))
+  filters.job_types.forEach((type) => params.append('job_type', type))
 
   const res = await fetch(`/api/jobs?${params}`)
   if (!res.ok) throw new Error('일감 목록을 불러오지 못했습니다.')
   return res.json()
 }
 
-export function useJobs(filters: JobFilters = {}) {
+export function useJobs(filters: JobFilters = DEFAULT_FILTERS) {
   return useInfiniteQuery({
     queryKey: ['jobs', filters],
     queryFn: ({ pageParam }) => fetchJobs({ pageParam: pageParam as number, filters }),
