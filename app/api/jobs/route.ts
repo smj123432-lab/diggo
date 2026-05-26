@@ -30,11 +30,12 @@ export async function GET(request: NextRequest) {
       query = query.order('created_at', { ascending: false })
     }
 
-    // status 명시 시 해당 값만, 기본은 open+closed 노출
+    // status 명시 시 해당 값만, 기본은 오늘 이후 work_date인 open 일감만 노출
     if (status) {
       query = query.eq('status', status)
     } else {
-      query = query.in('status', ['open', 'closed'])
+      const today = new Date().toISOString().split('T')[0]
+      query = query.eq('status', 'open').gte('work_date', today)
     }
 
     if (equipment_codes.length > 0) query = query.overlaps('equipment_codes', equipment_codes)

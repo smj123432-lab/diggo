@@ -10,10 +10,11 @@ interface JobCardProps {
 
 // 일감 상태 배지
 const STATUS_BADGE: Record<JobStatus, { label: string; className: string }> = {
-  open: { label: '모집중', className: 'text-emerald-500' },
-  closed: { label: '마감', className: 'text-gray-400' },
-  in_progress: { label: '작업중', className: 'text-brand-blue' },
-  completed: { label: '완료', className: 'text-brand-purple' },
+  open:        { label: '모집중',    className: 'text-emerald-600' },
+  closed:      { label: '마감',      className: 'text-gray-400' },
+  in_progress: { label: '작업중',    className: 'text-brand-blue' },
+  completed:   { label: '작업완료',  className: 'text-purple-600' },
+  settled:     { label: '정산완료',  className: 'text-emerald-600' },
 }
 
 // 일 종류별 배지 색상
@@ -29,8 +30,11 @@ export function JobCard({ job, isPreferred }: JobCardProps) {
     weekday: 'short',
   })
 
-  const status = STATUS_BADGE[job.status]
-  const isClosed = job.status !== 'open'
+  // work_date가 오늘 이전이면 open → closed 처리
+  const today = new Date().toISOString().split('T')[0]
+  const effectiveStatus: JobStatus = job.status === 'open' && job.work_date < today ? 'closed' : job.status
+  const status = STATUS_BADGE[effectiveStatus]
+  const isClosed = effectiveStatus !== 'open'
 
   return (
     <Link

@@ -5,6 +5,8 @@ import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
 import { JobApplyButton } from '@/components/features/jobs/JobApplyButton'
+import { JobOwnerActions } from '@/components/features/jobs/JobOwnerActions'
+import { JobStatusBadge } from '@/components/features/jobs/JobStatusBadge'
 import { KakaoMap } from '@/components/features/jobs/KakaoMap'
 import { CopyButton } from '@/components/ui/CopyButton'
 import {
@@ -21,10 +23,11 @@ interface Props {
 }
 
 const STATUS_BADGE: Record<JobStatus, { label: string; className: string }> = {
-  open:        { label: '모집중', className: 'bg-emerald-100 text-emerald-700' },
-  closed:      { label: '마감',   className: 'bg-gray-100 text-gray-500' },
-  in_progress: { label: '작업중', className: 'bg-blue-100 text-blue-700' },
-  completed:   { label: '완료',   className: 'bg-purple-100 text-purple-700' },
+  open:        { label: '모집중',           className: 'bg-emerald-100 text-emerald-700' },
+  closed:      { label: '모집 마감',        className: 'bg-gray-100 text-gray-500' },
+  in_progress: { label: '🚚 작업중',        className: 'bg-blue-100 text-blue-700' },
+  completed:   { label: '🟡 작업완료',      className: 'bg-purple-100 text-purple-700' },
+  settled:     { label: '🟢 정산완료',      className: 'bg-emerald-100 text-emerald-700' },
 }
 
 const JOB_TYPE_BADGE: Record<JobType, string> = {
@@ -71,24 +74,33 @@ export default async function JobDetailPage({ params }: Props) {
 
   const isOwnJob = user?.id === job.manager_id
   const workDate = new Date(job.work_date).toLocaleDateString('ko-KR', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-    weekday: 'short',
+    year: 'numeric', month: 'long', day: 'numeric', weekday: 'short',
   })
-  const status = STATUS_BADGE[job.status as JobStatus]
+
+  // work_date가 오늘 이전이면 open → closed 처리 (in_progress 이후는 자동 변경 없음)
+  const today = new Date().toISOString().split('T')[0]
+  const effectiveStatus: JobStatus = (job.status as JobStatus) === 'open' && (job.work_date as string) < today
+    ? 'closed'
+    : job.status as JobStatus
+  const status = STATUS_BADGE[effectiveStatus]
+
+  // 지급 예정일 계산 (work_date + pay_due_type 오프셋)
+  const PAY_DUE_DAYS: Record<string, number> = { same_day: 0, d3: 3, d7: 7, d14: 14, d30: 30 }
+  const payDueDays = PAY_DUE_DAYS[job.pay_due_type as string] ?? 0
+  const payDueDateObj = new Date(job.work_date as string)
+  payDueDateObj.setDate(payDueDateObj.getDate() + payDueDays)
+  const payDueDate = payDueDateObj.toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric' })
+
+  // 기사에게만 지원 버튼 노출
   const showApplyBar = !isOwnJob && userRole !== 'manager'
 
   return (
-    <main className="min-h-screen bg-gray-50 pb-24 lg:pb-8">
+    <main className={`min-h-screen bg-gray-50 ${showApplyBar ? 'pb-24 lg:pb-8' : 'pb-8'}`}>
 
       {/* 헤더 */}
       <div className="bg-white border-b border-gray-100 sticky top-0 z-10">
         <div className="max-w-6xl mx-auto px-4 lg:px-8 py-3 flex items-center gap-3">
-          <Link
-            href="/jobs"
-            className="p-1.5 -ml-1.5 rounded-lg hover:bg-gray-100 transition-colors"
-          >
+          <Link href="/jobs" className="p-1.5 -ml-1.5 rounded-lg hover:bg-gray-100 transition-colors">
             <svg className="w-5 h-5 text-gray-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
               <path d="M19 12H5M12 5l-7 7 7 7" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
@@ -101,15 +113,20 @@ export default async function JobDetailPage({ params }: Props) {
       <div className="max-w-6xl mx-auto px-4 lg:px-8 py-5">
         <div className="lg:grid lg:grid-cols-3 lg:gap-8 lg:items-start">
 
-          {/* ── 좌측 (col-span-2) ── */}
+          {/* ── 좌측 콘텐츠 (col-span-2) ── */}
           <div className="col-span-2 space-y-4">
 
             {/* 뱃지 + 제목 */}
             <div className="bg-white rounded-2xl border border-gray-200 p-5">
               <div className="flex items-center gap-1.5 flex-wrap mb-3">
-                <span className={`text-xs font-semibold px-2.5 py-1 rounded-lg ${status.className}`}>
-                  {status.label}
-                </span>
+                {/* 상태 — 소장: 미니 드롭다운, 기타: 정적 배지 */}
+                {isOwnJob ? (
+                  <JobStatusBadge jobId={job.id} effectiveStatus={effectiveStatus} />
+                ) : (
+                  <span className={`text-xs font-semibold px-2.5 py-1 rounded-lg ${status.className}`}>
+                    {status.label}
+                  </span>
+                )}
                 {(job.equipment_codes as EquipmentCode[]).map((code) => (
                   <span key={code} className="bg-brand-blue text-white text-xs font-bold px-2.5 py-1 rounded-lg">
                     {EQUIPMENT_LABELS[code]}
@@ -119,19 +136,21 @@ export default async function JobDetailPage({ params }: Props) {
                   {JOB_TYPE_LABELS[job.job_type as JobType]}
                 </span>
               </div>
-              <h1 className="text-xl font-bold text-gray-900 leading-snug">{job.title}</h1>
+              <h1 className="text-lg md:text-xl font-bold text-gray-900 leading-snug">{job.title}</h1>
             </div>
 
-            {/* 소장 정보 — 모바일 전용 (데스크톱은 우측 카드) */}
-            <div className="lg:hidden bg-white rounded-2xl border border-gray-200 p-5">
-              <ManagerBlock job={job} />
-            </div>
+            {/* 소장 정보 — 모바일 전용 */}
+            {!isOwnJob && (
+              <div className="lg:hidden bg-white rounded-2xl border border-gray-200 p-5">
+                <ManagerBlock job={job} />
+              </div>
+            )}
 
             {/* 작업 위치 + 지도 */}
             <div className="bg-white rounded-2xl border border-gray-200 p-5">
               <p className="text-xs text-gray-400 font-medium mb-3">작업 위치</p>
               <div className="flex items-start gap-3 mb-3">
-                <div className="w-8 h-8 rounded-lg bg-gray-50 flex items-center justify-center shrink-0">
+                <div className="w-8 h-8 rounded-xl bg-gray-50 flex items-center justify-center shrink-0">
                   <svg className="w-4 h-4 text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
                     <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
                     <circle cx="12" cy="10" r="3" />
@@ -143,29 +162,42 @@ export default async function JobDetailPage({ params }: Props) {
                 </div>
               </div>
               {job.latitude && job.longitude && (
-                <KakaoMap
-                  latitude={job.latitude}
-                  longitude={job.longitude}
-                />
+                <KakaoMap latitude={job.latitude} longitude={job.longitude} />
               )}
             </div>
 
-            {/* 작업 일자 / 지급 정보 — 모바일 전용 (데스크톱은 우측 카드) */}
-            <div className="lg:hidden bg-white rounded-2xl border border-gray-200 p-5 space-y-4">
-              <p className="text-xs text-gray-400 font-medium">작업 정보</p>
-              <MetaRow
-                icon={<CalendarIcon />}
-                label="작업일자"
-                value={workDate}
-                sub={job.work_duration ? WORK_DURATION_LABELS[job.work_duration as WorkDuration] : undefined}
-              />
-              <MetaRow
-                icon={<MoneyIcon />}
-                label="지급 금액 (대당)"
-                value={`${formatPayAmounts(job.pay_amounts as Record<string, number>)}원`}
-                sub={PAY_DUE_LABELS[job.pay_due_type as PayDueType]}
-                valueClass="text-lg font-black text-brand-blue-dark"
-              />
+            {/* 작업 정보 — 모바일 전용 */}
+            <div className="lg:hidden bg-white rounded-2xl border border-gray-200 p-5">
+              {/* 장비별 금액 */}
+              <p className="text-xs text-gray-400 mb-2">지급 금액 <span className="text-gray-300">(대당)</span></p>
+              {(job.equipment_codes as EquipmentCode[]).map(code => {
+                const amt = (job.pay_amounts as Record<string, number>)[code]
+                const days = (job.work_days as Record<string, number>)?.[code]
+                return (
+                  <div key={code} className="flex items-center justify-between mb-1.5">
+                    <div>
+                      <span className="text-xs text-gray-500">{EQUIPMENT_LABELS[code]}</span>
+                      {days > 0 && <span className="text-xs text-gray-400 ml-1">· {days}일</span>}
+                    </div>
+                    <span className="text-base font-black text-brand-blue-dark">{amt?.toLocaleString()}원</span>
+                  </div>
+                )
+              })}
+              <p className="text-xs text-gray-400 mb-4">{PAY_DUE_LABELS[job.pay_due_type as PayDueType]}</p>
+
+              <div className="border-t border-gray-100 pt-4 space-y-3">
+                <MetaRow
+                  icon={<CalendarIcon />}
+                  label="작업일자"
+                  value={workDate}
+                  sub={job.work_duration ? WORK_DURATION_LABELS[job.work_duration as WorkDuration] : undefined}
+                />
+                <MetaRow
+                  icon={<ExcavatorIcon />}
+                  label="필요 장비"
+                  value={(job.equipment_codes as EquipmentCode[]).map(c => EQUIPMENT_LABELS[c]).join(' · ')}
+                />
+              </div>
             </div>
 
             {/* 상세 내용 */}
@@ -176,42 +208,32 @@ export default async function JobDetailPage({ params }: Props) {
               </div>
             )}
 
-            {/* 철거 추가 정보 */}
-            {job.job_type === 'demolition' && (job.attachments || job.caution) && (
-              <div className="bg-orange-50 rounded-2xl border border-orange-200 p-5 space-y-3">
-                <p className="text-xs text-orange-600 font-semibold">철거 추가 정보</p>
-                {job.attachments && (
-                  <div>
-                    <p className="text-xs text-orange-400 mb-1">필요 어태치먼트</p>
+            {/* 어태치먼트 + 주의사항 */}
+            {(job.attachments || job.caution) && (
+              <div className="space-y-3">
+                {job.job_type === 'demolition' && job.attachments && (
+                  <div className="bg-orange-50 rounded-2xl border border-orange-200 p-5">
+                    <p className="text-xs text-orange-500 font-semibold mb-1">철거 추가 정보 · 필요 어태치먼트</p>
                     <p className="text-sm text-orange-800 font-medium">{job.attachments}</p>
                   </div>
                 )}
                 {job.caution && (
-                  <div>
-                    <p className="text-xs text-orange-400 mb-1">주의사항</p>
-                    <p className="text-sm text-orange-800 leading-relaxed">{job.caution}</p>
+                  <div className="bg-amber-50 rounded-2xl border border-amber-300 p-5">
+                    <p className="text-xs text-amber-600 font-semibold mb-1">⚠️ 주의사항</p>
+                    <p className="text-sm text-amber-900 leading-relaxed">{job.caution}</p>
                   </div>
                 )}
               </div>
             )}
 
-            {/* 소장 본인 — 수정/관리 버튼 (모바일) */}
+            {/* 소장 본인 — 일감 관리 (모바일 전용, 최하단) */}
             {isOwnJob && (
-              <div className="lg:hidden flex gap-2">
-                <Link
-                  href={`/jobs/${job.id}/edit`}
-                  className="flex-1 text-center bg-brand-blue text-white font-semibold py-3.5 rounded-2xl hover:bg-brand-blue-dark transition-colors text-sm"
-                >
-                  수정하기
-                </Link>
-                <Link
-                  href="/manager/jobs"
-                  className="flex-1 text-center bg-white border border-gray-200 text-gray-700 font-semibold py-3.5 rounded-2xl hover:bg-gray-50 transition-colors text-sm"
-                >
-                  내 일감 관리
-                </Link>
+              <div className="lg:hidden bg-white rounded-2xl border border-gray-200 p-5">
+                <p className="text-xs text-gray-400 font-medium mb-3">일감 관리</p>
+                <JobOwnerActions jobId={job.id} effectiveStatus={effectiveStatus} payDueDate={payDueDate} />
               </div>
             )}
+
           </div>
 
           {/* ── 우측 퀵 카드 (데스크톱 전용) ── */}
@@ -259,13 +281,17 @@ export default async function JobDetailPage({ params }: Props) {
                         </svg>
                       </div>
                       <div>
-                        <p className="text-xs text-gray-400">{(job.equipment_codes as EquipmentCode[]).length > 1 ? '총 작업 기간' : '작업 기간'}</p>
-                        <p className="text-sm font-semibold text-gray-800">{WORK_DURATION_LABELS[job.work_duration as WorkDuration]}</p>
+                        <p className="text-xs text-gray-400">
+                          {(job.equipment_codes as EquipmentCode[]).length > 1 ? '총 작업 기간' : '작업 기간'}
+                        </p>
+                        <p className="text-sm font-semibold text-gray-800">
+                          {WORK_DURATION_LABELS[job.work_duration as WorkDuration]}
+                        </p>
                       </div>
                     </div>
                   )}
 
-                  {/* 장비 */}
+                  {/* 필요 장비 */}
                   <div className="flex items-center gap-2.5">
                     <div className="w-7 h-7 rounded-lg bg-gray-50 flex items-center justify-center shrink-0">
                       <ExcavatorIcon />
@@ -305,33 +331,21 @@ export default async function JobDetailPage({ params }: Props) {
                   </div>
                 </div>
 
-                {/* 지원 버튼 */}
+                {/* 지원 버튼 (기사) */}
                 {showApplyBar && (
                   <JobApplyButton
                     jobId={job.id}
-                    jobStatus={job.status as JobStatus}
+                    jobStatus={effectiveStatus}
                     userRole={userRole}
                     existingApplication={existingApplication}
                   />
                 )}
 
-                {/* 소장 본인 — 수정/관리 버튼 (데스크톱) */}
+                {/* 소장 본인 — 상태 제어 (데스크톱) */}
                 {isOwnJob && (
-                  <div className="flex flex-col gap-2">
-                    <Link
-                      href={`/jobs/${job.id}/edit`}
-                      className="block w-full text-center bg-brand-blue text-white font-bold py-3.5 rounded-2xl hover:bg-brand-blue-dark transition-colors text-sm"
-                    >
-                      수정하기
-                    </Link>
-                    <Link
-                      href="/manager/jobs"
-                      className="block w-full text-center bg-gray-50 border border-gray-200 text-gray-700 font-semibold py-3 rounded-2xl hover:bg-gray-100 transition-colors text-sm"
-                    >
-                      내 일감 관리
-                    </Link>
-                  </div>
+                  <JobOwnerActions jobId={job.id} effectiveStatus={effectiveStatus} payDueDate={payDueDate} />
                 )}
+
               </div>
             </div>
           </div>
@@ -339,13 +353,13 @@ export default async function JobDetailPage({ params }: Props) {
         </div>
       </div>
 
-      {/* 모바일 고정 하단 지원 버튼 */}
+      {/* 모바일 고정 하단 — 기사 지원 버튼 */}
       {showApplyBar && (
         <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur border-t border-gray-200 px-4 py-4 z-20">
           <div className="max-w-lg mx-auto">
             <JobApplyButton
               jobId={job.id}
-              jobStatus={job.status as JobStatus}
+              jobStatus={effectiveStatus}
               userRole={userRole}
               existingApplication={existingApplication}
             />
@@ -357,7 +371,7 @@ export default async function JobDetailPage({ params }: Props) {
   )
 }
 
-/* ── 공유 서브컴포넌트 ── */
+/* ── 서브컴포넌트 ── */
 
 function ManagerBlock({ job }: { job: { profiles: { name: string; is_certified: boolean; rating_avg: number } } }) {
   return (
@@ -399,7 +413,7 @@ interface MetaRowProps {
 function MetaRow({ icon, label, value, sub, valueClass }: MetaRowProps) {
   return (
     <div className="flex items-start gap-3">
-      <div className="w-8 h-8 rounded-lg bg-gray-50 flex items-center justify-center shrink-0">
+      <div className="w-8 h-8 rounded-xl bg-gray-50 flex items-center justify-center shrink-0">
         {icon}
       </div>
       <div>

@@ -4,7 +4,7 @@ export type EquipmentCode = '008' | '017' | '035' | '02' | '3w' | '6w' | '8w' | 
 
 export type JobType = 'civil' | 'demolition'
 
-export type JobStatus = 'open' | 'closed' | 'in_progress' | 'completed'
+export type JobStatus = 'open' | 'closed' | 'in_progress' | 'completed' | 'settled'
 
 export type ApplicationStatus = 'pending' | 'reviewing' | 'accepted' | 'rejected'
 
@@ -170,7 +170,7 @@ export const JOB_TYPES_LIST: JobType[] = ['civil', 'demolition']
 
 // 장비 코드 한글 레이블
 export const EQUIPMENT_LABELS: Record<EquipmentCode, string> = {
-  '008': '008 (미니)',
+  '008': '008',
   '017': '017',
   '035': '035',
   '02': '02',
@@ -215,7 +215,8 @@ export const JOB_STATUS_LABELS: Record<JobStatus, string> = {
   open: '모집중',
   closed: '마감',
   in_progress: '작업중',
-  completed: '완료',
+  completed: '작업완료',
+  settled: '정산완료',
 }
 
 // 지원 상태 한글 레이블
