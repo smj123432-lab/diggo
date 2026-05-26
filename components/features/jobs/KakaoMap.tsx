@@ -41,8 +41,14 @@ export function KakaoMap({ latitude, longitude, label }: Props) {
       })
     }
 
-    if (document.getElementById(scriptId)) {
-      initMap()
+    const existing = document.getElementById(scriptId) as HTMLScriptElement | null
+    if (existing) {
+      // 스크립트 태그는 있지만 kakao 객체가 아직 준비 안 된 경우
+      if (window.kakao) {
+        initMap()
+      } else {
+        existing.addEventListener('load', initMap)
+      }
       return
     }
 
