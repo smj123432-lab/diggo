@@ -320,7 +320,7 @@ export function JobForm({ mode = 'create', jobId, initialValues }: JobFormProps)
         <Divider />
 
         {/* ── 지급 금액 + 지급 예정일 ── */}
-        <div className="grid grid-cols-2 gap-4">
+        <div className="flex flex-col gap-5">
           <div>
             <Label required>지급 금액 (대당)</Label>
             <div className="relative">
