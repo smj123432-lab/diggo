@@ -109,9 +109,11 @@ export default async function JobDetailPage({ params }: Props) {
                 <span className={`text-xs font-semibold px-2.5 py-1 rounded-lg ${status.className}`}>
                   {status.label}
                 </span>
-                <span className="bg-brand-blue text-white text-xs font-bold px-2.5 py-1 rounded-lg">
-                  {EQUIPMENT_LABELS[job.equipment_code as EquipmentCode]}
-                </span>
+                {(job.equipment_codes as EquipmentCode[]).map((code) => (
+                  <span key={code} className="bg-brand-blue text-white text-xs font-bold px-2.5 py-1 rounded-lg">
+                    {EQUIPMENT_LABELS[code]}
+                  </span>
+                ))}
                 <span className={`text-xs font-medium px-2.5 py-1 rounded-lg ${JOB_TYPE_BADGE[job.job_type as JobType]}`}>
                   {JOB_TYPE_LABELS[job.job_type as JobType]}
                 </span>
@@ -248,7 +250,9 @@ export default async function JobDetailPage({ params }: Props) {
                     </div>
                     <div>
                       <p className="text-xs text-gray-400">필요 장비</p>
-                      <p className="text-sm font-semibold text-gray-800">{EQUIPMENT_LABELS[job.equipment_code as EquipmentCode]}</p>
+                      <p className="text-sm font-semibold text-gray-800">
+                        {(job.equipment_codes as EquipmentCode[]).map(c => EQUIPMENT_LABELS[c]).join(' · ')}
+                      </p>
                     </div>
                   </div>
                 </div>

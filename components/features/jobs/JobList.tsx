@@ -51,7 +51,7 @@ export function JobList() {
     if (filters.sortBy === 'preferred' && profile?.role === 'driver') {
       const isPreferredJob = (job: (typeof rawJobs)[0]) =>
         profile.preferred_job_types?.includes(job.job_type) ||
-        profile.preferred_equipment_codes?.includes(job.equipment_code)
+        job.equipment_codes.some(c => profile.preferred_equipment_codes?.includes(c))
 
       return [...rawJobs].sort((a, b) => {
         // 1순위: 모집중 > 마감
@@ -91,7 +91,7 @@ export function JobList() {
   const isPreferred = (job: JobWithManager): boolean => {
     if (!profile || profile.role !== 'driver') return false
     return (
-      (profile.preferred_equipment_codes?.includes(job.equipment_code) ?? false) ||
+      (job.equipment_codes.some(c => profile.preferred_equipment_codes?.includes(c)) ?? false) ||
       (profile.preferred_job_types?.includes(job.job_type) ?? false)
     )
   }

@@ -11,7 +11,7 @@ import { AddressSearch } from './AddressSearch'
 interface FormState {
   title: string
   job_type: JobType | ''
-  equipment_code: EquipmentCode | ''
+  equipment_codes: EquipmentCode[]
   description: string
   attachments: string
   caution: string
@@ -27,7 +27,7 @@ interface FormState {
 const INITIAL: FormState = {
   title: '',
   job_type: '',
-  equipment_code: '',
+  equipment_codes: [],
   description: '',
   attachments: '',
   caution: '',
@@ -73,10 +73,18 @@ export function JobForm({ mode = 'create', jobId, initialValues }: JobFormProps)
   const set = (key: keyof FormState, value: FormState[keyof FormState]) =>
     setForm((f) => ({ ...f, [key]: value }))
 
+  const toggleEquipment = (code: EquipmentCode) =>
+    setForm(f => ({
+      ...f,
+      equipment_codes: f.equipment_codes.includes(code)
+        ? f.equipment_codes.filter(c => c !== code)
+        : [...f.equipment_codes, code],
+    }))
+
   const isValid = Boolean(
     form.title.trim() &&
     form.job_type &&
-    form.equipment_code &&
+    form.equipment_codes.length > 0 &&
     form.description.trim() &&
     form.location &&
     form.latitude !== null &&
@@ -91,7 +99,7 @@ export function JobForm({ mode = 'create', jobId, initialValues }: JobFormProps)
     const payload = {
       title: form.title.trim(),
       job_type: form.job_type,
-      equipment_code: form.equipment_code,
+      equipment_codes: form.equipment_codes,
       description: form.description.trim(),
       attachments: form.attachments.trim() || null,
       caution: form.caution.trim() || null,
@@ -156,24 +164,30 @@ export function JobForm({ mode = 'create', jobId, initialValues }: JobFormProps)
 
         <Divider />
 
-        {/* ── 필요 장비 ── */}
+        {/* ── 필요 장비 (복수 선택) ── */}
         <div>
-          <Label required>필요 장비</Label>
+          <div className="flex items-center gap-2 mb-3">
+            <Label required>필요 장비</Label>
+            <span className="text-xs text-gray-400 -mt-3">복수 선택 가능</span>
+          </div>
           <div className="grid grid-cols-4 gap-2">
-            {EQUIPMENT_CODES_LIST.map((code) => (
-              <button
-                key={code}
-                type="button"
-                onClick={() => set('equipment_code', code)}
-                className={`py-3 rounded-xl border-2 text-xs font-bold transition-all ${
-                  form.equipment_code === code
-                    ? 'border-brand-blue bg-brand-blue text-white shadow-sm'
-                    : 'border-gray-200 text-gray-500 hover:border-gray-300 hover:text-gray-700'
-                }`}
-              >
-                {EQUIPMENT_LABELS[code]}
-              </button>
-            ))}
+            {EQUIPMENT_CODES_LIST.map((code) => {
+              const selected = form.equipment_codes.includes(code)
+              return (
+                <button
+                  key={code}
+                  type="button"
+                  onClick={() => toggleEquipment(code)}
+                  className={`py-3 rounded-xl border-2 text-xs font-bold transition-all ${
+                    selected
+                      ? 'border-brand-blue bg-brand-blue text-white shadow-sm'
+                      : 'border-gray-200 text-gray-500 hover:border-gray-300 hover:text-gray-700'
+                  }`}
+                >
+                  {EQUIPMENT_LABELS[code]}
+                </button>
+              )
+            })}
           </div>
         </div>
 

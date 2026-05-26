@@ -2,6 +2,7 @@
 import Link from 'next/link'
 import type { JobWithManager, JobType, JobStatus } from '@/types'
 import { EQUIPMENT_LABELS, JOB_TYPE_LABELS, PAY_DUE_LABELS, WORK_DURATION_LABELS } from '@/types'
+import type { EquipmentCode } from '@/types'
 
 interface JobCardProps {
   job: JobWithManager
@@ -46,10 +47,12 @@ export function JobCard({ job, isPreferred }: JobCardProps) {
 
         {/* 배지 행 */}
         <div className="flex items-center gap-1.5 flex-wrap mb-3">
-          {/* 장비 코드 — 파란 솔리드 */}
-          <span className="bg-brand-blue text-white text-xs font-bold px-2.5 py-1 rounded-lg">
-            {EQUIPMENT_LABELS[job.equipment_code]}
-          </span>
+          {/* 장비 코드 — 파란 솔리드 (복수 표시) */}
+          {(job.equipment_codes as EquipmentCode[]).map((code) => (
+            <span key={code} className="bg-brand-blue text-white text-xs font-bold px-2.5 py-1 rounded-lg">
+              {EQUIPMENT_LABELS[code]}
+            </span>
+          ))}
           {/* 일 종류 — 토목: 초록 / 철거: 주황 */}
           <span className={`text-xs font-medium px-2.5 py-1 rounded-lg ${JOB_TYPE_BADGE[job.job_type]}`}>
             {JOB_TYPE_LABELS[job.job_type]}

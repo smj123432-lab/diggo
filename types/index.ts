@@ -48,7 +48,7 @@ export interface Job {
   manager_id: string
   title: string
   job_type: JobType
-  equipment_code: EquipmentCode
+  equipment_codes: EquipmentCode[]
   description: string
   attachments: string | null
   caution: string | null
@@ -66,6 +66,11 @@ export interface Job {
 
 export interface JobWithManager extends Job {
   profiles: Pick<Profile, 'id' | 'name' | 'rating_avg' | 'is_certified'>
+}
+
+// equipment_codes 배열을 레이블 문자열로 변환
+export function formatEquipmentCodes(codes: EquipmentCode[]): string {
+  return codes.map(c => EQUIPMENT_LABELS[c]).join(' · ')
 }
 
 export interface Application {

@@ -36,7 +36,7 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
 
     const body = await request.json()
     const ALLOWED: (keyof typeof body)[] = [
-      'title', 'job_type', 'equipment_code', 'description', 'attachments',
+      'title', 'job_type', 'equipment_codes', 'description', 'attachments',
       'caution', 'location', 'latitude', 'longitude', 'pay_amount',
       'work_date', 'work_duration', 'pay_due_type', 'status',
     ]

@@ -5,6 +5,7 @@ import { createClient } from '@/lib/supabase/server'
 import { JobForm } from '@/components/features/jobs/JobForm'
 import type { EquipmentCode, JobType, PayDueType, WorkDuration } from '@/types'
 
+
 interface Props {
   params: { id: string }
 }
@@ -27,7 +28,7 @@ export default async function JobEditPage({ params }: Props) {
   const initialValues = {
     title: job.title as string,
     job_type: job.job_type as JobType,
-    equipment_code: job.equipment_code as EquipmentCode,
+    equipment_codes: (job.equipment_codes as EquipmentCode[]) ?? [],
     description: job.description as string,
     attachments: (job.attachments as string | null) ?? '',
     caution: (job.caution as string | null) ?? '',
