@@ -260,3 +260,108 @@ GRANT INSERT, SELECT, UPDATE ON public.jobs TO authenticated;
 ```
 
 > `NEXT_PUBLIC_` 접두사가 붙은 환경변수는 브라우저에 노출된다. 외부 API 키는 반드시 서버 전용 환경변수로 관리한다.
+
+### KakaoMap SDK — 모달/드롭다운이 지도 뒤에 숨는 z-index 버그
+
+**증상**: `fixed` / `absolute` 포지션 요소(모달, 드롭다운)가 카카오맵 위에 렌더링되지 않고 지도 뒤로 숨거나, 지도가 모달 위로 튀어나옴
+
+**원인**: 카카오맵 SDK가 컨테이너 부모 요소에 `transform` CSS를 적용해 새로운 stacking context를 생성. `fixed` 포지션이 viewport 기준이 아닌 이 context 기준으로 계산되어 z-index가 의도대로 동작하지 않음.
+
+**해결**: `createPortal(content, document.body)`로 렌더링 위치를 카카오맵 부모 DOM 트리 바깥으로 분리.
+
+```tsx
+import { createPortal } from 'react-dom'
+
+return createPortal(
+  <div className="fixed inset-0 z-50">...</div>,
+  document.body
+)
+```
+
+> 카카오맵이 있는 페이지에서 모달·드롭다운·토스트 등은 항상 `createPortal`을 사용할 것.
+
+### 커스텀 드롭다운 — 옵션 클릭 시 선택 안 되고 닫히는 mousedown/click 레이스 컨디션
+
+**증상**: 드롭다운 옵션을 클릭해도 선택되지 않고 드롭다운만 닫힘
+
+**원인**: 바깥 클릭 감지에 `mousedown` 이벤트를 사용할 때, `mousedown`이 `click`보다 먼저 발화되어 드롭다운이 언마운트됨. 그 결과 옵션 버튼의 `onClick`이 발화되지 않음.
+
+**해결**: 바깥 클릭 핸들러에서 드롭다운 내부 클릭은 무시하도록 `dropdownRef` 추가.
+
+```tsx
+const dropdownRef = useRef<HTMLDivElement>(null)
+
+function onOutside(e: MouseEvent) {
+  const t = e.target as Node
+  if (!btnRef.current?.contains(t) && !dropdownRef.current?.contains(t)) {
+    setIsOpen(false)
+  }
+}
+document.addEventListener('mousedown', onOutside)
+```
+
+> `btnRef`만 체크하고 `dropdownRef`를 빠뜨리면 이 버그가 반드시 발생한다.
+
+### 커스텀 드롭다운 — stacking context에 막혀 드롭다운이 보이지 않는 버그
+
+**증상**: 드롭다운 버튼 클릭 시 드롭다운이 열리지 않거나 보이지 않음
+
+**원인**: 부모 요소의 `overflow: hidden`, `transform`, `position` 등이 새 stacking context를 형성해 드롭다운이 잘리거나 다른 요소 뒤에 숨음.
+
+**해결**: `createPortal` + `getBoundingClientRect()`로 버튼 위치를 계산해 `document.body`에 절대좌표로 렌더링.
+
+```tsx
+function openDropdown() {
+  const rect = btnRef.current?.getBoundingClientRect()
+  if (!rect) return
+  setDropdownPos({ top: rect.bottom + window.scrollY + 4, left: rect.left + window.scrollX })
+  setIsOpen(true)
+}
+
+// portal로 렌더링
+createPortal(
+  <div style={{ position: 'absolute', top: dropdownPos.top, left: dropdownPos.left, zIndex: 9999 }}>
+    ...
+  </div>,
+  document.body
+)
+```
+
+### jobs status CHECK 제약 조건 — 새 상태값 추가 시 DB 500 에러
+
+**증상**: 새 `status` 값(예: `'settled'`)으로 PATCH 요청 시 500 에러 발생
+
+**원인**: `jobs` 테이블의 `status` 컬럼에 CHECK 제약 조건이 있어 허용되지 않은 값은 DB에서 거부됨. TypeScript 타입과 프론트엔드 코드만 수정하면 DB에서 차단됨.
+
+**해결**: 새 상태값 추가 시 반드시 Supabase SQL Editor에서 제약 조건도 갱신.
+
+```sql
+ALTER TABLE jobs
+  DROP CONSTRAINT IF EXISTS jobs_status_check;
+
+ALTER TABLE jobs
+  ADD CONSTRAINT jobs_status_check
+    CHECK (status IN ('open', 'closed', 'in_progress', 'completed', 'settled'));
+```
+
+> `types/index.ts`의 `JobStatus` 타입 변경 시 DB CHECK 제약 조건도 반드시 함께 변경할 것.
+
+### 공용 일감 목록 — 날짜 지난 open 일감이 "마감"으로 표시되며 노출
+
+**증상**: 공용 목록(`/jobs`)에 "마감" 표시된 카드가 노출됨
+
+**원인**:
+1. API 기본 필터가 `status IN ('open', 'closed')`여서 마감 일감까지 포함됨
+2. `work_date`가 오늘 이전인 `open` 일감은 `JobCard`에서 effectiveStatus 계산으로 "마감" 표시됨
+
+**해결**: 공용 목록 API와 SSR 프리페치에 `status = 'open' AND work_date >= today` 조건 적용. 개인 대시보드(`/api/jobs/mine`)는 상태 필터 없이 전체 유지.
+
+```typescript
+// /api/jobs/route.ts — 공용 목록 기본 필터
+const today = new Date().toISOString().split('T')[0]
+query = query.eq('status', 'open').gte('work_date', today)
+
+// /api/jobs/mine/route.ts — 상태 필터 없음 (전체 상태 조회)
+```
+
+> 공용 탐색 화면과 개인 대시보드의 필터링 조건을 반드시 분리해야 한다.

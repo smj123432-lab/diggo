@@ -4,7 +4,7 @@ export type EquipmentCode = '008' | '017' | '035' | '02' | '3w' | '6w' | '8w' | 
 
 export type JobType = 'civil' | 'demolition'
 
-export type JobStatus = 'open' | 'closed' | 'in_progress' | 'completed'
+export type JobStatus = 'open' | 'closed' | 'in_progress' | 'completed' | 'settled'
 
 export type ApplicationStatus = 'pending' | 'reviewing' | 'accepted' | 'rejected'
 
@@ -48,14 +48,15 @@ export interface Job {
   manager_id: string
   title: string
   job_type: JobType
-  equipment_code: EquipmentCode
+  equipment_codes: EquipmentCode[]
   description: string
   attachments: string | null
   caution: string | null
   location: string
   latitude: number | null
   longitude: number | null
-  pay_amount: number
+  pay_amounts: Record<string, number>  // { "008": 500000, "035": 800000 }
+  work_days: Record<string, number>   // { "008": 1, "035": 3 }
   work_date: string
   work_duration: WorkDuration | null
   pay_due_type: PayDueType
@@ -66,6 +67,21 @@ export interface Job {
 
 export interface JobWithManager extends Job {
   profiles: Pick<Profile, 'id' | 'name' | 'rating_avg' | 'is_certified'>
+}
+
+// equipment_codes 배열을 레이블 문자열로 변환
+export function formatEquipmentCodes(codes: EquipmentCode[]): string {
+  return codes.map(c => EQUIPMENT_LABELS[c]).join(' · ')
+}
+
+// pay_amounts 객체를 카드용 표시 문자열로 변환 (단일: 그대로 / 복수: min~max)
+export function formatPayAmounts(amounts: Record<string, number>): string {
+  const values = Object.values(amounts)
+  if (values.length === 0) return '0'
+  const min = Math.min(...values)
+  const max = Math.max(...values)
+  if (min === max) return min.toLocaleString()
+  return `${min.toLocaleString()}~${max.toLocaleString()}`
 }
 
 export interface Application {
@@ -80,7 +96,7 @@ export interface Application {
 export interface ApplicationWithDetails extends Application {
   profiles: Pick<Profile, 'id' | 'name' | 'rating_avg' | 'is_certified' | 'experience_years'>
   equipments: Pick<Equipment, 'id' | 'model_code' | 'license_number'> | null
-  jobs: Pick<Job, 'id' | 'title' | 'work_date' | 'pay_amount' | 'location'>
+  jobs: Pick<Job, 'id' | 'title' | 'work_date' | 'pay_amounts' | 'location'>
 }
 
 export interface LedgerExpense {
@@ -154,7 +170,7 @@ export const JOB_TYPES_LIST: JobType[] = ['civil', 'demolition']
 
 // 장비 코드 한글 레이블
 export const EQUIPMENT_LABELS: Record<EquipmentCode, string> = {
-  '008': '008 (미니)',
+  '008': '008',
   '017': '017',
   '035': '035',
   '02': '02',
@@ -199,7 +215,8 @@ export const JOB_STATUS_LABELS: Record<JobStatus, string> = {
   open: '모집중',
   closed: '마감',
   in_progress: '작업중',
-  completed: '완료',
+  completed: '작업완료',
+  settled: '정산완료',
 }
 
 // 지원 상태 한글 레이블

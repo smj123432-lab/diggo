@@ -51,7 +51,7 @@ export function JobList() {
     if (filters.sortBy === 'preferred' && profile?.role === 'driver') {
       const isPreferredJob = (job: (typeof rawJobs)[0]) =>
         profile.preferred_job_types?.includes(job.job_type) ||
-        profile.preferred_equipment_codes?.includes(job.equipment_code)
+        job.equipment_codes.some(c => profile.preferred_equipment_codes?.includes(c))
 
       return [...rawJobs].sort((a, b) => {
         // 1순위: 모집중 > 마감
@@ -62,8 +62,8 @@ export function JobList() {
         const bP = isPreferredJob(b)
         if (aP && !bP) return -1
         if (!aP && bP) return 1
-        // 3순위: 최신순
-        return new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+        // 3순위: 마감 임박순
+        return new Date(a.work_date).getTime() - new Date(b.work_date).getTime()
       })
     }
 
@@ -91,7 +91,7 @@ export function JobList() {
   const isPreferred = (job: JobWithManager): boolean => {
     if (!profile || profile.role !== 'driver') return false
     return (
-      (profile.preferred_equipment_codes?.includes(job.equipment_code) ?? false) ||
+      (job.equipment_codes.some(c => profile.preferred_equipment_codes?.includes(c)) ?? false) ||
       (profile.preferred_job_types?.includes(job.job_type) ?? false)
     )
   }
@@ -223,9 +223,8 @@ export function JobList() {
                 onChange={(e) => setFilters((f) => ({ ...f, sortBy: e.target.value as SortBy }))}
                 className="text-sm text-gray-600 border border-gray-200 rounded-xl px-3 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-brand-blue focus:border-transparent cursor-pointer shadow-sm"
               >
-                <option value="latest">최신순</option>
                 <option value="deadline">마감 임박순</option>
-                <option value="preferred">내 선호순</option>
+                {role !== 'manager' && <option value="preferred">내 선호</option>}
               </select>
               {role === 'manager' && (
                 <Link

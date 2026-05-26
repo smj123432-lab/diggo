@@ -12,7 +12,7 @@ export interface JobFilters {
   sortBy: SortBy
 }
 
-export const DEFAULT_FILTERS: JobFilters = { equipment_codes: [], job_types: [], sortBy: 'latest' }
+export const DEFAULT_FILTERS: JobFilters = { equipment_codes: [], job_types: [], sortBy: 'deadline' }
 
 interface JobsPage {
   data: JobWithManager[]
@@ -32,8 +32,8 @@ async function fetchJobs({ pageParam, filters }: { pageParam: number; filters: J
   filters.equipment_codes.forEach((code) => params.append('equipment_code', code))
   filters.job_types.forEach((type) => params.append('job_type', type))
   if (filters.keyword) params.set('keyword', filters.keyword)
-  // preferred는 서버 정렬 없이 client-side 처리 → API엔 latest로 전달
-  const apiSort = filters.sortBy === 'preferred' ? 'latest' : filters.sortBy
+  // preferred는 서버 정렬 없이 client-side 처리 → API엔 deadline으로 전달
+  const apiSort = filters.sortBy === 'preferred' ? 'deadline' : filters.sortBy
   if (apiSort !== 'latest') params.set('sortBy', apiSort)
 
   const res = await fetch(`/api/jobs?${params}`)

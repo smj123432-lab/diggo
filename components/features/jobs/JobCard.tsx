@@ -1,6 +1,6 @@
 // 일감 목록 카드 컴포넌트
 import Link from 'next/link'
-import type { JobWithManager, JobType, JobStatus } from '@/types'
+import type { JobWithManager, JobType, JobStatus, EquipmentCode } from '@/types'
 import { EQUIPMENT_LABELS, JOB_TYPE_LABELS, PAY_DUE_LABELS, WORK_DURATION_LABELS } from '@/types'
 
 interface JobCardProps {
@@ -10,10 +10,11 @@ interface JobCardProps {
 
 // 일감 상태 배지
 const STATUS_BADGE: Record<JobStatus, { label: string; className: string }> = {
-  open: { label: '모집중', className: 'text-emerald-500' },
-  closed: { label: '마감', className: 'text-gray-400' },
-  in_progress: { label: '작업중', className: 'text-brand-blue' },
-  completed: { label: '완료', className: 'text-brand-purple' },
+  open:        { label: '모집중',    className: 'text-emerald-600' },
+  closed:      { label: '마감',      className: 'text-gray-400' },
+  in_progress: { label: '작업중',    className: 'text-brand-blue' },
+  completed:   { label: '작업완료',  className: 'text-purple-600' },
+  settled:     { label: '정산완료',  className: 'text-emerald-600' },
 }
 
 // 일 종류별 배지 색상
@@ -29,8 +30,11 @@ export function JobCard({ job, isPreferred }: JobCardProps) {
     weekday: 'short',
   })
 
-  const status = STATUS_BADGE[job.status]
-  const isClosed = job.status !== 'open'
+  // work_date가 오늘 이전이면 open → closed 처리
+  const today = new Date().toISOString().split('T')[0]
+  const effectiveStatus: JobStatus = job.status === 'open' && job.work_date < today ? 'closed' : job.status
+  const status = STATUS_BADGE[effectiveStatus]
+  const isClosed = effectiveStatus !== 'open'
 
   return (
     <Link
@@ -46,10 +50,12 @@ export function JobCard({ job, isPreferred }: JobCardProps) {
 
         {/* 배지 행 */}
         <div className="flex items-center gap-1.5 flex-wrap mb-3">
-          {/* 장비 코드 — 파란 솔리드 */}
-          <span className="bg-brand-blue text-white text-xs font-bold px-2.5 py-1 rounded-lg">
-            {EQUIPMENT_LABELS[job.equipment_code]}
-          </span>
+          {/* 장비 코드 — 파란 솔리드 (복수 표시) */}
+          {(job.equipment_codes as EquipmentCode[]).map((code) => (
+            <span key={code} className="bg-brand-blue text-white text-xs font-bold px-2.5 py-1 rounded-lg">
+              {EQUIPMENT_LABELS[code]}
+            </span>
+          ))}
           {/* 일 종류 — 토목: 초록 / 철거: 주황 */}
           <span className={`text-xs font-medium px-2.5 py-1 rounded-lg ${JOB_TYPE_BADGE[job.job_type]}`}>
             {JOB_TYPE_LABELS[job.job_type]}
@@ -119,8 +125,15 @@ export function JobCard({ job, isPreferred }: JobCardProps) {
               {job.profiles.rating_avg.toFixed(1)}
             </span>
           </div>
-          <div className="text-brand-blue-dark font-black text-lg leading-none shrink-0">
-            {job.pay_amount.toLocaleString()}원
+          <div className="flex flex-col items-end gap-0.5 shrink-0">
+            {(job.equipment_codes as EquipmentCode[]).map(code => (
+              <div key={code} className="flex items-baseline gap-1">
+                <span className="text-xs text-gray-400">{EQUIPMENT_LABELS[code]}</span>
+                <span className="text-brand-blue-dark font-black text-base leading-none">
+                  {(job.pay_amounts as Record<string, number>)[code]?.toLocaleString()}원
+                </span>
+              </div>
+            ))}
           </div>
         </div>
 

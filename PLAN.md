@@ -231,7 +231,7 @@
 | 회원가입 | `/signup` | ✅ |
 | 일감 목록 | `/jobs` | ✅ |
 | 일감 등록 | `/jobs/new` | ✅ |
-| 일감 상세 | `/jobs/[id]` | ⬜ |
+| 일감 상세 | `/jobs/[id]` | ✅ |
 | 내 일감 목록 (소장) | `/manager/jobs` | ⬜ |
 | 지원자 목록 (소장) | `/manager/jobs/[id]/applicants` | ⬜ |
 | 지원자 상세 (소장) | `/manager/jobs/[id]/applicants/[id]` | ⬜ |
@@ -289,8 +289,15 @@
 ### jobs 상태값
 
 ```
-open → closed (마감) → in_progress (작업중) → completed (완료)
+open (모집중)
+→ closed (모집 마감)          ← 소장이 드롭다운으로 수동 전환, 또는 work_date 경과 시 자동 표시
+→ in_progress (작업중)        ← 소장이 기사 지원 수락 시 전환 (구현 예정)
+→ completed (작업완료·지급대기) ← 소장이 "현장 작업 완료 처리" 버튼으로 전환
+→ settled (정산완료)           ← 소장이 "대금 지급 완료 확인" 버튼으로 전환
 ```
+
+> `work_date` 경과 시 DB status는 유지되고, 프론트엔드 `effectiveStatus`로만 `closed`로 표시됨.
+> 공용 목록(`/jobs`)은 `status = 'open' AND work_date >= today` 조건으로 필터링. 개인 대시보드는 전체 상태 노출.
 
 ### applications 상태값
 
