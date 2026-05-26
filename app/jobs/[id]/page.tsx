@@ -6,6 +6,7 @@ import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
 import { JobApplyButton } from '@/components/features/jobs/JobApplyButton'
 import { KakaoMap } from '@/components/features/jobs/KakaoMap'
+import { CopyButton } from '@/components/ui/CopyButton'
 import {
   EQUIPMENT_LABELS,
   JOB_TYPE_LABELS,
@@ -133,8 +134,9 @@ export default async function JobDetailPage({ params }: Props) {
                     <circle cx="12" cy="10" r="3" />
                   </svg>
                 </div>
-                <div>
+                <div className="flex items-center">
                   <p className="text-sm font-semibold text-gray-800">{job.location}</p>
+                  <CopyButton text={job.location} />
                 </div>
               </div>
               {job.latitude && job.longitude && (
