@@ -1,7 +1,7 @@
 // 일감 목록 카드 컴포넌트
 import Link from 'next/link'
 import type { JobWithManager, JobType, JobStatus, EquipmentCode } from '@/types'
-import { EQUIPMENT_LABELS, JOB_TYPE_LABELS, PAY_DUE_LABELS, WORK_DURATION_LABELS, formatPayAmounts } from '@/types'
+import { EQUIPMENT_LABELS, JOB_TYPE_LABELS, PAY_DUE_LABELS, WORK_DURATION_LABELS } from '@/types'
 
 interface JobCardProps {
   job: JobWithManager
@@ -121,9 +121,15 @@ export function JobCard({ job, isPreferred }: JobCardProps) {
               {job.profiles.rating_avg.toFixed(1)}
             </span>
           </div>
-          <div className="text-brand-blue-dark font-black text-lg leading-none shrink-0">
-            {formatPayAmounts(job.pay_amounts)}원
-              <span className="text-xs font-normal text-gray-400 ml-1">(대당)</span>
+          <div className="flex flex-col items-end gap-0.5 shrink-0">
+            {(job.equipment_codes as EquipmentCode[]).map(code => (
+              <div key={code} className="flex items-baseline gap-1">
+                <span className="text-xs text-gray-400">{EQUIPMENT_LABELS[code]}</span>
+                <span className="text-brand-blue-dark font-black text-base leading-none">
+                  {(job.pay_amounts as Record<string, number>)[code]?.toLocaleString()}원
+                </span>
+              </div>
+            ))}
           </div>
         </div>
 
