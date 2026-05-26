@@ -35,9 +35,17 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
     }
 
     const body = await request.json()
+    const ALLOWED: (keyof typeof body)[] = [
+      'title', 'job_type', 'equipment_code', 'description', 'attachments',
+      'caution', 'location', 'latitude', 'longitude', 'pay_amount',
+      'work_date', 'work_duration', 'pay_due_type', 'status',
+    ]
+    const update = Object.fromEntries(
+      Object.entries(body).filter(([k]) => ALLOWED.includes(k as keyof typeof body))
+    )
     const { data, error } = await supabase
       .from('jobs')
-      .update(body)
+      .update(update)
       .eq('id', params.id)
       .eq('manager_id', user.id)
       .select()

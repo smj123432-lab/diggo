@@ -58,9 +58,15 @@ function Label({ children, required }: { children: React.ReactNode; required?: b
 // 공통 인풋 클래스
 const inputCls = 'w-full px-4 py-3.5 border border-gray-200 rounded-xl text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-blue focus:border-transparent transition'
 
-export function JobForm() {
+interface JobFormProps {
+  mode?: 'create' | 'edit'
+  jobId?: string
+  initialValues?: Partial<FormState>
+}
+
+export function JobForm({ mode = 'create', jobId, initialValues }: JobFormProps) {
   const router = useRouter()
-  const [form, setForm] = useState<FormState>(INITIAL)
+  const [form, setForm] = useState<FormState>(initialValues ? { ...INITIAL, ...initialValues } : INITIAL)
   const [showAddressSearch, setShowAddressSearch] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
 
@@ -82,35 +88,36 @@ export function JobForm() {
   const handleSubmit = async () => {
     if (!isValid || isSubmitting) return
     setIsSubmitting(true)
+    const payload = {
+      title: form.title.trim(),
+      job_type: form.job_type,
+      equipment_code: form.equipment_code,
+      description: form.description.trim(),
+      attachments: form.attachments.trim() || null,
+      caution: form.caution.trim() || null,
+      location: form.location,
+      latitude: form.latitude,
+      longitude: form.longitude,
+      pay_amount: parseInt(form.pay_amount.replace(/,/g, ''), 10),
+      work_date: form.work_date,
+      work_duration: form.work_duration || null,
+      pay_due_type: form.pay_due_type,
+    }
     try {
-      const res = await fetch('/api/jobs', {
-        method: 'POST',
+      const res = await fetch(mode === 'edit' ? `/api/jobs/${jobId}` : '/api/jobs', {
+        method: mode === 'edit' ? 'PATCH' : 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          title: form.title.trim(),
-          job_type: form.job_type,
-          equipment_code: form.equipment_code,
-          description: form.description.trim(),
-          attachments: form.attachments.trim() || null,
-          caution: form.caution.trim() || null,
-          location: form.location,
-          latitude: form.latitude,
-          longitude: form.longitude,
-          pay_amount: parseInt(form.pay_amount.replace(/,/g, ''), 10),
-          work_date: form.work_date,
-          work_duration: form.work_duration || null,
-          pay_due_type: form.pay_due_type,
-        }),
+        body: JSON.stringify(payload),
       })
       if (!res.ok) {
         const err = await res.json()
-        throw new Error(err.error ?? '등록 실패')
+        throw new Error(err.error ?? (mode === 'edit' ? '수정 실패' : '등록 실패'))
       }
-      toast.success('일감이 등록되었습니다.')
-      router.push('/jobs')
+      toast.success(mode === 'edit' ? '일감이 수정되었습니다.' : '일감이 등록되었습니다.')
+      router.push(mode === 'edit' ? `/jobs/${jobId}` : '/jobs')
       router.refresh()
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : '일감 등록에 실패했습니다.')
+      toast.error(e instanceof Error ? e.message : (mode === 'edit' ? '일감 수정에 실패했습니다.' : '일감 등록에 실패했습니다.'))
     } finally {
       setIsSubmitting(false)
     }
@@ -276,7 +283,7 @@ export function JobForm() {
             <input
               type="date"
               value={form.work_date}
-              min={new Date().toISOString().split('T')[0]}
+              min={mode === 'edit' ? undefined : new Date().toISOString().split('T')[0]}
               onChange={(e) => set('work_date', e.target.value)}
               className={inputCls}
             />
@@ -345,9 +352,9 @@ export function JobForm() {
         {isSubmitting ? (
           <span className="flex items-center justify-center gap-2">
             <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-            등록 중...
+            {mode === 'edit' ? '수정 중...' : '등록 중...'}
           </span>
-        ) : '일감 등록하기'}
+        ) : (mode === 'edit' ? '수정 완료' : '일감 등록하기')}
       </button>
 
       {/* 주소 검색 모달 */}

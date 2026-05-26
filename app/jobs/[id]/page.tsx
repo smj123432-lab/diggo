@@ -192,14 +192,22 @@ export default async function JobDetailPage({ params }: Props) {
               </div>
             )}
 
-            {/* 소장 본인 일감 관리 링크 — 모바일 */}
+            {/* 소장 본인 — 수정/관리 버튼 (모바일) */}
             {isOwnJob && (
-              <Link
-                href="/manager/jobs"
-                className="lg:hidden block w-full text-center bg-white border border-gray-200 text-gray-700 font-semibold py-3.5 rounded-2xl hover:bg-gray-50 transition-colors text-sm"
-              >
-                내 일감 관리 →
-              </Link>
+              <div className="lg:hidden flex gap-2">
+                <Link
+                  href={`/jobs/${job.id}/edit`}
+                  className="flex-1 text-center bg-brand-blue text-white font-semibold py-3.5 rounded-2xl hover:bg-brand-blue-dark transition-colors text-sm"
+                >
+                  수정하기
+                </Link>
+                <Link
+                  href="/manager/jobs"
+                  className="flex-1 text-center bg-white border border-gray-200 text-gray-700 font-semibold py-3.5 rounded-2xl hover:bg-gray-50 transition-colors text-sm"
+                >
+                  내 일감 관리
+                </Link>
+              </div>
             )}
           </div>
 
@@ -281,14 +289,22 @@ export default async function JobDetailPage({ params }: Props) {
                   />
                 )}
 
-                {/* 소장 본인 일감 관리 링크 */}
+                {/* 소장 본인 — 수정/관리 버튼 (데스크톱) */}
                 {isOwnJob && (
-                  <Link
-                    href="/manager/jobs"
-                    className="block w-full text-center bg-gray-50 border border-gray-200 text-gray-700 font-semibold py-3.5 rounded-2xl hover:bg-gray-100 transition-colors text-sm"
-                  >
-                    내 일감 관리 →
-                  </Link>
+                  <div className="flex flex-col gap-2">
+                    <Link
+                      href={`/jobs/${job.id}/edit`}
+                      className="block w-full text-center bg-brand-blue text-white font-bold py-3.5 rounded-2xl hover:bg-brand-blue-dark transition-colors text-sm"
+                    >
+                      수정하기
+                    </Link>
+                    <Link
+                      href="/manager/jobs"
+                      className="block w-full text-center bg-gray-50 border border-gray-200 text-gray-700 font-semibold py-3 rounded-2xl hover:bg-gray-100 transition-colors text-sm"
+                    >
+                      내 일감 관리
+                    </Link>
+                  </div>
                 )}
               </div>
             </div>
