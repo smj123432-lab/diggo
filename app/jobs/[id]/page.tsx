@@ -247,11 +247,23 @@ export default async function JobDetailPage({ params }: Props) {
                     <div>
                       <p className="text-xs text-gray-400">작업일자</p>
                       <p className="text-sm font-semibold text-gray-800">{workDate}</p>
-                      {job.work_duration && (
-                        <p className="text-xs text-gray-400 mt-0.5">{WORK_DURATION_LABELS[job.work_duration as WorkDuration]}</p>
-                      )}
                     </div>
                   </div>
+
+                  {/* 총 작업 기간 */}
+                  {job.work_duration && (
+                    <div className="flex items-start gap-2.5">
+                      <div className="w-7 h-7 rounded-lg bg-gray-50 flex items-center justify-center shrink-0 mt-0.5">
+                        <svg className="w-4 h-4 text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+                          <circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" />
+                        </svg>
+                      </div>
+                      <div>
+                        <p className="text-xs text-gray-400">{(job.equipment_codes as EquipmentCode[]).length > 1 ? '총 작업 기간' : '작업 기간'}</p>
+                        <p className="text-sm font-semibold text-gray-800">{WORK_DURATION_LABELS[job.work_duration as WorkDuration]}</p>
+                      </div>
+                    </div>
+                  )}
 
                   {/* 장비 */}
                   <div className="flex items-center gap-2.5">
