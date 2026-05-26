@@ -25,22 +25,29 @@ export default async function JobEditPage({ params }: Props) {
   if (error || !job) notFound()
   if (job.manager_id !== user.id) redirect(`/jobs/${params.id}`)
 
+  const equipment_codes = (job.equipment_codes as EquipmentCode[]) ?? []
+  const pay_amounts = (job.pay_amounts as Record<string, number>) ?? {}
+  const work_days_map = (job.work_days as Record<string, number>) ?? {}
+
   const initialValues = {
     title: job.title as string,
     job_type: job.job_type as JobType,
-    equipment_codes: (job.equipment_codes as EquipmentCode[]) ?? [],
+    equipment_codes,
     description: job.description as string,
     attachments: (job.attachments as string | null) ?? '',
     caution: (job.caution as string | null) ?? '',
     location: job.location as string,
     latitude: job.latitude as number | null,
     longitude: job.longitude as number | null,
-    pay_amounts: Object.fromEntries(
-      Object.entries(job.pay_amounts as Record<string, number>).map(([code, amt]) => [code, (amt as number).toLocaleString()])
-    ) as Partial<Record<EquipmentCode, string>>,
-    work_days: Object.fromEntries(
-      Object.entries((job.work_days ?? {}) as Record<string, number>).map(([code, days]) => [code, String(days)])
-    ) as Partial<Record<EquipmentCode, string>>,
+    payments: Object.fromEntries(
+      equipment_codes.map(code => [
+        code,
+        {
+          amount: (pay_amounts[code] ?? 0).toLocaleString(),
+          days: String(work_days_map[code] ?? 0),
+        },
+      ])
+    ) as Partial<Record<EquipmentCode, { amount: string; days: string }>>,
     work_date: job.work_date as string,
     work_duration: (job.work_duration as WorkDuration | null) ?? ('' as const),
     pay_due_type: job.pay_due_type as PayDueType,
