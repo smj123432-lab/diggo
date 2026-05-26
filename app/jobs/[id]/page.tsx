@@ -5,6 +5,7 @@ import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
 import { JobApplyButton } from '@/components/features/jobs/JobApplyButton'
+import { KakaoMap } from '@/components/features/jobs/KakaoMap'
 import {
   EQUIPMENT_LABELS,
   JOB_TYPE_LABELS,
@@ -176,6 +177,15 @@ export default async function JobDetailPage({ params }: Props) {
               <p className="text-sm font-semibold text-gray-800 mt-0.5">{job.location}</p>
             </div>
           </div>
+
+          {/* 카카오맵 */}
+          {job.latitude && job.longitude && (
+            <KakaoMap
+              latitude={job.latitude}
+              longitude={job.longitude}
+              label={job.location}
+            />
+          )}
 
           <div className="flex items-start gap-3">
             <div className="w-8 h-8 rounded-lg bg-gray-50 flex items-center justify-center shrink-0">
