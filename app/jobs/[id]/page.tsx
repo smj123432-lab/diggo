@@ -143,7 +143,6 @@ export default async function JobDetailPage({ params }: Props) {
                 <KakaoMap
                   latitude={job.latitude}
                   longitude={job.longitude}
-                  label={job.location}
                 />
               )}
             </div>
@@ -207,7 +206,7 @@ export default async function JobDetailPage({ params }: Props) {
           {/* ── 우측 퀵 카드 (데스크톱 전용) ── */}
           <div className="hidden lg:block col-span-1">
             <div className="lg:sticky lg:top-24 space-y-3">
-              <div className="bg-white rounded-2xl border border-gray-200 p-6">
+              <div className="bg-white rounded-2xl border border-gray-200 px-6 pt-8 pb-6">
 
                 {/* 금액 */}
                 <div className="mb-5">
