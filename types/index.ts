@@ -55,7 +55,7 @@ export interface Job {
   location: string
   latitude: number | null
   longitude: number | null
-  pay_amount: number
+  pay_amounts: Record<string, number>  // { "008": 500000, "035": 800000 }
   work_date: string
   work_duration: WorkDuration | null
   pay_due_type: PayDueType
@@ -73,6 +73,16 @@ export function formatEquipmentCodes(codes: EquipmentCode[]): string {
   return codes.map(c => EQUIPMENT_LABELS[c]).join(' · ')
 }
 
+// pay_amounts 객체를 카드용 표시 문자열로 변환 (단일: 그대로 / 복수: min~max)
+export function formatPayAmounts(amounts: Record<string, number>): string {
+  const values = Object.values(amounts)
+  if (values.length === 0) return '0'
+  const min = Math.min(...values)
+  const max = Math.max(...values)
+  if (min === max) return min.toLocaleString()
+  return `${min.toLocaleString()}~${max.toLocaleString()}`
+}
+
 export interface Application {
   id: string
   job_id: string
@@ -85,7 +95,7 @@ export interface Application {
 export interface ApplicationWithDetails extends Application {
   profiles: Pick<Profile, 'id' | 'name' | 'rating_avg' | 'is_certified' | 'experience_years'>
   equipments: Pick<Equipment, 'id' | 'model_code' | 'license_number'> | null
-  jobs: Pick<Job, 'id' | 'title' | 'work_date' | 'pay_amount' | 'location'>
+  jobs: Pick<Job, 'id' | 'title' | 'work_date' | 'pay_amounts' | 'location'>
 }
 
 export interface LedgerExpense {

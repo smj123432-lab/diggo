@@ -12,6 +12,7 @@ import {
   JOB_TYPE_LABELS,
   PAY_DUE_LABELS,
   WORK_DURATION_LABELS,
+  formatPayAmounts,
 } from '@/types'
 import type { JobType, JobStatus, ApplicationStatus, EquipmentCode, WorkDuration, PayDueType } from '@/types'
 
@@ -161,7 +162,7 @@ export default async function JobDetailPage({ params }: Props) {
               <MetaRow
                 icon={<MoneyIcon />}
                 label="지급 금액 (대당)"
-                value={`${job.pay_amount.toLocaleString()}원`}
+                value={`${formatPayAmounts(job.pay_amounts as Record<string, number>)}원`}
                 sub={PAY_DUE_LABELS[job.pay_due_type as PayDueType]}
                 valueClass="text-lg font-black text-brand-blue-dark"
               />
@@ -220,12 +221,17 @@ export default async function JobDetailPage({ params }: Props) {
 
                 {/* 금액 */}
                 <div className="mb-5">
-                  <p className="text-xs text-gray-400 mb-1">지급 금액 <span className="text-gray-300">(대당)</span></p>
-                  <p className="text-3xl font-black text-brand-blue-dark leading-tight">
-                    {job.pay_amount.toLocaleString()}
-                    <span className="text-lg font-bold ml-1">원</span>
-                  </p>
-                  <p className="text-xs text-gray-400 mt-1">{PAY_DUE_LABELS[job.pay_due_type as PayDueType]}</p>
+                  <p className="text-xs text-gray-400 mb-2">지급 금액 <span className="text-gray-300">(대당)</span></p>
+                  {(job.equipment_codes as EquipmentCode[]).map(code => {
+                    const amt = (job.pay_amounts as Record<string, number>)[code]
+                    return (
+                      <div key={code} className="flex items-center justify-between mb-1.5">
+                        <span className="text-xs text-gray-500">{EQUIPMENT_LABELS[code]}</span>
+                        <span className="text-lg font-black text-brand-blue-dark">{amt?.toLocaleString()}원</span>
+                      </div>
+                    )
+                  })}
+                  <p className="text-xs text-gray-400 mt-2">{PAY_DUE_LABELS[job.pay_due_type as PayDueType]}</p>
                 </div>
 
                 <div className="border-t border-gray-100 pt-4 space-y-3 mb-5">

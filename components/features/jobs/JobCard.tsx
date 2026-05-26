@@ -1,8 +1,7 @@
 // 일감 목록 카드 컴포넌트
 import Link from 'next/link'
-import type { JobWithManager, JobType, JobStatus } from '@/types'
-import { EQUIPMENT_LABELS, JOB_TYPE_LABELS, PAY_DUE_LABELS, WORK_DURATION_LABELS } from '@/types'
-import type { EquipmentCode } from '@/types'
+import type { JobWithManager, JobType, JobStatus, EquipmentCode } from '@/types'
+import { EQUIPMENT_LABELS, JOB_TYPE_LABELS, PAY_DUE_LABELS, WORK_DURATION_LABELS, formatPayAmounts } from '@/types'
 
 interface JobCardProps {
   job: JobWithManager
@@ -123,7 +122,7 @@ export function JobCard({ job, isPreferred }: JobCardProps) {
             </span>
           </div>
           <div className="text-brand-blue-dark font-black text-lg leading-none shrink-0">
-            {job.pay_amount.toLocaleString()}원
+            {formatPayAmounts(job.pay_amounts)}원
               <span className="text-xs font-normal text-gray-400 ml-1">(대당)</span>
           </div>
         </div>

@@ -80,10 +80,16 @@ export async function POST(request: NextRequest) {
     const {
       title, job_type, equipment_codes, description,
       attachments, caution, location, latitude, longitude,
-      pay_amount, work_date, work_duration, pay_due_type,
+      pay_amounts, work_date, work_duration, pay_due_type,
     } = body
 
-    if (!title || !job_type || !Array.isArray(equipment_codes) || equipment_codes.length === 0 || !description || !location || !pay_amount || !work_date || !pay_due_type) {
+    if (
+      !title || !job_type ||
+      !Array.isArray(equipment_codes) || equipment_codes.length === 0 ||
+      !description || !location || !work_date || !pay_due_type ||
+      !pay_amounts || typeof pay_amounts !== 'object' ||
+      equipment_codes.some((c: string) => !pay_amounts[c])
+    ) {
       return NextResponse.json({ error: '필수 항목을 모두 입력해주세요.' }, { status: 400 })
     }
 
@@ -95,7 +101,7 @@ export async function POST(request: NextRequest) {
         attachments: attachments ?? null,
         caution: caution ?? null,
         location, latitude, longitude,
-        pay_amount, work_date,
+        pay_amounts, work_date,
         work_duration: work_duration ?? null,
         pay_due_type,
         status: 'open',

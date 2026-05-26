@@ -15,7 +15,7 @@ export async function GET() {
 
     const { data, error } = await supabase
       .from('applications')
-      .select('*, jobs(id, title, work_date, pay_amount, location, status)')
+      .select('*, jobs(id, title, work_date, pay_amounts, equipment_codes, location, status)')
       .eq('driver_id', user.id)
       .order('applied_at', { ascending: false })
 

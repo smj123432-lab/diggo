@@ -12,13 +12,13 @@ interface FormState {
   title: string
   job_type: JobType | ''
   equipment_codes: EquipmentCode[]
+  pay_amounts: Partial<Record<EquipmentCode, string>>
   description: string
   attachments: string
   caution: string
   location: string
   latitude: number | null
   longitude: number | null
-  pay_amount: string
   work_date: string
   work_duration: WorkDuration | ''
   pay_due_type: PayDueType | ''
@@ -28,13 +28,13 @@ const INITIAL: FormState = {
   title: '',
   job_type: '',
   equipment_codes: [],
+  pay_amounts: {},
   description: '',
   attachments: '',
   caution: '',
   location: '',
   latitude: null,
   longitude: null,
-  pay_amount: '',
   work_date: '',
   work_duration: '',
   pay_due_type: '',
@@ -74,21 +74,28 @@ export function JobForm({ mode = 'create', jobId, initialValues }: JobFormProps)
     setForm((f) => ({ ...f, [key]: value }))
 
   const toggleEquipment = (code: EquipmentCode) =>
-    setForm(f => ({
-      ...f,
-      equipment_codes: f.equipment_codes.includes(code)
-        ? f.equipment_codes.filter(c => c !== code)
-        : [...f.equipment_codes, code],
-    }))
+    setForm(f => {
+      if (f.equipment_codes.includes(code)) {
+        const { [code]: _, ...restAmounts } = f.pay_amounts
+        return { ...f, equipment_codes: f.equipment_codes.filter(c => c !== code), pay_amounts: restAmounts }
+      }
+      return { ...f, equipment_codes: [...f.equipment_codes, code], pay_amounts: { ...f.pay_amounts, [code]: '' } }
+    })
+
+  const setPayAmount = (code: EquipmentCode, value: string) =>
+    setForm(f => ({ ...f, pay_amounts: { ...f.pay_amounts, [code]: formatPayAmount(value) } }))
+
+  const allAmountsFilled = form.equipment_codes.length > 0 &&
+    form.equipment_codes.every(code => Boolean(form.pay_amounts[code]))
 
   const isValid = Boolean(
     form.title.trim() &&
     form.job_type &&
     form.equipment_codes.length > 0 &&
+    allAmountsFilled &&
     form.description.trim() &&
     form.location &&
     form.latitude !== null &&
-    form.pay_amount &&
     form.work_date &&
     form.pay_due_type
   )
@@ -106,7 +113,9 @@ export function JobForm({ mode = 'create', jobId, initialValues }: JobFormProps)
       location: form.location,
       latitude: form.latitude,
       longitude: form.longitude,
-      pay_amount: parseInt(form.pay_amount.replace(/,/g, ''), 10),
+      pay_amounts: Object.fromEntries(
+        form.equipment_codes.map(code => [code, parseInt((form.pay_amounts[code] ?? '0').replace(/,/g, ''), 10)])
+      ),
       work_date: form.work_date,
       work_duration: form.work_duration || null,
       pay_due_type: form.pay_due_type,
@@ -319,23 +328,33 @@ export function JobForm({ mode = 'create', jobId, initialValues }: JobFormProps)
 
         <Divider />
 
-        {/* ── 지급 금액 + 지급 예정일 ── */}
+        {/* ── 지급 금액 (장비별 동적 생성) + 지급 예정일 ── */}
         <div className="flex flex-col gap-5">
-          <div>
-            <Label required>지급 금액 (대당)</Label>
-            <div className="relative">
-              <input
-                type="text"
-                inputMode="numeric"
-                value={form.pay_amount}
-                onChange={(e) => set('pay_amount', formatPayAmount(e.target.value))}
-                placeholder="0"
-                className="w-full pl-4 pr-8 py-3.5 border border-gray-200 rounded-xl text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-blue focus:border-transparent transition"
-              />
-              <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-gray-400 pointer-events-none">원</span>
+          {form.equipment_codes.length === 0 ? (
+            <div>
+              <Label required>지급 금액 (대당)</Label>
+              <div className="px-4 py-3.5 border border-dashed border-gray-200 rounded-xl text-sm text-gray-400 text-center">
+                장비를 먼저 선택해 주세요
+              </div>
             </div>
-            <p className="text-xs text-gray-500 mt-1">※ 장비를 여러 개 선택한 경우, 각 장비 1대당 적용되는 하루 일당을 입력해 주세요.</p>
-          </div>
+          ) : (
+            form.equipment_codes.map(code => (
+              <div key={code}>
+                <Label required>{EQUIPMENT_LABELS[code]} 지급 금액 (대당)</Label>
+                <div className="relative">
+                  <input
+                    type="text"
+                    inputMode="numeric"
+                    value={form.pay_amounts[code] ?? ''}
+                    onChange={(e) => setPayAmount(code, e.target.value)}
+                    placeholder="0"
+                    className="w-full pl-4 pr-8 py-3.5 border border-gray-200 rounded-xl text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-blue focus:border-transparent transition"
+                  />
+                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-gray-400 pointer-events-none">원</span>
+                </div>
+              </div>
+            ))
+          )}
           <div>
             <Label required>지급 예정일</Label>
             <select
