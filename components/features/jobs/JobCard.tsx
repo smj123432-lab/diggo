@@ -124,6 +124,7 @@ export function JobCard({ job, isPreferred }: JobCardProps) {
           </div>
           <div className="text-brand-blue-dark font-black text-lg leading-none shrink-0">
             {job.pay_amount.toLocaleString()}원
+              <span className="text-xs font-normal text-gray-400 ml-1">(대당)</span>
           </div>
         </div>
 

@@ -160,7 +160,7 @@ export default async function JobDetailPage({ params }: Props) {
               />
               <MetaRow
                 icon={<MoneyIcon />}
-                label="지급 금액"
+                label="지급 금액 (대당)"
                 value={`${job.pay_amount.toLocaleString()}원`}
                 sub={PAY_DUE_LABELS[job.pay_due_type as PayDueType]}
                 valueClass="text-lg font-black text-brand-blue-dark"
@@ -220,7 +220,7 @@ export default async function JobDetailPage({ params }: Props) {
 
                 {/* 금액 */}
                 <div className="mb-5">
-                  <p className="text-xs text-gray-400 mb-1">지급 금액</p>
+                  <p className="text-xs text-gray-400 mb-1">지급 금액 <span className="text-gray-300">(대당)</span></p>
                   <p className="text-3xl font-black text-brand-blue-dark leading-tight">
                     {job.pay_amount.toLocaleString()}
                     <span className="text-lg font-bold ml-1">원</span>

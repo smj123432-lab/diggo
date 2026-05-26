@@ -322,7 +322,7 @@ export function JobForm({ mode = 'create', jobId, initialValues }: JobFormProps)
         {/* ── 지급 금액 + 지급 예정일 ── */}
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <Label required>지급 금액</Label>
+            <Label required>지급 금액 (대당)</Label>
             <div className="relative">
               <input
                 type="text"
@@ -334,6 +334,7 @@ export function JobForm({ mode = 'create', jobId, initialValues }: JobFormProps)
               />
               <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-gray-400 pointer-events-none">원</span>
             </div>
+            <p className="text-xs text-gray-500 mt-1">※ 장비를 여러 개 선택한 경우, 각 장비 1대당 적용되는 하루 일당을 입력해 주세요.</p>
           </div>
           <div>
             <Label required>지급 예정일</Label>
