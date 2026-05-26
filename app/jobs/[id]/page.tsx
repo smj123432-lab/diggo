@@ -224,9 +224,13 @@ export default async function JobDetailPage({ params }: Props) {
                   <p className="text-xs text-gray-400 mb-2">지급 금액 <span className="text-gray-300">(대당)</span></p>
                   {(job.equipment_codes as EquipmentCode[]).map(code => {
                     const amt = (job.pay_amounts as Record<string, number>)[code]
+                    const days = (job.work_days as Record<string, number>)?.[code]
                     return (
                       <div key={code} className="flex items-center justify-between mb-1.5">
-                        <span className="text-xs text-gray-500">{EQUIPMENT_LABELS[code]}</span>
+                        <div>
+                          <span className="text-xs text-gray-500">{EQUIPMENT_LABELS[code]}</span>
+                          {days > 0 && <span className="text-xs text-gray-400 ml-1">· {days}일</span>}
+                        </div>
                         <span className="text-lg font-black text-brand-blue-dark">{amt?.toLocaleString()}원</span>
                       </div>
                     )

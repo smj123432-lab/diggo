@@ -56,6 +56,7 @@ export interface Job {
   latitude: number | null
   longitude: number | null
   pay_amounts: Record<string, number>  // { "008": 500000, "035": 800000 }
+  work_days: Record<string, number>   // { "008": 1, "035": 3 }
   work_date: string
   work_duration: WorkDuration | null
   pay_due_type: PayDueType

@@ -80,7 +80,7 @@ export async function POST(request: NextRequest) {
     const {
       title, job_type, equipment_codes, description,
       attachments, caution, location, latitude, longitude,
-      pay_amounts, work_date, work_duration, pay_due_type,
+      pay_amounts, work_days, work_date, work_duration, pay_due_type,
     } = body
 
     if (
@@ -101,7 +101,7 @@ export async function POST(request: NextRequest) {
         attachments: attachments ?? null,
         caution: caution ?? null,
         location, latitude, longitude,
-        pay_amounts, work_date,
+        pay_amounts, work_days: work_days ?? {}, work_date,
         work_duration: work_duration ?? null,
         pay_due_type,
         status: 'open',

@@ -13,6 +13,7 @@ interface FormState {
   job_type: JobType | ''
   equipment_codes: EquipmentCode[]
   pay_amounts: Partial<Record<EquipmentCode, string>>
+  work_days: Partial<Record<EquipmentCode, string>>
   description: string
   attachments: string
   caution: string
@@ -29,6 +30,7 @@ const INITIAL: FormState = {
   job_type: '',
   equipment_codes: [],
   pay_amounts: {},
+  work_days: {},
   description: '',
   attachments: '',
   caution: '',
@@ -76,14 +78,18 @@ export function JobForm({ mode = 'create', jobId, initialValues }: JobFormProps)
   const toggleEquipment = (code: EquipmentCode) =>
     setForm(f => {
       if (f.equipment_codes.includes(code)) {
-        const { [code]: _, ...restAmounts } = f.pay_amounts
-        return { ...f, equipment_codes: f.equipment_codes.filter(c => c !== code), pay_amounts: restAmounts }
+        const { [code]: _a, ...restAmounts } = f.pay_amounts
+        const { [code]: _d, ...restDays } = f.work_days
+        return { ...f, equipment_codes: f.equipment_codes.filter(c => c !== code), pay_amounts: restAmounts, work_days: restDays }
       }
-      return { ...f, equipment_codes: [...f.equipment_codes, code], pay_amounts: { ...f.pay_amounts, [code]: '' } }
+      return { ...f, equipment_codes: [...f.equipment_codes, code], pay_amounts: { ...f.pay_amounts, [code]: '' }, work_days: { ...f.work_days, [code]: '' } }
     })
 
   const setPayAmount = (code: EquipmentCode, value: string) =>
     setForm(f => ({ ...f, pay_amounts: { ...f.pay_amounts, [code]: formatPayAmount(value) } }))
+
+  const setWorkDays = (code: EquipmentCode, value: string) =>
+    setForm(f => ({ ...f, work_days: { ...f.work_days, [code]: value.replace(/[^0-9]/g, '') } }))
 
   const allAmountsFilled = form.equipment_codes.length > 0 &&
     form.equipment_codes.every(code => Boolean(form.pay_amounts[code]))
@@ -115,6 +121,9 @@ export function JobForm({ mode = 'create', jobId, initialValues }: JobFormProps)
       longitude: form.longitude,
       pay_amounts: Object.fromEntries(
         form.equipment_codes.map(code => [code, parseInt((form.pay_amounts[code] ?? '0').replace(/,/g, ''), 10)])
+      ),
+      work_days: Object.fromEntries(
+        form.equipment_codes.map(code => [code, parseInt(form.work_days[code] ?? '0', 10)])
       ),
       work_date: form.work_date,
       work_duration: form.work_duration || null,
@@ -312,7 +321,7 @@ export function JobForm({ mode = 'create', jobId, initialValues }: JobFormProps)
             />
           </div>
           <div>
-            <Label>작업 기간</Label>
+            <Label>{form.equipment_codes.length > 1 ? '총 작업 기간' : '작업 기간'}</Label>
             <select
               value={form.work_duration}
               onChange={(e) => set('work_duration', e.target.value as WorkDuration)}
@@ -341,16 +350,29 @@ export function JobForm({ mode = 'create', jobId, initialValues }: JobFormProps)
             form.equipment_codes.map(code => (
               <div key={code}>
                 <Label required>{EQUIPMENT_LABELS[code]} 지급 금액 (대당)</Label>
-                <div className="relative">
-                  <input
-                    type="text"
-                    inputMode="numeric"
-                    value={form.pay_amounts[code] ?? ''}
-                    onChange={(e) => setPayAmount(code, e.target.value)}
-                    placeholder="0"
-                    className="w-full pl-4 pr-8 py-3.5 border border-gray-200 rounded-xl text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-blue focus:border-transparent transition"
-                  />
-                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-gray-400 pointer-events-none">원</span>
+                <div className="flex gap-2">
+                  <div className="relative flex-1">
+                    <input
+                      type="text"
+                      inputMode="numeric"
+                      value={form.pay_amounts[code] ?? ''}
+                      onChange={(e) => setPayAmount(code, e.target.value)}
+                      placeholder="0"
+                      className="w-full pl-4 pr-8 py-3.5 border border-gray-200 rounded-xl text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-blue focus:border-transparent transition"
+                    />
+                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-gray-400 pointer-events-none">원</span>
+                  </div>
+                  <div className="relative w-24 shrink-0">
+                    <input
+                      type="text"
+                      inputMode="numeric"
+                      value={form.work_days[code] ?? ''}
+                      onChange={(e) => setWorkDays(code, e.target.value)}
+                      placeholder="0"
+                      className="w-full pl-4 pr-7 py-3.5 border border-gray-200 rounded-xl text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-blue focus:border-transparent transition"
+                    />
+                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-gray-400 pointer-events-none">일</span>
+                  </div>
                 </div>
               </div>
             ))

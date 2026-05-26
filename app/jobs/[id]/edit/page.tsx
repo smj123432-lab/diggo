@@ -38,6 +38,9 @@ export default async function JobEditPage({ params }: Props) {
     pay_amounts: Object.fromEntries(
       Object.entries(job.pay_amounts as Record<string, number>).map(([code, amt]) => [code, (amt as number).toLocaleString()])
     ) as Partial<Record<EquipmentCode, string>>,
+    work_days: Object.fromEntries(
+      Object.entries((job.work_days ?? {}) as Record<string, number>).map(([code, days]) => [code, String(days)])
+    ) as Partial<Record<EquipmentCode, string>>,
     work_date: job.work_date as string,
     work_duration: (job.work_duration as WorkDuration | null) ?? ('' as const),
     pay_due_type: job.pay_due_type as PayDueType,
