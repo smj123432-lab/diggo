@@ -55,7 +55,7 @@ export function AnimatedFeatures() {
         transition={{ duration: 0.5, ease: "easeOut" }}
         className="mb-16"
       >
-        <p className="font-mono text-blue-500 text-xs tracking-widest uppercase mb-4">
+        <p className="font-mono text-brand-blue text-xs tracking-widest uppercase mb-4">
           핵심 기능
         </p>
         <h2 className="text-3xl sm:text-4xl font-black tracking-tight text-stone-900">
@@ -79,10 +79,10 @@ export function AnimatedFeatures() {
             <div className="absolute left-0 top-8 bottom-8 w-0.5 bg-gradient-to-b from-transparent via-blue-400 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-full" />
 
             <div className="flex items-start justify-between mb-8">
-              <span className="font-mono text-xs text-blue-500 tracking-widest">
+              <span className="font-mono text-xs text-brand-blue tracking-widest">
                 {num}
               </span>
-              <span className="text-blue-300 group-hover:text-blue-500 transition-colors duration-300">
+              <span className="text-blue-300 group-hover:text-brand-blue transition-colors duration-300">
                 {icon}
               </span>
             </div>

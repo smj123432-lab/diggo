@@ -31,8 +31,8 @@ export function ManagerJobStatusFilter({ value, onChange, counts }: Props) {
             onClick={() => onChange(tab.value)}
             className={`shrink-0 text-xs font-semibold px-3.5 py-1.5 rounded-full transition-colors ${
               value === tab.value
-                ? 'bg-blue-500 text-white'
-                : 'bg-white border border-gray-200 text-gray-500 hover:border-blue-300 hover:text-blue-600'
+                ? 'bg-brand-blue text-white'
+                : 'bg-white border border-gray-200 text-gray-500 hover:border-blue-300 hover:text-brand-blue-dark'
             }`}
           >
             {tab.label}{count > 0 ? ` (${count})` : ''}

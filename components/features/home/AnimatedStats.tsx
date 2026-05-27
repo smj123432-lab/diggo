@@ -63,10 +63,10 @@ export function AnimatedStats() {
     <div className="max-w-6xl mx-auto px-6 py-14 grid grid-cols-3 divide-x divide-blue-100">
       {stats.map(({ to, suffix, decimals, label }) => (
         <div key={label} className="text-center px-4">
-          <div className="font-mono text-3xl sm:text-4xl font-bold text-blue-600 tabular-nums">
+          <div className="font-mono text-3xl sm:text-4xl font-bold text-brand-blue-dark tabular-nums">
             <CountUp to={to} suffix={suffix} decimals={decimals} />
           </div>
-          <div className="text-blue-700/60 text-sm mt-2 tracking-wide">
+          <div className="text-brand-blue-deep/60 text-sm mt-2 tracking-wide">
             {label}
           </div>
         </div>

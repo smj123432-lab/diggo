@@ -59,7 +59,7 @@ export function NavButtons() {
           <Link href="/login" className="text-sm border border-white/20 hover:border-white/40 text-white px-4 py-2 rounded-lg transition-colors bg-white/5">
             로그인
           </Link>
-          <Link href="/signup" className="text-sm bg-blue-500 hover:bg-blue-400 text-white font-bold px-4 py-2 rounded-lg transition-colors">
+          <Link href="/signup" className="text-sm bg-brand-blue hover:bg-blue-400 text-white font-bold px-4 py-2 rounded-lg transition-colors">
             시작하기
           </Link>
         </div>

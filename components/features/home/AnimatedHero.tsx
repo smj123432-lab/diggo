@@ -11,7 +11,7 @@ export function AnimatedHero() {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6, ease: "easeOut" }}
-        className="inline-flex items-center gap-2.5 border border-blue-400/40 bg-blue-500/10 backdrop-blur-sm px-4 py-2 rounded-full text-blue-300 text-xs font-mono tracking-widest uppercase mb-12"
+        className="inline-flex items-center gap-2.5 border border-blue-400/40 bg-brand-blue/10 backdrop-blur-sm px-4 py-2 rounded-full text-blue-300 text-xs font-mono tracking-widest uppercase mb-12"
       >
         <span className="w-1.5 h-1.5 bg-blue-400 rounded-full animate-pulse" />
         굴착기 배차 플랫폼

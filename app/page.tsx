@@ -102,16 +102,16 @@ export default function HomePage() {
       <footer className="border-t border-blue-200 bg-white">
         <div className="max-w-6xl mx-auto px-6 py-10 flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-2">
-            <ExcavatorIcon className="w-7 h-5 text-blue-500" />
+            <ExcavatorIcon className="w-7 h-5 text-brand-blue" />
             <span className="text-sm font-black tracking-tight text-blue-900">
-              Diggo<span className="text-blue-500">.</span>
+              Diggo<span className="text-brand-blue">.</span>
             </span>
           </div>
-          <p className="text-blue-700/50 text-xs text-center">
+          <p className="text-brand-blue-deep/50 text-xs text-center">
             굴착기 기사와 소장을 위한 배차 플랫폼
           </p>
-          <div className="flex items-center gap-6 text-xs text-blue-700/50">
-            <Link href="/jobs" className="hover:text-blue-700 transition-colors">
+          <div className="flex items-center gap-6 text-xs text-brand-blue-deep/50">
+            <Link href="/jobs" className="hover:text-brand-blue-deep transition-colors">
               일감 보기
             </Link>
             <FooterAuthLink />

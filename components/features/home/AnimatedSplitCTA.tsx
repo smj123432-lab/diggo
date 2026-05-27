@@ -45,7 +45,7 @@ export function AnimatedSplitCTA() {
           whileInView={{ opacity: 1, x: 0 }}
           viewport={{ once: true, margin: "-100px" }}
           transition={{ duration: 0.65, ease: "easeOut" }}
-          className="relative bg-blue-600 p-14 sm:p-20 overflow-hidden"
+          className="relative bg-brand-blue-dark p-14 sm:p-20 overflow-hidden"
         >
           <div
             className="absolute inset-0 opacity-10"
@@ -69,7 +69,7 @@ export function AnimatedSplitCTA() {
             </p>
             <button
               onClick={handleDriverClick}
-              className="group inline-flex items-center gap-2 bg-white text-blue-700 font-bold text-sm px-6 py-3.5 rounded-xl hover:bg-blue-50 transition-colors"
+              className="group inline-flex items-center gap-2 bg-white text-brand-blue-deep font-bold text-sm px-6 py-3.5 rounded-xl hover:bg-blue-50 transition-colors"
             >
               {role === "driver" ? "일감 찾으러 가기" : "기사로 가입하기"}
               <svg
@@ -96,7 +96,7 @@ export function AnimatedSplitCTA() {
             style={gridStyle("rgba(59,130,246,0.05)")}
           />
           <div className="relative">
-            <p className="font-mono text-blue-500 text-xs tracking-widest uppercase mb-8">
+            <p className="font-mono text-brand-blue text-xs tracking-widest uppercase mb-8">
               소장이라면
             </p>
             <h3 className="text-3xl sm:text-4xl font-black text-stone-900 leading-tight mb-5">
@@ -112,7 +112,7 @@ export function AnimatedSplitCTA() {
             </p>
             <button
               onClick={handleManagerClick}
-              className="group inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm px-6 py-3.5 rounded-xl transition-colors"
+              className="group inline-flex items-center gap-2 bg-brand-blue-dark hover:bg-brand-blue-deep text-white font-bold text-sm px-6 py-3.5 rounded-xl transition-colors"
             >
               {role === "manager" ? "일감 올리러 가기" : "소장으로 가입하기"}
               <svg

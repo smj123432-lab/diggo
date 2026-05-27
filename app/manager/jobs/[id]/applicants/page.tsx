@@ -13,7 +13,7 @@ interface Props {
 const JOB_STATUS_STYLE: Record<JobStatus, string> = {
   open:        'bg-emerald-100 text-emerald-700',
   closed:      'bg-gray-100 text-gray-500',
-  in_progress: 'bg-blue-100 text-blue-700',
+  in_progress: 'bg-blue-100 text-brand-blue-deep',
   completed:   'bg-purple-100 text-purple-700',
   settled:     'bg-emerald-100 text-emerald-700',
 }
@@ -88,7 +88,7 @@ export default async function ApplicantsPage({ params }: Props) {
               {JOB_STATUS_LABELS[effectiveStatus]}
             </span>
             {(job.equipment_codes as EquipmentCode[]).map((code) => (
-              <span key={code} className="bg-blue-500 text-white text-xs font-bold px-2.5 py-1 rounded-lg">
+              <span key={code} className="bg-brand-blue text-white text-xs font-bold px-2.5 py-1 rounded-lg">
                 {EQUIPMENT_LABELS[code]}
               </span>
             ))}

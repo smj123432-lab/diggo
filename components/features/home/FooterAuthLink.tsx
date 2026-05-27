@@ -19,14 +19,14 @@ export function FooterAuthLink() {
 
   if (user) {
     return (
-      <button onClick={handleLogout} className="hover:text-blue-700 transition-colors">
+      <button onClick={handleLogout} className="hover:text-brand-blue-deep transition-colors">
         로그아웃
       </button>
     )
   }
 
   return (
-    <Link href="/login" className="hover:text-blue-700 transition-colors">
+    <Link href="/login" className="hover:text-brand-blue-deep transition-colors">
       로그인
     </Link>
   )

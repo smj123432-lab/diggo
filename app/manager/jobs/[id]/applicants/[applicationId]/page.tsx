@@ -12,7 +12,7 @@ interface Props {
 
 const STATUS_STYLE: Record<ApplicationStatus, string> = {
   pending:   'bg-gray-100 text-gray-600',
-  reviewing: 'bg-blue-100 text-blue-700',
+  reviewing: 'bg-blue-100 text-brand-blue-deep',
   accepted:  'bg-emerald-100 text-emerald-700',
   rejected:  'bg-red-100 text-red-500',
 }
@@ -79,7 +79,7 @@ export default async function ApplicantDetailPage({ params }: Props) {
               <div className="flex items-center gap-2 mb-1">
                 <span className="text-base font-bold text-gray-900">{driver.name}</span>
                 {driver.is_certified && (
-                  <span className="inline-flex items-center gap-1 bg-blue-500 text-white text-xs font-bold px-2 py-0.5 rounded-full">
+                  <span className="inline-flex items-center gap-1 bg-brand-blue text-white text-xs font-bold px-2 py-0.5 rounded-full">
                     <svg className="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={3}>
                       <path d="M20 6L9 17l-5-5" strokeLinecap="round" strokeLinejoin="round" />
                     </svg>
@@ -101,7 +101,7 @@ export default async function ApplicantDetailPage({ params }: Props) {
             <div className="border-t border-gray-100 pt-4">
               <p className="text-xs text-gray-400 mb-2">보유 장비</p>
               <div className="flex items-center gap-2">
-                <span className="bg-blue-500 text-white text-xs font-bold px-2.5 py-1 rounded-lg">
+                <span className="bg-brand-blue text-white text-xs font-bold px-2.5 py-1 rounded-lg">
                   {EQUIPMENT_LABELS[equipment.model_code]}
                 </span>
                 {equipment.license_number && (

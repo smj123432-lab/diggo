@@ -100,7 +100,7 @@ export default function ManagerJobsPage() {
             <ManagerJobStatusFilter value={filter} onChange={setFilter} counts={counts} />
             <Link
               href="/jobs/new"
-              className="shrink-0 ml-3 text-sm bg-blue-500 hover:bg-blue-600 text-white font-bold px-4 py-2 rounded-xl transition-colors"
+              className="shrink-0 ml-3 text-sm bg-brand-blue hover:bg-brand-blue-dark text-white font-bold px-4 py-2 rounded-xl transition-colors"
             >
               + 등록
             </Link>
@@ -120,7 +120,7 @@ export default function ManagerJobsPage() {
               {filter === 'all' && (
                 <Link
                   href="/jobs/new"
-                  className="inline-block bg-blue-500 text-white font-bold px-6 py-3 rounded-2xl text-sm hover:bg-blue-600 transition-colors"
+                  className="inline-block bg-brand-blue text-white font-bold px-6 py-3 rounded-2xl text-sm hover:bg-brand-blue-dark transition-colors"
                 >
                   첫 일감 등록하기
                 </Link>
