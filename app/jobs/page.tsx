@@ -42,7 +42,7 @@ export default async function JobsPage() {
         <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
           {/* 로고 */}
           <Link href="/" className="flex items-center gap-2.5">
-            <img src="/logo.png" alt="Diggo" className="h-8 w-auto object-contain" style={{filter: "invert(1) hue-rotate(180deg) brightness(1.2) saturate(3)"}} />
+            <ExcavatorIcon className="w-10 h-8 text-blue-400" />
             <span className="text-lg font-black tracking-tight text-white">
               Diggo<span className="text-blue-400">.</span>
             </span>
