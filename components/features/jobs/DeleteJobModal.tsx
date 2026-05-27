@@ -84,7 +84,7 @@ export function DeleteJobModal({ onConfirm, onClose, isLoading }: Props) {
           {/* 잘못 입력했을 때만 경고 표시 */}
           {isWrong && (
             <p className="text-xs text-red-400 mt-1.5 pl-1">
-              <span className="font-bold">"삭제"</span>라고 정확히 입력해 주세요.
+              <span className="font-bold">&ldquo;삭제&rdquo;</span>라고 정확히 입력해 주세요.
             </p>
           )}
         </div>
