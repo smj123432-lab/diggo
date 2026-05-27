@@ -163,7 +163,7 @@ export default async function MypagePage() {
 
           {/* ── 기사 정보 카드 ── */}
           {profile.role === 'driver' && (
-            <div className="bg-white rounded-2xl border border-gray-200 p-5">
+            <div className="bg-slate-50/50 rounded-2xl border border-slate-100 p-5">
               <p className="text-xs font-semibold text-blue-600 mb-3">기사 정보</p>
 
               {/* 보유 장비 */}
@@ -217,9 +217,9 @@ export default async function MypagePage() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-stretch">
 
             {/* 좌측: 활동 메뉴 — 3등분 */}
-            <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden flex flex-col">
-              <p className="px-4 py-3 text-xs font-semibold text-gray-400 bg-gray-50 shrink-0">활동</p>
-              <div className="flex flex-col flex-1 divide-y divide-gray-100">
+            <div className="bg-slate-50/50 rounded-2xl border border-slate-100 overflow-hidden flex flex-col">
+              <p className="px-4 py-3 text-xs font-semibold text-white bg-blue-600 shrink-0">활동</p>
+              <div className="flex flex-col flex-1 divide-y divide-slate-100">
                 {profile.role === 'manager' ? (
                   <>
                     <Link href="/manager/jobs" className="flex-1 flex items-center gap-3 px-4 hover:bg-blue-50 transition-colors group">
@@ -292,8 +292,8 @@ export default async function MypagePage() {
             </div>
 
             {/* 우측: 계정 설정 */}
-            <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden divide-y divide-gray-100">
-              <p className="px-4 py-3 text-xs font-semibold text-gray-400 bg-gray-50">계정 설정</p>
+            <div className="bg-slate-50/50 rounded-2xl border border-slate-100 overflow-hidden divide-y divide-slate-100">
+              <p className="px-4 py-3 text-xs font-semibold text-white bg-blue-600">계정 설정</p>
 
               <Link href="/notifications" className="flex items-center gap-3 px-4 py-3.5 hover:bg-blue-50 transition-colors group">
                 <span className="w-8 h-8 rounded-lg bg-blue-50 group-hover:bg-blue-100 flex items-center justify-center transition-colors">
