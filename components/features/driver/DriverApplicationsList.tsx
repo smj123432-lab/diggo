@@ -37,7 +37,7 @@ const STAGE_BAR: Record<StageFilter, string> = {
   applying:           'bg-blue-400',
   confirmed:          'bg-emerald-400',
   pending_settlement: 'bg-amber-400',
-  settled:            'bg-purple-400',
+  settled:            'bg-emerald-400',
 }
 
 const STAGE_BADGE: Record<StageFilter, string> = {
@@ -45,7 +45,7 @@ const STAGE_BADGE: Record<StageFilter, string> = {
   applying:           'bg-blue-50 text-brand-blue-deep',
   confirmed:          'bg-emerald-50 text-emerald-700',
   pending_settlement: 'bg-amber-50 text-amber-700',
-  settled:            'bg-purple-50 text-purple-700',
+  settled:            'bg-emerald-50 text-emerald-700',
 }
 
 function getStage(appStatus: string, jobStatus: JobStatus): StageFilter {

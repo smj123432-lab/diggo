@@ -25,7 +25,7 @@ const STATUS_BADGE: Record<JobStatus, { label: string; className: string }> = {
   open:        { label: '모집중',           className: 'bg-emerald-100 text-emerald-700' },
   closed:      { label: '모집 마감',        className: 'bg-gray-100 text-gray-500' },
   in_progress: { label: '🚚 작업중',        className: 'bg-blue-100 text-brand-blue-deep' },
-  completed:   { label: '🟡 작업완료',      className: 'bg-purple-100 text-purple-700' },
+  completed:   { label: '🟡 작업완료',      className: 'bg-slate-100 text-slate-600' },
   settled:     { label: '🟢 정산완료',      className: 'bg-emerald-100 text-emerald-700' },
 }
 

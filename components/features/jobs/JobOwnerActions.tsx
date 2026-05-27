@@ -83,7 +83,7 @@ export function JobOwnerActions({ jobId, effectiveStatus, payDueDate }: Props) {
           <button
             onClick={() => handleStatusChange('settled')}
             disabled={isLoading}
-            className="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-3.5 rounded-2xl transition-colors text-sm disabled:opacity-50"
+            className="w-full bg-brand-blue-dark hover:bg-brand-blue-deep text-white font-bold py-3.5 rounded-2xl transition-colors text-sm disabled:opacity-50"
           >
             {isLoading ? '처리 중...' : '대금 지급 완료 확인'}
           </button>

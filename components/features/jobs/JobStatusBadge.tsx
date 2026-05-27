@@ -16,7 +16,7 @@ interface Props {
 // 잠금 상태 뱃지 스타일
 const LOCKED_BADGE: Partial<Record<JobStatus, { label: string; className: string }>> = {
   in_progress: { label: '🚚 작업중',           className: 'bg-blue-50 text-brand-blue-deep border-blue-200' },
-  completed:   { label: '🟡 작업완료(지급대기)', className: 'bg-purple-50 text-purple-700 border-purple-200' },
+  completed:   { label: '🟡 작업완료(지급대기)', className: 'bg-emerald-50 text-emerald-700 border-purple-200' },
   settled:     { label: '🟢 정산완료',          className: 'bg-emerald-50 text-emerald-700 border-emerald-200' },
 }
 
