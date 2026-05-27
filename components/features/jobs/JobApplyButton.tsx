@@ -48,7 +48,7 @@ export function JobApplyButton({ jobId, jobStatus, userRole, existingApplication
         disabled
         className="w-full bg-gray-100 text-gray-500 font-bold py-4 rounded-2xl text-base cursor-not-allowed"
       >
-        지원완료 · {APPLICATION_STATUS_LABELS[applied.status]}
+        {APPLICATION_STATUS_LABELS[applied.status]}
       </button>
     )
   }
