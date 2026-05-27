@@ -44,7 +44,7 @@ export async function PATCH(request: NextRequest) {
 
     // 허용 필드만 명시적으로 추출 (mass assignment 방지)
     const {
-      name, phone, experience_years, garage_address,
+      name, phone, bio, experience_years, garage_address,
       latitude, longitude, preferred_job_types,
       preferred_equipment_codes, preferred_regions,
     } = body
@@ -52,6 +52,7 @@ export async function PATCH(request: NextRequest) {
     const updateData = {
       ...(name !== undefined && { name }),
       ...(phone !== undefined && { phone }),
+      ...(bio !== undefined && { bio }),
       ...(experience_years !== undefined && { experience_years }),
       ...(garage_address !== undefined && { garage_address }),
       ...(latitude !== undefined && { latitude }),

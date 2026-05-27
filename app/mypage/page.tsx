@@ -61,8 +61,7 @@ export default async function MypagePage() {
 
   const initial = profile.name?.charAt(0) ?? '?'
   const roleLabel = ROLE_LABEL[profile.role] ?? profile.role
-  // bio 컬럼이 profiles 테이블에 추가되면 표시됨 (ALTER TABLE profiles ADD COLUMN bio TEXT)
-  const bio: string | null = ('bio' in profile) ? (profile as unknown as { bio: string | null }).bio : null
+  const bio = profile.bio
 
   return (
     <div className="min-h-screen bg-gray-50">
