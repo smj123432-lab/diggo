@@ -30,14 +30,15 @@ export async function GET(request: NextRequest) {
       query = query.order('created_at', { ascending: false })
     }
 
-    // status 명시 시 해당 값만, 기본은 open+closed 노출
+    // status 명시 시 해당 값만, 기본은 오늘 이후 work_date인 open 일감만 노출
     if (status) {
       query = query.eq('status', status)
     } else {
-      query = query.in('status', ['open', 'closed'])
+      const today = new Date().toISOString().split('T')[0]
+      query = query.eq('status', 'open').gte('work_date', today)
     }
 
-    if (equipment_codes.length > 0) query = query.in('equipment_code', equipment_codes)
+    if (equipment_codes.length > 0) query = query.overlaps('equipment_codes', equipment_codes)
     if (job_types.length > 0) query = query.in('job_type', job_types)
     if (keyword) query = query.ilike('location', `%${keyword}%`)
 
@@ -75,9 +76,37 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json()
+
+    // 허용 필드만 명시적으로 추출 (mass assignment 방지)
+    const {
+      title, job_type, equipment_codes, description,
+      attachments, caution, location, latitude, longitude,
+      pay_amounts, work_days, work_date, work_duration, pay_due_type,
+    } = body
+
+    if (
+      !title || !job_type ||
+      !Array.isArray(equipment_codes) || equipment_codes.length === 0 ||
+      !description || !location || !work_date || !pay_due_type ||
+      !pay_amounts || typeof pay_amounts !== 'object' ||
+      equipment_codes.some((c: string) => !pay_amounts[c])
+    ) {
+      return NextResponse.json({ error: '필수 항목을 모두 입력해주세요.' }, { status: 400 })
+    }
+
     const { data, error } = await supabase
       .from('jobs')
-      .insert({ ...body, manager_id: user.id })
+      .insert({
+        manager_id: user.id,
+        title, job_type, equipment_codes, description,
+        attachments: attachments ?? null,
+        caution: caution ?? null,
+        location, latitude, longitude,
+        pay_amounts, work_days: work_days ?? {}, work_date,
+        work_duration: work_duration ?? null,
+        pay_due_type,
+        status: 'open',
+      })
       .select()
       .single()
 

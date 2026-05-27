@@ -8,9 +8,7 @@ export async function PATCH(
 ) {
   try {
     const supabase = await createClient()
-    const {
-      data: { user },
-    } = await supabase.auth.getUser()
+    const { data: { user } } = await supabase.auth.getUser()
 
     if (!user) {
       return NextResponse.json({ error: '로그인이 필요합니다.' }, { status: 401 })
@@ -23,7 +21,6 @@ export async function PATCH(
       return NextResponse.json({ error: '유효하지 않은 상태값입니다.' }, { status: 400 })
     }
 
-    // 소장이 본인 일감의 지원인지 확인
     const { data: application } = await supabase
       .from('applications')
       .select('id, job_id, jobs(manager_id)')
@@ -54,6 +51,14 @@ export async function PATCH(
         job_id: application.job_id,
         application_id: params.id,
       })
+    }
+
+    // 수락 시 일감 상태 → in_progress
+    if (status === 'accepted') {
+      await supabase
+        .from('jobs')
+        .update({ status: 'in_progress' })
+        .eq('id', application.job_id)
     }
 
     return NextResponse.json({ data })

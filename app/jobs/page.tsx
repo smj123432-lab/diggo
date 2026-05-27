@@ -4,6 +4,7 @@ import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
 import { ExcavatorIcon } from '@/components/ui/ExcavatorIcon'
 import { NavButtons } from '@/components/features/home/NavButtons'
+import { NavRoleLink } from '@/components/features/home/NavRoleLink'
 import { JobList } from '@/components/features/jobs/JobList'
 import { DEFAULT_FILTERS } from '@/hooks/useJobs'
 
@@ -25,7 +26,8 @@ export default async function JobsPage() {
       const { data, count } = await supabase
         .from('jobs')
         .select('*, profiles(id, name, rating_avg, is_certified)', { count: 'exact' })
-        .in('status', ['open', 'closed'])
+        .eq('status', 'open')
+        .gte('work_date', new Date().toISOString().split('T')[0])
         .order('created_at', { ascending: false })
         .range(from, to)
 
@@ -41,7 +43,7 @@ export default async function JobsPage() {
         <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
           {/* 로고 */}
           <Link href="/" className="flex items-center gap-2.5">
-            <ExcavatorIcon className="w-8 h-6 text-blue-400" />
+            <ExcavatorIcon className="w-10 h-8 text-blue-400" />
             <span className="text-lg font-black tracking-tight text-white">
               Diggo<span className="text-blue-400">.</span>
             </span>
@@ -49,18 +51,13 @@ export default async function JobsPage() {
 
           {/* 중앙 네비게이션 */}
           <div className="hidden md:flex items-center gap-1">
-            <Link
-              href="/jobs"
-              className="px-4 py-2 text-sm font-semibold text-white bg-white/10 rounded-lg"
-            >
+            <Link href="/jobs" className="px-4 py-2 text-sm font-semibold text-white bg-white/10 rounded-lg">
               일감 찾기
             </Link>
-            <Link
-              href="/mypage/ledger"
-              className="px-4 py-2 text-sm text-slate-400 hover:text-white hover:bg-white/5 rounded-lg transition-colors"
-            >
+            <Link href="/mypage/ledger" className="px-4 py-2 text-sm text-slate-400 hover:text-white hover:bg-white/5 rounded-lg transition-colors">
               장부
             </Link>
+            <NavRoleLink />
           </div>
 
           {/* 우측 버튼 */}

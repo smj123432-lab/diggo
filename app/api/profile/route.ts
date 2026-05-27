@@ -42,24 +42,56 @@ export async function PATCH(request: NextRequest) {
 
     const body = await request.json()
 
-    // 변경 불가 필드 제거
-    const IMMUTABLE = ['id', 'role', 'rating_avg', 'is_certified']
-    const updateData = Object.fromEntries(
-      Object.entries(body).filter(([key]) => !IMMUTABLE.includes(key))
-    )
+    // 허용 필드만 명시적으로 추출 (mass assignment 방지)
+    const {
+      name, phone, bio, experience_years, garage_address,
+      latitude, longitude, preferred_job_types,
+      preferred_equipment_codes, preferred_regions,
+    } = body
 
-    const { data, error } = await supabase
+    const updateData = {
+      ...(name !== undefined && { name }),
+      ...(phone !== undefined && { phone }),
+      ...(bio !== undefined && { bio }),
+      ...(experience_years !== undefined && { experience_years }),
+      ...(garage_address !== undefined && { garage_address }),
+      ...(latitude !== undefined && { latitude }),
+      ...(longitude !== undefined && { longitude }),
+      ...(preferred_job_types !== undefined && { preferred_job_types }),
+      ...(preferred_equipment_codes !== undefined && { preferred_equipment_codes }),
+      ...(preferred_regions !== undefined && { preferred_regions }),
+    }
+
+    let { data, error } = await supabase
       .from('profiles')
       .update(updateData)
       .eq('id', user.id)
       .select()
       .single()
 
+    // bio 컬럼이 DB에 없는 경우 bio 제외 후 재시도
+    // (영구 해결: ALTER TABLE profiles ADD COLUMN bio TEXT;)
+    if (error?.message?.includes('bio')) {
+      const { bio: _bio, ...updateWithoutBio } = updateData as Record<string, unknown>
+      const retry = await supabase
+        .from('profiles')
+        .update(updateWithoutBio)
+        .eq('id', user.id)
+        .select()
+        .single()
+      data = retry.data
+      error = retry.error
+    }
+
     if (error) throw error
 
     return NextResponse.json({ data })
   } catch (error) {
-    console.error('[PATCH /api/profile]', error)
-    return NextResponse.json({ error: '프로필 수정에 실패했습니다.' }, { status: 500 })
+    console.error('[PATCH /api/profile]', JSON.stringify(error))
+    const msg =
+      (error as { message?: string })?.message ??
+      (error as { error?: string })?.error ??
+      '프로필 수정에 실패했습니다.'
+    return NextResponse.json({ error: msg }, { status: 500 })
   }
 }

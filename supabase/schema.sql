@@ -49,7 +49,7 @@ create table jobs (
   work_date date not null,
   pay_due_type text not null check (pay_due_type in ('same_day', 'd3', 'd7', 'd14', 'd30')),
   pay_due_date date,
-  status text not null default 'open' check (status in ('open', 'closed', 'in_progress', 'completed')),
+  status text not null default 'open' check (status in ('open', 'closed', 'in_progress', 'completed', 'settled')),
   created_at timestamptz default now() not null
 );
 

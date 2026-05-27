@@ -20,6 +20,10 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: '필수 항목을 입력해주세요.' }, { status: 400 })
     }
 
+    if (typeof rating !== 'number' || rating < 1 || rating > 5 || !Number.isInteger(rating)) {
+      return NextResponse.json({ error: '평점은 1~5 사이의 정수여야 합니다.' }, { status: 400 })
+    }
+
     // 완료된 일감인지 확인
     const { data: job } = await supabase
       .from('jobs')

@@ -23,7 +23,7 @@ export async function GET(request: NextRequest) {
     // 완료된 일감에서 수입 계산
     const { data: jobs } = await supabase
       .from('applications')
-      .select('jobs(pay_amount, work_date, title, pay_due_type)')
+      .select('equipment_id, jobs(pay_amounts, equipment_codes, work_date, title, pay_due_type)')
       .eq('driver_id', user.id)
       .eq('status', 'accepted')
       .gte('jobs.work_date', startDate)
@@ -38,8 +38,11 @@ export async function GET(request: NextRequest) {
       .lte('expense_date', endDate)
 
     const totalIncome = jobs?.reduce((sum, a) => {
-      const job = (a.jobs as unknown) as { pay_amount: number } | null
-      return sum + (job?.pay_amount ?? 0)
+      const job = (a.jobs as unknown) as { pay_amounts: Record<string, number>; equipment_codes: string[] } | null
+      if (!job) return sum
+      // 기사가 사용한 장비의 단가 합산 (단일 장비 선택 시 해당 금액, 복수 선택 시 첫 번째)
+      const amounts = Object.values(job.pay_amounts ?? {})
+      return sum + (amounts[0] ?? 0)
     }, 0) ?? 0
 
     const totalExpense = expenses?.reduce((sum, e) => sum + e.amount, 0) ?? 0

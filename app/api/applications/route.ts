@@ -15,7 +15,7 @@ export async function GET() {
 
     const { data, error } = await supabase
       .from('applications')
-      .select('*, jobs(id, title, work_date, pay_amount, location, status)')
+      .select('*, jobs(id, title, work_date, pay_amounts, equipment_codes, location, status)')
       .eq('driver_id', user.id)
       .order('applied_at', { ascending: false })
 
@@ -42,7 +42,7 @@ export async function POST(request: NextRequest) {
 
     const { data: profile } = await supabase
       .from('profiles')
-      .select('role')
+      .select('role, is_certified')
       .eq('id', user.id)
       .single()
 
@@ -50,10 +50,24 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: '기사만 지원할 수 있습니다.' }, { status: 403 })
     }
 
-    const body = await request.json()
+    if (!profile?.is_certified) {
+      return NextResponse.json({ error: '면허증과 안전교육 이수증 인증을 완료해야 지원할 수 있습니다.' }, { status: 403 })
+    }
+
+    const { job_id, equipment_id } = await request.json()
+
+    if (!job_id) {
+      return NextResponse.json({ error: '일감 정보가 없습니다.' }, { status: 400 })
+    }
+
     const { data, error } = await supabase
       .from('applications')
-      .insert({ ...body, driver_id: user.id })
+      .insert({
+        job_id,
+        driver_id: user.id,
+        equipment_id: equipment_id ?? null,
+        status: 'pending',
+      })
       .select()
       .single()
 

@@ -23,7 +23,7 @@ BEGIN
   WHERE id = manager1_id;
 
   UPDATE profiles
-  SET role = 'manager', rating_avg = 4.6, is_certified = true
+  SET role = 'manager', rating_avg = 4.6, is_certified = false
   WHERE id = manager2_id;
 
   -- 기존 더미 데이터 정리
