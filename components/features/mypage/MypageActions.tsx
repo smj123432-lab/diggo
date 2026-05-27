@@ -50,8 +50,13 @@ export function DeleteAccountButton() {
     <>
       <button
         onClick={() => setOpen(true)}
-        className="text-xs text-slate-400 underline underline-offset-2 hover:text-slate-600 transition-colors"
+        className="w-full flex items-center gap-3 px-4 py-3.5 text-sm text-red-500 hover:bg-red-50 transition-colors disabled:opacity-50"
       >
+        <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+          <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+          <circle cx="9" cy="7" r="4" />
+          <line x1="17" y1="8" x2="23" y2="8" />
+        </svg>
         회원탈퇴
       </button>
 
