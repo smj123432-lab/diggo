@@ -62,12 +62,26 @@ export async function PATCH(request: NextRequest) {
       ...(preferred_regions !== undefined && { preferred_regions }),
     }
 
-    const { data, error } = await supabase
+    let { data, error } = await supabase
       .from('profiles')
       .update(updateData)
       .eq('id', user.id)
       .select()
       .single()
+
+    // bio 컬럼이 DB에 없는 경우 bio 제외 후 재시도
+    // (영구 해결: ALTER TABLE profiles ADD COLUMN bio TEXT;)
+    if (error?.message?.includes('bio')) {
+      const { bio: _bio, ...updateWithoutBio } = updateData as Record<string, unknown>
+      const retry = await supabase
+        .from('profiles')
+        .update(updateWithoutBio)
+        .eq('id', user.id)
+        .select()
+        .single()
+      data = retry.data
+      error = retry.error
+    }
 
     if (error) throw error
 
