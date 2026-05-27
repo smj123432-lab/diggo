@@ -48,16 +48,18 @@ export default async function JobDetailPage({ params }: Props) {
   const { data: { user } } = await supabase.auth.getUser()
 
   let userRole: string | null = null
+  let isCertified = false
   let existingApplication: { id: string; status: ApplicationStatus } | null = null
 
   if (user) {
     const { data: profile } = await supabase
       .from('profiles')
-      .select('role')
+      .select('role, is_certified')
       .eq('id', user.id)
       .single()
 
     userRole = profile?.role ?? null
+    isCertified = profile?.is_certified ?? false
 
     if (userRole === 'driver') {
       const { data: application } = await supabase
@@ -336,6 +338,7 @@ export default async function JobDetailPage({ params }: Props) {
                     jobId={job.id}
                     jobStatus={effectiveStatus}
                     userRole={userRole}
+                    isCertified={isCertified}
                     existingApplication={existingApplication}
                   />
                 )}
@@ -360,6 +363,7 @@ export default async function JobDetailPage({ params }: Props) {
               jobId={job.id}
               jobStatus={effectiveStatus}
               userRole={userRole}
+              isCertified={isCertified}
               existingApplication={existingApplication}
             />
           </div>
