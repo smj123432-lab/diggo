@@ -7,6 +7,7 @@ import { useAuthStore } from '@/store/auth'
 import { useRouter } from 'next/navigation'
 import { ExcavatorIcon } from '@/components/ui/ExcavatorIcon'
 import { NavButtons } from '@/components/features/home/NavButtons'
+import { NavRoleLink } from '@/components/features/home/NavRoleLink'
 import { ManagerJobCard } from '@/components/features/manager/ManagerJobCard'
 import { ManagerJobStatusFilter } from '@/components/features/manager/ManagerJobStatusFilter'
 import type { Job, JobStatus } from '@/types'
@@ -64,9 +65,10 @@ export default function ManagerJobsPage() {
             <Link href="/jobs" className="px-4 py-2 text-sm text-slate-400 hover:text-white hover:bg-white/5 rounded-lg transition-colors">
               일감 찾기
             </Link>
-            <Link href="/manager/jobs" className="px-4 py-2 text-sm font-semibold text-white bg-white/10 rounded-lg">
-              내 일감
+            <Link href="/mypage/ledger" className="px-4 py-2 text-sm text-slate-400 hover:text-white hover:bg-white/5 rounded-lg transition-colors">
+              장부
             </Link>
+            <NavRoleLink />
           </div>
           <NavButtons />
         </div>
