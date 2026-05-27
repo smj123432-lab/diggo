@@ -89,99 +89,103 @@ export default async function MypagePage() {
       <div className="pt-16">
         <div className="max-w-3xl mx-auto px-4 py-6 space-y-4">
 
-          {/* ── 프로필 카드 ── */}
+          {/* ── 프로필 카드 (통합) ── */}
           <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
-            <div className="h-20 bg-gradient-to-r from-blue-600 to-blue-500" />
+            {/* 그라데이션 배너 */}
+            <div className="h-24 bg-gradient-to-r from-blue-600 to-indigo-600 relative">
+              <Link
+                href="/mypage/edit"
+                className="absolute top-4 right-4 text-xs font-semibold text-white/80 border border-white/30 bg-white/10 hover:bg-white/20 px-3 py-1.5 rounded-lg transition-colors"
+              >
+                프로필 수정
+              </Link>
+            </div>
+
             <div className="px-5 pb-5">
-              <div className="-mt-8 mb-4 flex items-end justify-between">
-                <div className="w-16 h-16 rounded-2xl bg-white border-4 border-white shadow-md flex items-center justify-center text-2xl font-black text-blue-600">
+              {/* 아바타 + 이름/전화번호 + 평점 가로 배치 */}
+              <div className="flex items-end gap-4 mb-4">
+                <div className="w-16 h-16 rounded-2xl bg-white border-4 border-white shadow-md flex items-center justify-center text-2xl font-black text-blue-600 shrink-0 -mt-8">
                   {initial}
                 </div>
-                <Link
-                  href="/mypage/edit"
-                  className="text-xs font-semibold text-blue-600 border border-blue-200 bg-blue-50 hover:bg-blue-100 px-3 py-1.5 rounded-lg transition-colors"
-                >
-                  프로필 수정
-                </Link>
-              </div>
-              <div className="flex items-center gap-2 mb-1">
-                <h1 className="text-lg font-black text-gray-900">{profile.name}</h1>
-                <span className="text-xs font-bold bg-blue-600 text-white px-2 py-0.5 rounded-full">
-                  {roleLabel}
-                </span>
-                {profile.is_certified && (
-                  <span className="inline-flex items-center gap-1 text-xs font-bold bg-blue-50 text-blue-600 px-2 py-0.5 rounded-full">
-                    <svg className="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={3}>
-                      <path d="M20 6L9 17l-5-5" strokeLinecap="round" strokeLinejoin="round" />
-                    </svg>
-                    인증
-                  </span>
+                <div className="flex-1 min-w-0 pb-0.5">
+                  <div className="flex items-center gap-2 flex-wrap mb-1">
+                    <h1 className="text-lg font-black text-gray-900">{profile.name}</h1>
+                    <span className="text-xs font-bold bg-blue-600 text-white px-2 py-0.5 rounded-full">
+                      {roleLabel}
+                    </span>
+                    {profile.is_certified && (
+                      <span className="inline-flex items-center gap-1 text-xs font-bold border border-blue-200 text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full">
+                        <svg className="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={3}>
+                          <path d="M20 6L9 17l-5-5" strokeLinecap="round" strokeLinejoin="round" />
+                        </svg>
+                        인증
+                      </span>
+                    )}
+                  </div>
+                  <p className="text-sm text-gray-500">{profile.phone ?? '전화번호 미등록'}</p>
+                </div>
+                {profile.role === 'driver' && (
+                  <div className="text-right pb-0.5 shrink-0">
+                    <p className="text-xs text-gray-400 mb-0.5">평점</p>
+                    <p className="text-xl font-black text-gray-900">
+                      <span className="text-yellow-400">★</span> {profile.rating_avg?.toFixed(1) ?? '0.0'}
+                    </p>
+                  </div>
                 )}
               </div>
-              <p className="text-sm text-gray-500">{profile.phone ?? '전화번호 미등록'}</p>
-            </div>
-          </div>
 
-          {/* ── 역할별 메타 카드 ── */}
-          {profile.role === 'manager' && (
-            <div className="bg-white rounded-2xl border border-gray-200 p-5">
-              <p className="text-xs font-semibold text-blue-600 mb-3">소장 정보</p>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <p className="text-xs text-gray-400 mb-1">누적 등록 일감</p>
-                  <p className="text-2xl font-black text-gray-900">{jobCount}<span className="text-sm font-semibold text-gray-400 ml-1">건</span></p>
-                </div>
-                <div>
-                  <p className="text-xs text-gray-400 mb-1">차고지 / 주요 현장</p>
-                  <p className="text-sm font-semibold text-gray-700 line-clamp-2">
-                    {profile.garage_address ?? '미등록'}
-                  </p>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {profile.role === 'driver' && (
-            <div className="bg-white rounded-2xl border border-gray-200 p-5">
-              <p className="text-xs font-semibold text-blue-600 mb-3">기사 정보</p>
-              <div className="space-y-3">
-                <div>
-                  <p className="text-xs text-gray-400 mb-1.5">보유 장비</p>
-                  {equipments.length > 0 ? (
-                    <div className="flex gap-1.5 flex-wrap">
-                      {equipments.map((eq) => (
-                        <span key={eq.id} className="bg-blue-600 text-white text-xs font-bold px-2.5 py-1 rounded-lg">
-                          {EQUIPMENT_LABELS[eq.model_code]}
+              {/* 정보 배지 행 */}
+              {(profile.role === 'driver' || profile.role === 'manager') && (
+                <div className="flex flex-wrap gap-2">
+                  {profile.role === 'driver' && (
+                    <>
+                      {equipments.length > 0
+                        ? equipments.map((eq) => (
+                            <span key={eq.id} className="inline-flex items-center text-xs font-bold bg-blue-600 text-white px-2.5 py-1 rounded-lg">
+                              {EQUIPMENT_LABELS[eq.model_code]}
+                            </span>
+                          ))
+                        : (
+                          <span className="inline-flex items-center text-xs font-semibold border border-gray-200 text-gray-400 bg-gray-50 px-3 py-1 rounded-full">
+                            장비 미등록
+                          </span>
+                        )
+                      }
+                      {profile.experience_years != null && (
+                        <span className="inline-flex items-center text-xs font-semibold border border-blue-200 text-blue-600 bg-blue-50 px-3 py-1 rounded-full">
+                          경력 {profile.experience_years}년
                         </span>
-                      ))}
-                    </div>
-                  ) : (
-                    <p className="text-sm text-gray-400">등록된 장비 없음</p>
+                      )}
+                      {certApproved && (
+                        <span className="inline-flex items-center gap-1 text-xs font-semibold border border-blue-200 text-blue-600 bg-blue-50 px-3 py-1 rounded-full">
+                          <svg className="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5}>
+                            <path d="M20 6L9 17l-5-5" strokeLinecap="round" strokeLinejoin="round" />
+                          </svg>
+                          면허·안전교육 이수
+                        </span>
+                      )}
+                    </>
+                  )}
+                  {profile.role === 'manager' && (
+                    <>
+                      <span className="inline-flex items-center text-xs font-semibold border border-blue-200 text-blue-600 bg-blue-50 px-3 py-1 rounded-full">
+                        누적 일감 {jobCount}건
+                      </span>
+                      {profile.garage_address && (
+                        <span className="inline-flex items-center gap-1 text-xs font-semibold border border-gray-200 text-gray-600 bg-gray-50 px-3 py-1 rounded-full">
+                          <svg className="w-3 h-3 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+                            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
+                            <circle cx="12" cy="10" r="3" />
+                          </svg>
+                          {profile.garage_address}
+                        </span>
+                      )}
+                    </>
                   )}
                 </div>
-                <div className="flex items-center gap-6 pt-1 border-t border-gray-100">
-                  <div>
-                    <p className="text-xs text-gray-400 mb-0.5">현장 경력</p>
-                    <p className="text-sm font-bold text-gray-800">
-                      {profile.experience_years != null ? `${profile.experience_years}년` : '미등록'}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-xs text-gray-400 mb-0.5">면허 / 안전교육</p>
-                    <p className={`text-sm font-bold ${certApproved ? 'text-blue-600' : 'text-gray-400'}`}>
-                      {certApproved ? '이수 완료 ✓' : '미등록'}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-xs text-gray-400 mb-0.5">평점</p>
-                    <p className="text-sm font-bold text-gray-800">
-                      ★ {profile.rating_avg?.toFixed(1) ?? '0.0'}
-                    </p>
-                  </div>
-                </div>
-              </div>
+              )}
             </div>
-          )}
+          </div>
 
           {/* ── 바로가기 그리드 ── */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
