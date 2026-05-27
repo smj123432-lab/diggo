@@ -61,6 +61,8 @@ export default async function MypagePage() {
 
   const initial = profile.name?.charAt(0) ?? '?'
   const roleLabel = ROLE_LABEL[profile.role] ?? profile.role
+  // bio 컬럼이 profiles 테이블에 추가되면 표시됨 (ALTER TABLE profiles ADD COLUMN bio TEXT)
+  const bio: string | null = ('bio' in profile) ? (profile as unknown as { bio: string | null }).bio : null
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -90,17 +92,15 @@ export default async function MypagePage() {
         <div className="max-w-3xl mx-auto px-4 py-6 space-y-4">
 
           {/* ── 프로필 카드 ── */}
-          <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
-            {/* 순수 데코 배너 — 보라색 없음 */}
-            <div className="h-20 bg-gradient-to-r from-brand-blue-deep to-brand-blue" />
-
-            {/* 아바타 + 이름/전화번호 + 평점 + 수정버튼 가로 배치 */}
-            <div className="px-5 pb-5 pt-2 flex items-end gap-4">
-              <div className="w-16 h-16 rounded-2xl bg-white border-4 border-white shadow-md flex items-center justify-center text-2xl font-black text-brand-blue-dark shrink-0 -mt-10">
+          <div className="bg-slate-50/50 border border-slate-100 rounded-2xl p-5">
+            <div className="flex items-center gap-5">
+              {/* 아바타 */}
+              <div className="w-16 h-16 rounded-2xl bg-brand-blue-dark flex items-center justify-center text-2xl font-black text-white shrink-0">
                 {initial}
               </div>
 
-              <div className="flex-1 min-w-0 pb-1">
+              {/* 이름·역할·전화번호·한 줄 소개 */}
+              <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 flex-wrap mb-0.5">
                   <h1 className="text-lg font-black text-gray-900">{profile.name}</h1>
                   <span className="text-xs font-bold bg-brand-blue-dark text-white px-2 py-0.5 rounded-full">
@@ -115,11 +115,17 @@ export default async function MypagePage() {
                     </span>
                   )}
                 </div>
-                <p className="text-sm text-gray-500">{profile.phone ?? '전화번호 미등록'}</p>
+                <p className="text-sm text-gray-500 mb-1">{profile.phone ?? '전화번호 미등록'}</p>
+                {bio ? (
+                  <p className="text-xs text-gray-500">&ldquo;{bio}&rdquo;</p>
+                ) : (
+                  <p className="text-xs text-gray-300 italic">한 줄 소개를 등록해 보세요</p>
+                )}
               </div>
 
+              {/* 기사 평점 */}
               {profile.role === 'driver' && (
-                <div className="text-center pb-1 shrink-0">
+                <div className="text-center shrink-0">
                   <p className="text-xs text-gray-400 mb-0.5">평점</p>
                   <p className="text-xl font-black text-gray-900">
                     <span className="text-yellow-400">★</span> {profile.rating_avg?.toFixed(1) ?? '0.0'}
@@ -127,9 +133,10 @@ export default async function MypagePage() {
                 </div>
               )}
 
+              {/* 프로필 수정 버튼 */}
               <Link
                 href="/mypage/edit"
-                className="self-start mt-2 shrink-0 text-xs font-semibold text-brand-blue-dark border border-blue-200 bg-blue-50 hover:bg-blue-100 px-3 py-1.5 rounded-lg transition-colors"
+                className="self-start shrink-0 text-xs font-semibold text-brand-blue-dark border border-blue-200 bg-white hover:bg-blue-50 px-3 py-1.5 rounded-lg transition-colors"
               >
                 프로필 수정
               </Link>
@@ -137,12 +144,12 @@ export default async function MypagePage() {
 
             {/* 소장 배지 행 */}
             {profile.role === 'manager' && (
-              <div className="px-5 pb-4 flex flex-wrap gap-2">
-                <span className="inline-flex items-center text-xs font-semibold border border-blue-200 text-brand-blue-dark bg-blue-50 px-3 py-1 rounded-full">
+              <div className="mt-4 pt-4 border-t border-slate-100 flex flex-wrap gap-2">
+                <span className="inline-flex items-center text-xs font-semibold border border-blue-200 text-brand-blue-dark bg-white px-3 py-1 rounded-full">
                   누적 일감 {jobCount}건
                 </span>
                 {profile.garage_address && (
-                  <span className="inline-flex items-center gap-1 text-xs font-semibold border border-gray-200 text-gray-600 bg-gray-50 px-3 py-1 rounded-full">
+                  <span className="inline-flex items-center gap-1 text-xs font-semibold border border-gray-200 text-gray-600 bg-white px-3 py-1 rounded-full">
                     <svg className="w-3 h-3 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
                       <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
                       <circle cx="12" cy="10" r="3" />
@@ -183,11 +190,18 @@ export default async function MypagePage() {
                     {profile.experience_years != null ? `${profile.experience_years}년` : '—'}
                   </p>
                 </div>
-                <div className="border border-blue-100 bg-blue-50/30 rounded-xl p-3 text-center">
+                <div className={`border rounded-xl p-3 text-center ${certApproved ? 'border-blue-100 bg-blue-50/30' : 'border-red-100 bg-red-50/30'}`}>
                   <p className="text-xs text-gray-400 mb-1.5">면허·안전교육</p>
-                  <p className={`text-sm font-bold ${certApproved ? 'text-brand-blue-dark' : 'text-gray-400'}`}>
-                    {certApproved ? '이수완료' : '—'}
-                  </p>
+                  {certApproved ? (
+                    <p className="text-sm font-bold text-brand-blue-dark">이수완료</p>
+                  ) : (
+                    <div className="flex flex-col items-center gap-1.5">
+                      <p className="text-sm font-bold text-gray-400">미등록</p>
+                      <span className="text-xs font-bold text-red-500 bg-red-50 border border-red-200 px-2 py-0.5 rounded-full">
+                        등록 필수
+                      </span>
+                    </div>
+                  )}
                 </div>
                 <div className="border border-blue-100 bg-blue-50/30 rounded-xl p-3 text-center">
                   <p className="text-xs text-gray-400 mb-1.5">평점</p>
