@@ -20,10 +20,6 @@ const dmMono = DM_Mono({
 export const metadata: Metadata = {
   title: 'Diggo — 굴착기 배차 플랫폼',
   description: '굴착기 기사와 소장을 연결하는 배차 플랫폼. 전자장부로 수입을 관리하세요.',
-  icons: {
-    icon: '/logo.png',
-    apple: '/logo.png',
-  },
 }
 
 export default function RootLayout({
