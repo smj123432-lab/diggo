@@ -8,7 +8,7 @@ import { createClient } from '@/lib/supabase/client'
 
 // 헤더 우측 버튼 — 데스크톱: 텍스트 버튼 / 모바일: 햄버거 메뉴
 export function NavButtons() {
-  const { user, isLoading } = useAuthStore()
+  const { user, role, isLoading } = useAuthStore()
   const router = useRouter()
   const [menuOpen, setMenuOpen] = useState(false)
   const buttonRef = useRef<HTMLButtonElement>(null)
@@ -23,7 +23,6 @@ export function NavButtons() {
 
   const close = () => setMenuOpen(false)
 
-  // ESC 키로 닫기
   useEffect(() => {
     const handler = (e: KeyboardEvent) => { if (e.key === 'Escape') close() }
     document.addEventListener('keydown', handler)
@@ -45,6 +44,16 @@ export function NavButtons() {
       {/* ── 데스크톱 ── */}
       {user ? (
         <div className="hidden md:flex items-center gap-3">
+          {role === 'manager' && (
+            <Link href="/manager/jobs" className="text-sm text-slate-300 hover:text-white transition-colors">
+              내 일감
+            </Link>
+          )}
+          {role === 'driver' && (
+            <Link href="/mypage/applications" className="text-sm text-slate-300 hover:text-white transition-colors">
+              내 지원
+            </Link>
+          )}
           <Link href="/mypage" className="text-sm text-slate-300 hover:text-white transition-colors">
             마이페이지
           </Link>
@@ -86,7 +95,7 @@ export function NavButtons() {
         onClick={close}
       />
 
-      {/* ── 드롭다운 메뉴 — 헤더(z-50) 아래 z-[45]로 X버튼이 항상 위에 노출 ── */}
+      {/* ── 드롭다운 메뉴 ── */}
       <div
         className={`md:hidden fixed top-16 right-0 z-[45] w-52 bg-slate-900/95 backdrop-blur-md border-l border-b border-white/10 rounded-bl-2xl shadow-xl overflow-hidden transition-all duration-200 ease-out ${
           menuOpen
@@ -96,10 +105,37 @@ export function NavButtons() {
       >
         {user ? (
           <>
+            {role === 'manager' && (
+              <Link
+                href="/manager/jobs"
+                onClick={close}
+                className="flex items-center gap-3 px-4 py-3.5 text-sm text-slate-200 hover:bg-white/10 transition-colors"
+              >
+                <svg className="w-4 h-4 text-slate-400 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+                  <rect x="3" y="3" width="18" height="18" rx="2" />
+                  <path d="M9 9h6M9 13h6M9 17h4" strokeLinecap="round" />
+                </svg>
+                내 일감
+              </Link>
+            )}
+            {role === 'driver' && (
+              <Link
+                href="/mypage/applications"
+                onClick={close}
+                className="flex items-center gap-3 px-4 py-3.5 text-sm text-slate-200 hover:bg-white/10 transition-colors"
+              >
+                <svg className="w-4 h-4 text-slate-400 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+                  <path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2" />
+                  <rect x="9" y="3" width="6" height="4" rx="1" />
+                  <path d="M9 12l2 2 4-4" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+                내 지원
+              </Link>
+            )}
             <Link
               href="/mypage/ledger"
               onClick={close}
-              className="flex items-center gap-3 px-4 py-3.5 text-sm text-slate-200 hover:bg-white/10 transition-colors"
+              className="flex items-center gap-3 px-4 py-3.5 text-sm text-slate-200 hover:bg-white/10 transition-colors border-t border-white/5"
             >
               <svg className="w-4 h-4 text-slate-400 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
                 <path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2" />
