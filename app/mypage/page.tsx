@@ -1,4 +1,4 @@
-// 마이페이지 — 프로필 + 역할별 메타 + 바로가기
+// 마이페이지 — 인라인 수정 가능한 프로필 + 역할별 메타 + 바로가기
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
@@ -6,16 +6,10 @@ import { ExcavatorIcon } from '@/components/ui/ExcavatorIcon'
 import { NavButtons } from '@/components/features/home/NavButtons'
 import { NavRoleLink } from '@/components/features/home/NavRoleLink'
 import { DeleteAccountButton } from '@/components/features/mypage/MypageActions'
-import type { EquipmentCode } from '@/types'
-import { EQUIPMENT_LABELS } from '@/types'
+import { InlineProfileCard } from '@/components/features/mypage/InlineProfileCard'
+import { InlineDriverInfoCard } from '@/components/features/mypage/InlineDriverInfoCard'
 
 export const dynamic = 'force-dynamic'
-
-const ROLE_LABEL: Record<string, string> = {
-  driver:  '기사',
-  manager: '소장',
-  admin:   '관리자',
-}
 
 export default async function MypagePage() {
   const supabase = await createClient()
@@ -31,9 +25,7 @@ export default async function MypagePage() {
 
   if (!profile) redirect('/login')
 
-  // 역할별 추가 데이터
   let jobCount = 0
-  let equipments: { id: string; model_code: EquipmentCode }[] = []
   let certApproved = false
 
   if (profile.role === 'manager') {
@@ -45,12 +37,6 @@ export default async function MypagePage() {
   }
 
   if (profile.role === 'driver') {
-    const { data: eqs } = await supabase
-      .from('equipments')
-      .select('id, model_code')
-      .eq('owner_id', user.id)
-    equipments = (eqs ?? []) as { id: string; model_code: EquipmentCode }[]
-
     const { count } = await supabase
       .from('certifications')
       .select('id', { count: 'exact', head: true })
@@ -58,10 +44,6 @@ export default async function MypagePage() {
       .eq('status', 'approved')
     certApproved = (count ?? 0) > 0
   }
-
-  const initial = profile.name?.charAt(0) ?? '?'
-  const roleLabel = ROLE_LABEL[profile.role] ?? profile.role
-  const bio = profile.bio
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -90,132 +72,18 @@ export default async function MypagePage() {
       <div className="pt-16">
         <div className="max-w-3xl mx-auto px-4 py-6 space-y-4">
 
-          {/* ── 프로필 카드 ── */}
-          <div className="bg-white border border-gray-200 rounded-2xl p-5">
-            <div className="flex items-center gap-5">
-              {/* 아바타 */}
-              <div className="w-16 h-16 rounded-2xl bg-blue-600 flex items-center justify-center text-2xl font-black text-white shrink-0">
-                {initial}
-              </div>
+          {/* 프로필 카드 — 인라인 수정 */}
+          <InlineProfileCard profile={profile} jobCount={jobCount} />
 
-              {/* 이름·역할·전화번호·한 줄 소개 */}
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2 flex-wrap mb-0.5">
-                  <h1 className="text-lg font-black text-gray-900">{profile.name}</h1>
-                  <span className="text-xs font-bold bg-blue-600 text-white px-2 py-0.5 rounded-full">
-                    {roleLabel}
-                  </span>
-                  {profile.is_certified && (
-                    <span className="inline-flex items-center gap-1 text-xs font-bold border border-blue-200 text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full">
-                      <svg className="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={3}>
-                        <path d="M20 6L9 17l-5-5" strokeLinecap="round" strokeLinejoin="round" />
-                      </svg>
-                      인증
-                    </span>
-                  )}
-                </div>
-                <p className="text-sm text-gray-500 mb-1">{profile.phone ?? '전화번호 미등록'}</p>
-                {bio ? (
-                  <p className="text-xs text-gray-500">&ldquo;{bio}&rdquo;</p>
-                ) : (
-                  <p className="text-xs text-gray-300 italic">한 줄 소개를 등록해 보세요</p>
-                )}
-              </div>
-
-              {/* 기사 평점 */}
-              {profile.role === 'driver' && (
-                <div className="text-center shrink-0">
-                  <p className="text-xs text-gray-400 mb-0.5">평점</p>
-                  <p className="text-xl font-black text-gray-900">
-                    <span className="text-yellow-400">★</span> {profile.rating_avg?.toFixed(1) ?? '0.0'}
-                  </p>
-                </div>
-              )}
-
-              {/* 프로필 수정 버튼 */}
-              <Link
-                href="/mypage/edit"
-                className="self-start shrink-0 text-xs font-semibold text-blue-600 border border-blue-200 bg-white hover:bg-blue-50 px-3 py-1.5 rounded-lg transition-colors"
-              >
-                프로필 수정
-              </Link>
-            </div>
-
-            {/* 소장 배지 행 */}
-            {profile.role === 'manager' && (
-              <div className="mt-4 pt-4 border-t border-gray-200 flex flex-wrap gap-2">
-                <span className="inline-flex items-center text-xs font-semibold border border-blue-200 text-blue-600 bg-white px-3 py-1 rounded-full">
-                  누적 일감 {jobCount}건
-                </span>
-                {profile.garage_address && (
-                  <span className="inline-flex items-center gap-1 text-xs font-semibold border border-gray-200 text-gray-600 bg-white px-3 py-1 rounded-full">
-                    <svg className="w-3 h-3 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
-                      <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
-                      <circle cx="12" cy="10" r="3" />
-                    </svg>
-                    {profile.garage_address}
-                  </span>
-                )}
-              </div>
-            )}
-          </div>
-
-          {/* ── 기사 정보 카드 ── */}
+          {/* 기사 정보 카드 — 인라인 수정 */}
           {profile.role === 'driver' && (
-            <div className="bg-white rounded-2xl border border-gray-200 p-5">
-              <p className="text-sm font-bold text-slate-800 mb-3">기사 정보</p>
-
-              {/* 보유 장비 */}
-              <div className="border border-blue-100 bg-blue-50/30 rounded-xl p-3 mb-3">
-                <p className="text-xs text-gray-400 mb-2">보유 장비</p>
-                {equipments.length > 0 ? (
-                  <div className="flex gap-1.5 flex-wrap">
-                    {equipments.map((eq) => (
-                      <span key={eq.id} className="bg-blue-600 text-white text-xs font-bold px-2.5 py-1 rounded-lg">
-                        {EQUIPMENT_LABELS[eq.model_code]}
-                      </span>
-                    ))}
-                  </div>
-                ) : (
-                  <p className="text-sm text-gray-400">등록된 장비 없음</p>
-                )}
-              </div>
-
-              {/* 3-col 배지 그리드 */}
-              <div className="grid grid-cols-3 gap-2">
-                <div className="border border-blue-100 bg-blue-50/30 rounded-xl p-3 text-center">
-                  <p className="text-xs text-gray-400 mb-1.5">현장 경력</p>
-                  <p className="text-sm font-bold text-gray-800">
-                    {profile.experience_years != null ? `${profile.experience_years}년` : '—'}
-                  </p>
-                </div>
-                <div className={`border rounded-xl p-3 text-center ${certApproved ? 'border-blue-100 bg-blue-50/30' : 'border-red-100 bg-red-50/30'}`}>
-                  <p className="text-xs text-gray-400 mb-1.5">면허·안전교육</p>
-                  {certApproved ? (
-                    <p className="text-sm font-bold text-blue-600">이수완료</p>
-                  ) : (
-                    <div className="flex flex-col items-center gap-1.5">
-                      <p className="text-sm font-bold text-gray-400">미등록</p>
-                      <span className="text-xs font-bold text-red-500 bg-red-50 border border-red-200 px-2 py-0.5 rounded-full">
-                        등록 필수
-                      </span>
-                    </div>
-                  )}
-                </div>
-                <div className="border border-blue-100 bg-blue-50/30 rounded-xl p-3 text-center">
-                  <p className="text-xs text-gray-400 mb-1.5">평점</p>
-                  <p className="text-sm font-bold text-gray-800">
-                    <span className="text-yellow-400">★</span> {profile.rating_avg?.toFixed(1) ?? '0.0'}
-                  </p>
-                </div>
-              </div>
-            </div>
+            <InlineDriverInfoCard profile={profile} certApproved={certApproved} />
           )}
 
-          {/* ── 바로가기 그리드 ── */}
+          {/* 바로가기 그리드 */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-stretch">
 
-            {/* 좌측: 활동 메뉴 — 3등분 */}
+            {/* 활동 */}
             <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden flex flex-col">
               <p className="px-5 pt-4 pb-2 text-sm font-bold text-slate-800 shrink-0">활동</p>
               <div className="flex flex-col flex-1 divide-y divide-gray-100">
@@ -290,7 +158,7 @@ export default async function MypagePage() {
               </div>
             </div>
 
-            {/* 우측: 계정 설정 */}
+            {/* 계정 설정 */}
             <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden divide-y divide-gray-100">
               <p className="px-5 pt-4 pb-2 text-sm font-bold text-slate-800">계정 설정</p>
 
