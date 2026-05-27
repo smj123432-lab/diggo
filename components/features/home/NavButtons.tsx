@@ -44,16 +44,6 @@ export function NavButtons() {
       {/* ── 데스크톱 ── */}
       {user ? (
         <div className="hidden md:flex items-center gap-3">
-          {role === 'manager' && (
-            <Link href="/manager/jobs" className="text-sm text-slate-300 hover:text-white transition-colors">
-              내 일감
-            </Link>
-          )}
-          {role === 'driver' && (
-            <Link href="/mypage/applications" className="text-sm text-slate-300 hover:text-white transition-colors">
-              내 지원
-            </Link>
-          )}
           <Link href="/mypage" className="text-sm text-slate-300 hover:text-white transition-colors">
             마이페이지
           </Link>

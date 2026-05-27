@@ -4,6 +4,7 @@ import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
 import { ExcavatorIcon } from '@/components/ui/ExcavatorIcon'
 import { NavButtons } from '@/components/features/home/NavButtons'
+import { NavRoleLink } from '@/components/features/home/NavRoleLink'
 import { JobList } from '@/components/features/jobs/JobList'
 import { DEFAULT_FILTERS } from '@/hooks/useJobs'
 
@@ -50,18 +51,13 @@ export default async function JobsPage() {
 
           {/* 중앙 네비게이션 */}
           <div className="hidden md:flex items-center gap-1">
-            <Link
-              href="/jobs"
-              className="px-4 py-2 text-sm font-semibold text-white bg-white/10 rounded-lg"
-            >
+            <Link href="/jobs" className="px-4 py-2 text-sm font-semibold text-white bg-white/10 rounded-lg">
               일감 찾기
             </Link>
-            <Link
-              href="/mypage/ledger"
-              className="px-4 py-2 text-sm text-slate-400 hover:text-white hover:bg-white/5 rounded-lg transition-colors"
-            >
+            <Link href="/mypage/ledger" className="px-4 py-2 text-sm text-slate-400 hover:text-white hover:bg-white/5 rounded-lg transition-colors">
               장부
             </Link>
+            <NavRoleLink />
           </div>
 
           {/* 우측 버튼 */}
