@@ -61,7 +61,7 @@ export function JobOwnerActions({ jobId, effectiveStatus, payDueDate }: Props) {
       {canEdit ? (
         <Link
           href={`/jobs/${jobId}/edit`}
-          className="block w-full text-center bg-brand-blue text-white font-bold py-3.5 rounded-2xl hover:bg-brand-blue-dark transition-colors text-sm"
+          className="block w-full text-center bg-blue-500 text-white font-bold py-3.5 rounded-2xl hover:bg-blue-600 transition-colors text-sm"
         >
           수정하기
         </Link>
@@ -83,7 +83,7 @@ export function JobOwnerActions({ jobId, effectiveStatus, payDueDate }: Props) {
           <button
             onClick={() => handleStatusChange('settled')}
             disabled={isLoading}
-            className="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-3.5 rounded-2xl transition-colors text-sm disabled:opacity-50"
+            className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3.5 rounded-2xl transition-colors text-sm disabled:opacity-50"
           >
             {isLoading ? '처리 중...' : '대금 지급 완료 확인'}
           </button>

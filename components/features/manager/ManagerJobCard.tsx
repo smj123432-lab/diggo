@@ -11,7 +11,7 @@ const STATUS_BAR: Record<JobStatus, string> = {
   open:        'bg-emerald-400',
   closed:      'bg-gray-300',
   in_progress: 'bg-blue-400',
-  completed:   'bg-purple-400',
+  completed:   'bg-emerald-400',
   settled:     'bg-emerald-400',
 }
 
@@ -19,7 +19,7 @@ const STATUS_BADGE: Record<JobStatus, string> = {
   open:        'text-emerald-700 bg-emerald-50',
   closed:      'text-gray-500 bg-gray-100',
   in_progress: 'text-blue-700 bg-blue-50',
-  completed:   'text-purple-700 bg-purple-50',
+  completed:   'text-emerald-700 bg-emerald-50',
   settled:     'text-emerald-700 bg-emerald-50',
 }
 
@@ -80,7 +80,7 @@ export function ManagerJobCard({ job }: ManagerJobCardProps) {
                     NEW {job.pending_count}
                   </span>
                 )}
-                <span className="bg-purple-50 text-purple-700 font-medium text-sm rounded-lg px-4 py-2 hover:bg-purple-100 transition-colors whitespace-nowrap">
+                <span className="bg-emerald-50 text-emerald-700 font-medium text-sm rounded-lg px-4 py-2 hover:bg-emerald-100 transition-colors whitespace-nowrap">
                   지원자 {job.applicant_count}명 →
                 </span>
               </div>

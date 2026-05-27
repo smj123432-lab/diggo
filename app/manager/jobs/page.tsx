@@ -49,9 +49,11 @@ export default function ManagerJobsPage() {
   const effectiveStatus = (job: JobWithCount): JobStatus =>
     job.status === 'open' && job.work_date < today ? 'closed' : job.status
 
-  const sorted = [...jobs].sort((a, b) =>
-    new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
-  )
+  const sorted = [...jobs].sort((a, b) => {
+    const createdDiff = new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+    if (createdDiff !== 0) return createdDiff
+    return new Date(b.work_date).getTime() - new Date(a.work_date).getTime()
+  })
 
   const filtered = sorted.filter((job) =>
     filter === 'all' || effectiveStatus(job) === filter

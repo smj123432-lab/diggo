@@ -42,12 +42,16 @@ export async function POST(request: NextRequest) {
 
     const { data: profile } = await supabase
       .from('profiles')
-      .select('role')
+      .select('role, is_certified')
       .eq('id', user.id)
       .single()
 
     if (profile?.role !== 'driver') {
       return NextResponse.json({ error: '기사만 지원할 수 있습니다.' }, { status: 403 })
+    }
+
+    if (!profile?.is_certified) {
+      return NextResponse.json({ error: '면허증과 안전교육 이수증 인증을 완료해야 지원할 수 있습니다.' }, { status: 403 })
     }
 
     const { job_id, equipment_id } = await request.json()

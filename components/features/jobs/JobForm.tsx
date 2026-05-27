@@ -64,14 +64,14 @@ function Label({
   return (
     <p className="text-sm font-bold text-gray-800 mb-3">
       {children}
-      {required && <span className="text-brand-blue ml-0.5">*</span>}
+      {required && <span className="text-blue-500 ml-0.5">*</span>}
     </p>
   );
 }
 
 // 공통 인풋 클래스
 const inputCls =
-  "w-full px-4 py-3.5 border border-gray-200 rounded-xl text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-blue focus:border-transparent transition";
+  "w-full px-4 py-3.5 border border-gray-200 rounded-xl text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition";
 
 interface JobFormProps {
   mode?: "create" | "edit";
@@ -228,7 +228,7 @@ export function JobForm({
                 onClick={() => set("job_type", type)}
                 className={`py-3.5 rounded-xl border-2 text-sm font-semibold transition-all ${
                   form.job_type === type
-                    ? "border-brand-blue bg-brand-blue text-white shadow-sm"
+                    ? "border-blue-500 bg-blue-500 text-white shadow-sm"
                     : "border-gray-200 text-gray-500 hover:border-gray-300 hover:text-gray-700"
                 }`}
               >
@@ -256,7 +256,7 @@ export function JobForm({
                   onClick={() => toggleEquipment(code)}
                   className={`py-3 rounded-xl border-2 text-xs font-bold transition-all ${
                     selected
-                      ? "border-brand-blue bg-brand-blue text-white shadow-sm"
+                      ? "border-blue-500 bg-blue-500 text-white shadow-sm"
                       : "border-gray-200 text-gray-500 hover:border-gray-300 hover:text-gray-700"
                   }`}
                 >
@@ -345,12 +345,12 @@ export function JobForm({
             onClick={() => setShowAddressSearch(true)}
             className={`w-full flex items-center gap-3 px-4 py-3.5 rounded-xl border text-sm text-left transition-all ${
               form.location
-                ? "border-brand-blue bg-blue-50 text-gray-900 font-medium"
+                ? "border-blue-500 bg-blue-50 text-gray-900 font-medium"
                 : "border-gray-200 text-gray-400 hover:border-gray-300"
             }`}
           >
             <svg
-              className={`w-4 h-4 shrink-0 ${form.location ? "text-brand-blue" : "text-gray-300"}`}
+              className={`w-4 h-4 shrink-0 ${form.location ? "text-blue-500" : "text-gray-300"}`}
               viewBox="0 0 24 24"
               fill="none"
               stroke="currentColor"
@@ -415,7 +415,7 @@ export function JobForm({
               onChange={(e) =>
                 set("work_duration", e.target.value as WorkDuration)
               }
-              className="w-full px-4 py-3.5 border border-gray-200 rounded-xl text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-brand-blue focus:border-transparent transition bg-white appearance-none cursor-pointer"
+              className="w-full px-4 py-3.5 border border-gray-200 rounded-xl text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition bg-white appearance-none cursor-pointer"
             >
               <option value="">미정</option>
               {WORK_DURATION_LIST.map((d) => (
@@ -450,7 +450,7 @@ export function JobForm({
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <p className="text-xs font-semibold text-gray-600 mb-1.5">
-                      지급 금액 <span className="text-brand-blue">*</span>
+                      지급 금액 <span className="text-blue-500">*</span>
                     </p>
                     <div className="relative">
                       <input
@@ -461,7 +461,7 @@ export function JobForm({
                           setPayment(code, "amount", e.target.value)
                         }
                         placeholder="0"
-                        className="w-full pl-3 pr-7 py-3 bg-white border border-gray-200 rounded-xl text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-blue focus:border-transparent transition"
+                        className="w-full pl-3 pr-7 py-3 bg-white border border-gray-200 rounded-xl text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
                       />
                       <span className="absolute right-2.5 top-1/2 -translate-y-1/2 text-xs text-gray-400 pointer-events-none">
                         원
@@ -470,7 +470,7 @@ export function JobForm({
                   </div>
                   <div>
                     <p className="text-xs font-semibold text-gray-600 mb-1.5">
-                      작업 기간 <span className="text-brand-blue">*</span>
+                      작업 기간 <span className="text-blue-500">*</span>
                     </p>
                     <div className="relative">
                       <input
@@ -481,7 +481,7 @@ export function JobForm({
                           setPayment(code, "days", e.target.value)
                         }
                         placeholder="0"
-                        className="w-full pl-3 pr-7 py-3 bg-white border border-gray-200 rounded-xl text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-blue focus:border-transparent transition"
+                        className="w-full pl-3 pr-7 py-3 bg-white border border-gray-200 rounded-xl text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
                       />
                       <span className="absolute right-2.5 top-1/2 -translate-y-1/2 text-xs text-gray-400 pointer-events-none">
                         일
@@ -499,7 +499,7 @@ export function JobForm({
               onChange={(e) =>
                 set("pay_due_type", e.target.value as PayDueType)
               }
-              className="w-full px-4 py-3.5 border border-gray-200 rounded-xl text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-brand-blue focus:border-transparent transition bg-white appearance-none cursor-pointer"
+              className="w-full px-4 py-3.5 border border-gray-200 rounded-xl text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition bg-white appearance-none cursor-pointer"
             >
               <option value="">선택</option>
               {PAY_DUE_TYPES_LIST.map((type) => (
@@ -519,7 +519,7 @@ export function JobForm({
         disabled={!isValid || isSubmitting}
         className={`w-full mt-4 py-4 rounded-xl font-bold text-base transition-all ${
           isValid && !isSubmitting
-            ? "bg-brand-blue hover:bg-brand-blue-dark text-white shadow-md active:scale-[0.98]"
+            ? "bg-blue-500 hover:bg-blue-600 text-white shadow-md active:scale-[0.98]"
             : "bg-gray-100 text-gray-400 cursor-not-allowed"
         }`}
       >

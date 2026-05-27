@@ -37,7 +37,7 @@ export function JobFilters({ filters, onChange }: JobFiltersProps) {
           {hasActiveFilters && (
             <button
               onClick={() => onChange({ ...filters, equipment_codes: [], job_types: [] })}
-              className="text-xs text-brand-blue hover:text-brand-blue-deep transition-colors"
+              className="text-xs text-blue-500 hover:text-blue-700 transition-colors"
             >
               초기화
             </button>
@@ -56,8 +56,8 @@ export function JobFilters({ filters, onChange }: JobFiltersProps) {
                     onClick={() => toggleEquipment(code)}
                     className={`w-4 h-4 rounded border-2 flex items-center justify-center transition-all shrink-0 ${
                       checked
-                        ? 'bg-brand-blue border-brand-blue'
-                        : 'border-gray-300 group-hover:border-brand-blue-muted'
+                        ? 'bg-blue-500 border-blue-500'
+                        : 'border-gray-300 group-hover:border-blue-400'
                     }`}
                   >
                     {checked && (
@@ -95,8 +95,8 @@ export function JobFilters({ filters, onChange }: JobFiltersProps) {
                     onClick={() => toggleJobType(type)}
                     className={`w-4 h-4 rounded border-2 flex items-center justify-center transition-all shrink-0 ${
                       checked
-                        ? 'bg-brand-blue border-brand-blue'
-                        : 'border-gray-300 group-hover:border-brand-blue-muted'
+                        ? 'bg-blue-500 border-blue-500'
+                        : 'border-gray-300 group-hover:border-blue-400'
                     }`}
                   >
                     {checked && (

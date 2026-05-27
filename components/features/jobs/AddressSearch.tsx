@@ -93,12 +93,12 @@ export function AddressSearch({ onSelect, onClose }: AddressSearchProps) {
               onChange={(e) => setQuery(e.target.value)}
               onKeyDown={handleKeyDown}
               placeholder="도로명, 지번, 건물명으로 검색"
-              className="flex-1 px-4 py-2.5 border border-gray-200 rounded-xl text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-blue focus:border-transparent transition"
+              className="flex-1 px-4 py-2.5 border border-gray-200 rounded-xl text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
             />
             <button
               onClick={search}
               disabled={isLoading}
-              className="px-4 py-2.5 bg-brand-blue hover:bg-brand-blue-dark text-white text-sm font-semibold rounded-xl transition-colors disabled:opacity-50 shrink-0"
+              className="px-4 py-2.5 bg-blue-500 hover:bg-blue-600 text-white text-sm font-semibold rounded-xl transition-colors disabled:opacity-50 shrink-0"
             >
               {isLoading ? (
                 <span className="flex items-center gap-1.5">
