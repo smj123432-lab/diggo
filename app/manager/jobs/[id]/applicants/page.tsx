@@ -33,15 +33,32 @@ export default async function ApplicantsPage({ params }: Props) {
 
   if (jobError || !job) notFound()
 
-  const { data: applications } = await supabase
+  const { data: rawApps } = await supabase
     .from('applications')
-    .select(`
-      id, status, applied_at,
-      profiles(id, name, rating_avg, is_certified, experience_years),
-      equipments(id, model_code, license_number)
-    `)
+    .select('id, status, applied_at, driver_id, equipment_id')
     .eq('job_id', params.id)
     .order('applied_at', { ascending: false })
+
+  const driverIds = (rawApps ?? []).map((a) => a.driver_id).filter(Boolean)
+  const equipmentIds = (rawApps ?? []).map((a) => a.equipment_id).filter(Boolean)
+
+  const [{ data: profiles }, { data: equipments }] = await Promise.all([
+    driverIds.length > 0
+      ? supabase.from('profiles').select('id, name, rating_avg, is_certified, experience_years').in('id', driverIds)
+      : Promise.resolve({ data: [] }),
+    equipmentIds.length > 0
+      ? supabase.from('equipments').select('id, model_code, license_number').in('id', equipmentIds)
+      : Promise.resolve({ data: [] }),
+  ])
+
+  const profileMap = new Map((profiles ?? []).map((p) => [p.id, p]))
+  const equipmentMap = new Map((equipments ?? []).map((e) => [e.id, e]))
+
+  const applications = (rawApps ?? []).map((app) => ({
+    ...app,
+    profiles: profileMap.get(app.driver_id) ?? null,
+    equipments: app.equipment_id ? (equipmentMap.get(app.equipment_id) ?? null) : null,
+  }))
 
   const workDate = new Date(job.work_date).toLocaleDateString('ko-KR', {
     month: 'long', day: 'numeric', weekday: 'short',

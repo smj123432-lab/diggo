@@ -25,26 +25,29 @@ export default async function ApplicantDetailPage({ params }: Props) {
 
   const { data: application, error } = await supabase
     .from('applications')
-    .select(`
-      id, status, applied_at,
-      profiles(id, name, rating_avg, is_certified, experience_years, phone, preferred_equipment_codes),
-      equipments(id, model_code, license_number),
-      jobs(id, title, manager_id)
-    `)
+    .select('id, status, applied_at, driver_id, equipment_id, job_id')
     .eq('id', params.applicationId)
     .single()
 
   if (error || !application) notFound()
 
-  const job = application.jobs as unknown as { id: string; title: string; manager_id: string }
-  if (job.manager_id !== user.id) notFound()
+  const [{ data: jobData }, { data: driverData }, { data: equipmentData }] = await Promise.all([
+    supabase.from('jobs').select('id, title, manager_id').eq('id', application.job_id).single(),
+    supabase.from('profiles').select('id, name, rating_avg, is_certified, experience_years, phone, preferred_equipment_codes').eq('id', application.driver_id).single(),
+    application.equipment_id
+      ? supabase.from('equipments').select('id, model_code, license_number').eq('id', application.equipment_id).single()
+      : Promise.resolve({ data: null }),
+  ])
 
-  const driver = application.profiles as unknown as {
+  if (!jobData || jobData.manager_id !== user.id) notFound()
+
+  const job = jobData as { id: string; title: string; manager_id: string }
+  const driver = (driverData ?? {}) as {
     id: string; name: string; rating_avg: number; is_certified: boolean
     experience_years: number | null; phone: string | null
     preferred_equipment_codes: EquipmentCode[]
   }
-  const equipment = application.equipments as unknown as {
+  const equipment = equipmentData as {
     id: string; model_code: EquipmentCode; license_number: string | null
   } | null
 

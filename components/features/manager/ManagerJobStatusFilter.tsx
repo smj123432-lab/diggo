@@ -8,6 +8,7 @@ type FilterValue = 'all' | JobStatus
 interface Props {
   value: FilterValue
   onChange: (v: FilterValue) => void
+  counts: Record<FilterValue, number>
 }
 
 const TABS: { value: FilterValue; label: string }[] = [
@@ -19,22 +20,25 @@ const TABS: { value: FilterValue; label: string }[] = [
   { value: 'settled',     label: '정산' },
 ]
 
-export function ManagerJobStatusFilter({ value, onChange }: Props) {
+export function ManagerJobStatusFilter({ value, onChange, counts }: Props) {
   return (
     <div className="flex gap-1.5 overflow-x-auto pb-1">
-      {TABS.map((tab) => (
-        <button
-          key={tab.value}
-          onClick={() => onChange(tab.value)}
-          className={`shrink-0 text-xs font-semibold px-3.5 py-1.5 rounded-full transition-colors ${
-            value === tab.value
-              ? 'bg-blue-500 text-white'
-              : 'bg-white border border-gray-200 text-gray-500 hover:border-blue-300 hover:text-blue-600'
-          }`}
-        >
-          {tab.label}
-        </button>
-      ))}
+      {TABS.map((tab) => {
+        const count = counts[tab.value]
+        return (
+          <button
+            key={tab.value}
+            onClick={() => onChange(tab.value)}
+            className={`shrink-0 text-xs font-semibold px-3.5 py-1.5 rounded-full transition-colors ${
+              value === tab.value
+                ? 'bg-blue-500 text-white'
+                : 'bg-white border border-gray-200 text-gray-500 hover:border-blue-300 hover:text-blue-600'
+            }`}
+          >
+            {tab.label}{count > 0 ? ` (${count})` : ''}
+          </button>
+        )
+      })}
     </div>
   )
 }

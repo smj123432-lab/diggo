@@ -11,21 +11,44 @@ export async function GET() {
       return NextResponse.json({ error: '로그인이 필요합니다.' }, { status: 401 })
     }
 
+    // 1단계: 일감 목록 조회
     const { data, error } = await supabase
       .from('jobs')
-      .select('*, applications(id, status)')
+      .select('*')
       .eq('manager_id', user.id)
       .order('created_at', { ascending: false })
 
     if (error) throw error
 
+    const jobIds = (data ?? []).map((j) => j.id)
+
+    // 2단계: 지원자 수 별도 조회
+    let appData: { id: string; job_id: string; status: string }[] = []
+    if (jobIds.length > 0) {
+      const { data: apps, error: appError } = await supabase
+        .from('applications')
+        .select('id, job_id, status')
+        .in('job_id', jobIds)
+      if (appError) {
+        console.error('[GET /api/jobs/mine] applications error:', JSON.stringify(appError))
+      } else {
+        appData = apps ?? []
+      }
+    }
+
+    const appMap = new Map<string, { id: string; status: string }[]>()
+    for (const app of appData) {
+      const list = appMap.get(app.job_id) ?? []
+      list.push(app)
+      appMap.set(app.job_id, list)
+    }
+
     const jobs = (data ?? []).map((job) => {
-      const applications = (job.applications ?? []) as { id: string; status: string }[]
+      const applications = appMap.get(job.id) ?? []
       return {
         ...job,
         applicant_count: applications.length,
         pending_count: applications.filter((a) => a.status === 'pending').length,
-        applications: undefined,
       }
     })
 

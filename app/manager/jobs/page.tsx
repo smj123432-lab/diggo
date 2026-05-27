@@ -27,7 +27,8 @@ export default function ManagerJobsPage() {
   const [filter, setFilter] = useState<FilterValue>('all')
 
   useEffect(() => {
-    if (!authLoading && (!user || role !== 'manager')) {
+    // role이 null이면 아직 프로필 fetch 중 — 리다이렉트 보류
+    if (!authLoading && role !== null && (!user || role !== 'manager')) {
       router.replace('/jobs')
     }
   }, [user, role, authLoading, router])
@@ -37,19 +38,35 @@ export default function ManagerJobsPage() {
     setIsLoading(true)
     fetch('/api/jobs/mine')
       .then((r) => r.json())
-      .then(({ data }) => setJobs(data ?? []))
+      .then((json) => {
+        setJobs(json.data ?? [])
+      })
       .finally(() => setIsLoading(false))
   }, [user, role])
 
   const today = new Date().toISOString().split('T')[0]
 
-  const filtered = jobs.filter((job) => {
-    const effective: JobStatus =
-      job.status === 'open' && job.work_date < today ? 'closed' : job.status
-    return filter === 'all' || effective === filter
-  })
+  const effectiveStatus = (job: JobWithCount): JobStatus =>
+    job.status === 'open' && job.work_date < today ? 'closed' : job.status
 
-  if (authLoading) return null
+  const sorted = [...jobs].sort((a, b) =>
+    new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+  )
+
+  const filtered = sorted.filter((job) =>
+    filter === 'all' || effectiveStatus(job) === filter
+  )
+
+  const counts: Record<FilterValue, number> = {
+    all:         jobs.length,
+    open:        jobs.filter((j) => effectiveStatus(j) === 'open').length,
+    closed:      jobs.filter((j) => effectiveStatus(j) === 'closed').length,
+    in_progress: jobs.filter((j) => effectiveStatus(j) === 'in_progress').length,
+    completed:   jobs.filter((j) => effectiveStatus(j) === 'completed').length,
+    settled:     jobs.filter((j) => effectiveStatus(j) === 'settled').length,
+  }
+
+  if (authLoading || role === null) return null
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -78,7 +95,7 @@ export default function ManagerJobsPage() {
         <div className="max-w-3xl mx-auto px-4 py-6">
 
           <div className="flex items-center justify-between mb-5">
-            <ManagerJobStatusFilter value={filter} onChange={setFilter} />
+            <ManagerJobStatusFilter value={filter} onChange={setFilter} counts={counts} />
             <Link
               href="/jobs/new"
               className="shrink-0 ml-3 text-sm bg-blue-500 hover:bg-blue-600 text-white font-bold px-4 py-2 rounded-xl transition-colors"
@@ -88,7 +105,7 @@ export default function ManagerJobsPage() {
           </div>
 
           {isLoading ? (
-            <div className="space-y-3">
+            <div className="flex flex-col gap-4">
               {[...Array(3)].map((_, i) => (
                 <div key={i} className="bg-white rounded-2xl border border-gray-200 p-5 animate-pulse h-28" />
               ))}
@@ -108,7 +125,7 @@ export default function ManagerJobsPage() {
               )}
             </div>
           ) : (
-            <div className="space-y-3">
+            <div className="flex flex-col gap-4">
               {filtered.map((job) => (
                 <ManagerJobCard key={job.id} job={job} />
               ))}

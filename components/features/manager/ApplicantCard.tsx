@@ -71,11 +71,12 @@ export function ApplicantCard({ jobId, application }: ApplicantCardProps) {
               </div>
             </div>
           </div>
-          <div className="flex flex-col items-end gap-1 shrink-0">
+          <div className="flex flex-col items-end gap-2 shrink-0">
             <span className={`text-xs font-semibold px-2.5 py-1 rounded-lg ${STATUS_STYLE[application.status]}`}>
               {APPLICATION_STATUS_LABELS[application.status]}
             </span>
             <span className="text-xs text-gray-400">{appliedAt} 지원</span>
+            <span className="text-xs font-semibold text-blue-500">상세 보기 →</span>
           </div>
         </div>
       </div>
