@@ -232,7 +232,7 @@ function SignupPageInner() {
         {/* 로고 */}
         <div className="flex flex-col items-center mb-10">
           <div className="inline-flex items-center gap-2.5 bg-slate-900 px-6 py-3 rounded-2xl mb-3">
-            <img src="/logo.png" alt="Diggo" className="h-8 w-auto object-contain" />
+            <img src="/logo.png" alt="Diggo" className="h-8 w-auto object-contain" style={{filter: "invert(1) hue-rotate(180deg) brightness(1.2) saturate(3)"}} />
             <span className="text-xl font-black tracking-tight text-white">
               Diggo<span className="text-blue-400">.</span>
             </span>
