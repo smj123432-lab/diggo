@@ -1,6 +1,6 @@
 'use client'
 
-// 마이페이지 프로필 카드 — 연필 클릭으로 인라인 수정 (이름·전화번호·한줄소개·차고지)
+// 프로필 카드 — 뼈대 고정, 텍스트 자리에만 input 스위칭
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
@@ -41,10 +41,6 @@ export function InlineProfileCard({ profile, jobCount = 0 }: Props) {
     setEditing(true)
   }
 
-  function cancelEdit() {
-    setEditing(false)
-  }
-
   async function handleSave() {
     if (!name.trim()) { toast.error('이름을 입력해 주세요.'); return }
     setIsSaving(true)
@@ -81,70 +77,84 @@ export function InlineProfileCard({ profile, jobCount = 0 }: Props) {
 
   return (
     <div className="bg-white border border-gray-200 rounded-2xl p-5">
-      <div className="flex items-start gap-5">
+      {/* ── 메인 행: 아바타 | 텍스트 | 평점+버튼 ── */}
+      <div className="flex items-center gap-5">
 
-        {/* 아바타 */}
+        {/* 아바타 — 항상 고정 */}
         <div className="w-16 h-16 rounded-2xl bg-blue-600 flex items-center justify-center text-2xl font-black text-white shrink-0">
           {dName?.charAt(0) ?? '?'}
         </div>
 
-        {/* 이름·역할·전화·소개 */}
+        {/* 이름·전화·소개 — 텍스트 ↔ input 스위칭 */}
         <div className="flex-1 min-w-0">
+
+          {/* 이름 행 */}
+          <div className="flex items-center gap-2 flex-wrap mb-0.5">
+            {editing ? (
+              <input
+                type="text"
+                value={name}
+                onChange={e => setName(e.target.value)}
+                className="text-lg font-black text-gray-900 bg-transparent border-b border-gray-300 focus:border-blue-500 focus:outline-none w-28"
+              />
+            ) : (
+              <span className="text-lg font-black text-gray-900">{dName}</span>
+            )}
+            <span className="text-xs font-bold bg-blue-600 text-white px-2 py-0.5 rounded-full shrink-0">
+              {ROLE_LABEL[profile.role]}
+            </span>
+            {profile.is_certified && (
+              <span className="inline-flex items-center gap-1 text-xs font-bold border border-blue-200 text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full shrink-0">
+                <svg className="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={3}>
+                  <path d="M20 6L9 17l-5-5" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+                인증
+              </span>
+            )}
+          </div>
+
+          {/* 전화번호 */}
           {editing ? (
-            <div className="space-y-2">
-              <input type="text" value={name} onChange={e => setName(e.target.value)} placeholder="이름"
-                className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm text-gray-900 focus:outline-none focus:border-blue-400 focus:ring-1 focus:ring-blue-400 transition" />
-              <input type="tel" value={phone} onChange={e => setPhone(e.target.value)} placeholder="010-0000-0000"
-                className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm placeholder-gray-300 focus:outline-none focus:border-blue-400 focus:ring-1 focus:ring-blue-400 transition" />
-              <input type="text" value={bio} onChange={e => setBio(e.target.value)} placeholder="한 줄 소개" maxLength={80}
-                className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm placeholder-gray-300 focus:outline-none focus:border-blue-400 focus:ring-1 focus:ring-blue-400 transition" />
-              {profile.role === 'manager' && (
-                <div className="flex gap-2">
-                  <div className="flex-1 border border-gray-200 rounded-xl px-3 py-2 text-sm bg-gray-50 min-h-[38px] flex items-center">
-                    {garage ? <span className="text-gray-800">{garage}</span> : <span className="text-gray-300">차고지 주소 검색</span>}
-                  </div>
-                  <button type="button" onClick={() => setShowAddress(true)}
-                    className="shrink-0 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold px-3 rounded-xl transition-colors">
-                    검색
-                  </button>
-                </div>
-              )}
-              <div className="flex gap-2 pt-1">
-                <button onClick={cancelEdit}
-                  className="flex-1 py-2 rounded-xl border border-gray-200 text-xs font-semibold text-gray-500 hover:bg-gray-50 transition-colors">
-                  취소
-                </button>
-                <button onClick={handleSave} disabled={isSaving}
-                  className="flex-1 py-2 rounded-xl bg-blue-600 text-white text-xs font-semibold hover:bg-blue-700 disabled:opacity-50 transition-colors">
-                  {isSaving ? '저장 중...' : '저장'}
-                </button>
-              </div>
-            </div>
+            <input
+              type="tel"
+              value={phone}
+              onChange={e => setPhone(e.target.value)}
+              placeholder="010-0000-0000"
+              className="text-sm text-gray-500 bg-transparent border-b border-gray-200 focus:border-blue-500 focus:outline-none w-full mb-1 placeholder-gray-300"
+            />
           ) : (
-            <>
-              <div className="flex items-center gap-2 flex-wrap mb-0.5">
-                <h1 className="text-lg font-black text-gray-900">{dName}</h1>
-                <span className="text-xs font-bold bg-blue-600 text-white px-2 py-0.5 rounded-full">
-                  {ROLE_LABEL[profile.role]}
-                </span>
-                {profile.is_certified && (
-                  <span className="inline-flex items-center gap-1 text-xs font-bold border border-blue-200 text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full">
-                    <svg className="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={3}>
-                      <path d="M20 6L9 17l-5-5" strokeLinecap="round" strokeLinejoin="round" />
-                    </svg>
-                    인증
-                  </span>
-                )}
-              </div>
-              <p className="text-sm text-gray-500 mb-1">{dPhone || '전화번호 미등록'}</p>
-              {dBio
-                ? <p className="text-xs text-gray-500">&ldquo;{dBio}&rdquo;</p>
-                : <p className="text-xs text-gray-300 italic">한 줄 소개를 등록해 보세요</p>}
-            </>
+            <p className="text-sm text-gray-500 mb-1">{dPhone || '전화번호 미등록'}</p>
+          )}
+
+          {/* 한 줄 소개 */}
+          {editing ? (
+            <input
+              type="text"
+              value={bio}
+              onChange={e => setBio(e.target.value)}
+              placeholder="한 줄 소개를 등록해 보세요"
+              maxLength={80}
+              className="text-xs text-gray-500 bg-transparent border-b border-gray-200 focus:border-blue-500 focus:outline-none w-full placeholder-gray-300"
+            />
+          ) : (
+            dBio
+              ? <p className="text-xs text-gray-500">&ldquo;{dBio}&rdquo;</p>
+              : <p className="text-xs text-gray-300 italic">한 줄 소개를 등록해 보세요</p>
+          )}
+
+          {/* 소장 차고지 — 수정 모드에만 표시 */}
+          {editing && profile.role === 'manager' && (
+            <div className="flex items-center gap-2 mt-1.5">
+              <span className="text-xs text-gray-400 truncate">{garage || '차고지 미등록'}</span>
+              <button type="button" onClick={() => setShowAddress(true)}
+                className="text-xs font-semibold text-blue-500 hover:text-blue-700 shrink-0 transition-colors">
+                변경
+              </button>
+            </div>
           )}
         </div>
 
-        {/* 우측: 평점(기사) + 수정 버튼 */}
+        {/* 우측: 평점(기사) + [프로필 수정] ↔ [취소][저장] */}
         <div className="flex flex-col items-end gap-2 shrink-0">
           {profile.role === 'driver' && (
             <div className="text-center">
@@ -154,7 +164,19 @@ export function InlineProfileCard({ profile, jobCount = 0 }: Props) {
               </p>
             </div>
           )}
-          {!editing && (
+
+          {editing ? (
+            <div className="flex gap-1.5">
+              <button onClick={() => setEditing(false)}
+                className="text-xs font-semibold text-gray-500 border border-gray-200 bg-white hover:bg-gray-50 px-2.5 py-1.5 rounded-lg transition-colors">
+                취소
+              </button>
+              <button onClick={handleSave} disabled={isSaving}
+                className="text-xs font-semibold text-white bg-blue-600 hover:bg-blue-700 px-2.5 py-1.5 rounded-lg disabled:opacity-50 transition-colors">
+                {isSaving ? '저장 중' : '저장'}
+              </button>
+            </div>
+          ) : (
             <button onClick={openEdit}
               className="text-xs font-semibold text-blue-600 border border-blue-200 bg-white hover:bg-blue-50 px-3 py-1.5 rounded-lg transition-colors">
               프로필 수정
@@ -163,7 +185,7 @@ export function InlineProfileCard({ profile, jobCount = 0 }: Props) {
         </div>
       </div>
 
-      {/* 소장 배지 행 */}
+      {/* 소장 배지 행 — 뷰 모드에서만 */}
       {profile.role === 'manager' && !editing && (
         <div className="mt-4 pt-4 border-t border-gray-200 flex flex-wrap gap-2">
           <span className="inline-flex items-center text-xs font-semibold border border-blue-200 text-blue-600 bg-white px-3 py-1 rounded-full">
