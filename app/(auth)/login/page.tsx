@@ -74,7 +74,7 @@ function LoginForm() {
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           placeholder="example@email.com"
-          className="w-full px-4 py-3 border border-gray-300 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-blue focus:border-transparent transition"
+          className="w-full px-4 py-3 border border-gray-300 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
         />
       </div>
 
@@ -91,7 +91,7 @@ function LoginForm() {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             placeholder="비밀번호 입력"
-            className="w-full px-4 py-3 pr-11 border border-gray-300 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-blue focus:border-transparent transition"
+            className="w-full px-4 py-3 pr-11 border border-gray-300 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
           />
           <button
             type="button"
@@ -113,14 +113,14 @@ function LoginForm() {
       <button
         type="submit"
         disabled={isLoading}
-        className="w-full py-3 bg-brand-blue hover:bg-brand-blue-dark disabled:bg-blue-300 text-white font-semibold rounded-xl transition focus:outline-none focus:ring-2 focus:ring-brand-blue focus:ring-offset-2"
+        className="w-full py-3 bg-blue-500 hover:bg-blue-600 disabled:bg-blue-300 text-white font-semibold rounded-xl transition focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
       >
         {isLoading ? '로그인 중...' : '로그인'}
       </button>
 
       <p className="text-center text-sm text-gray-500">
         아직 계정이 없으신가요?{' '}
-        <Link href="/signup" className="text-brand-blue-dark font-medium hover:underline">
+        <Link href="/signup" className="text-blue-600 font-medium hover:underline">
           회원가입
         </Link>
       </p>

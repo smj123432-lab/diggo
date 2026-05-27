@@ -57,7 +57,7 @@ function Chip({ label, selected, onClick }: { label: string; selected: boolean; 
       onClick={onClick}
       className={`px-3 py-1.5 rounded-lg text-sm font-medium border-2 transition ${
         selected
-          ? 'border-brand-blue bg-blue-50 text-brand-blue-deep'
+          ? 'border-blue-500 bg-blue-50 text-blue-700'
           : 'border-gray-200 text-gray-600 hover:border-gray-300 hover:bg-gray-50'
       }`}
     >
@@ -213,7 +213,7 @@ function SignupPageInner() {
             </p>
             <Link
               href="/login"
-              className="inline-block w-full py-3 bg-brand-blue hover:bg-brand-blue-dark text-white font-semibold rounded-xl transition text-center"
+              className="inline-block w-full py-3 bg-blue-500 hover:bg-blue-600 text-white font-semibold rounded-xl transition text-center"
             >
               로그인 페이지로
             </Link>
@@ -246,7 +246,7 @@ function SignupPageInner() {
             {[1, 2, 3].map((n, i) => (
               <React.Fragment key={n}>
                 <div className="flex items-center gap-1.5">
-                  <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold transition ${step >= n ? 'bg-brand-blue text-white' : 'bg-gray-200 text-gray-400'}`}>
+                  <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold transition ${step >= n ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-400'}`}>
                     {n}
                   </div>
                   <span className={`text-xs font-medium transition ${step === n ? 'text-gray-900' : 'text-gray-400'}`}>
@@ -273,10 +273,10 @@ function SignupPageInner() {
                   >
                     <div className="flex-shrink-0">{icon}</div>
                     <div>
-                      <p className="font-semibold text-gray-900 group-hover:text-brand-blue-deep">{label}</p>
+                      <p className="font-semibold text-gray-900 group-hover:text-blue-700">{label}</p>
                       <p className="text-sm text-gray-500">{desc}</p>
                     </div>
-                    <div className="ml-auto text-gray-300 group-hover:text-brand-blue-muted">→</div>
+                    <div className="ml-auto text-gray-300 group-hover:text-blue-400">→</div>
                   </button>
                 ))}
               </div>
@@ -297,10 +297,10 @@ function SignupPageInner() {
               <div className="flex items-center gap-2 mb-8">
                 <div className="w-6 h-5 flex items-center justify-center">
                   {selectedRole === 'driver'
-                    ? <ExcavatorIcon className="w-6 h-5 text-brand-blue-dark" />
+                    ? <ExcavatorIcon className="w-6 h-5 text-blue-600" />
                     : <span className="text-base">📋</span>}
                 </div>
-                <span className="text-sm font-medium text-brand-blue-dark bg-blue-50 px-2 py-0.5 rounded-full">
+                <span className="text-sm font-medium text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full">
                   {ROLE_OPTIONS.find((o) => o.role === selectedRole)?.label}
                 </span>
               </div>
@@ -313,7 +313,7 @@ function SignupPageInner() {
                     id="name" type="text" required autoComplete="name" maxLength={10}
                     value={name} onChange={(e) => setName(e.target.value)}
                     placeholder="홍길동"
-                    className="w-full px-4 py-3 border border-gray-300 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-blue focus:border-transparent transition"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
                   />
                 </div>
 
@@ -329,7 +329,7 @@ function SignupPageInner() {
                     className={`w-full px-4 py-3 border rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:border-transparent transition ${
                       emailError ? 'border-red-400 focus:ring-red-400'
                         : emailTouched && email && !emailError ? 'border-green-400 focus:ring-green-400'
-                        : 'border-gray-300 focus:ring-brand-blue'
+                        : 'border-gray-300 focus:ring-blue-500'
                     }`}
                   />
                   {emailError && (
@@ -349,7 +349,7 @@ function SignupPageInner() {
                       className={`w-full px-4 py-3 pr-11 border rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:border-transparent transition ${
                         pwTouched && !isPwValid ? 'border-red-400 focus:ring-red-400'
                           : pwTouched && isPwValid ? 'border-green-400 focus:ring-green-400'
-                          : 'border-gray-300 focus:ring-brand-blue'
+                          : 'border-gray-300 focus:ring-blue-500'
                       }`}
                     />
                     <button type="button" onClick={() => setShowPw((v) => !v)}
@@ -381,7 +381,7 @@ function SignupPageInner() {
                       className={`w-full px-4 py-3 pr-11 border rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:border-transparent transition ${
                         confirmPassword && password.length > 0 && confirmPassword !== password ? 'border-red-400 focus:ring-red-400'
                           : confirmPassword && password.length > 0 && confirmPassword === password ? 'border-green-400 focus:ring-green-400'
-                          : 'border-gray-300 focus:ring-brand-blue'
+                          : 'border-gray-300 focus:ring-blue-500'
                       }`}
                     />
                     <button type="button" onClick={() => setShowConfirmPw((v) => !v)}
@@ -400,8 +400,8 @@ function SignupPageInner() {
                 {/* 다음 버튼 */}
                 <button
                   type="submit"
-                  className={`w-full py-3 text-white font-semibold rounded-xl transition focus:outline-none focus:ring-2 focus:ring-brand-blue focus:ring-offset-2 ${
-                    isFormValid ? 'bg-brand-blue hover:bg-brand-blue-dark cursor-pointer' : 'bg-gray-300 cursor-not-allowed'
+                  className={`w-full py-3 text-white font-semibold rounded-xl transition focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${
+                    isFormValid ? 'bg-blue-500 hover:bg-blue-600 cursor-pointer' : 'bg-gray-300 cursor-not-allowed'
                   }`}
                   disabled={!isFormValid}
                 >
@@ -500,7 +500,7 @@ function SignupPageInner() {
                   type="button"
                   onClick={handleSignUp}
                   disabled={isLoading}
-                  className="flex-1 py-3 bg-brand-blue hover:bg-brand-blue-dark text-white font-semibold rounded-xl transition disabled:bg-blue-300"
+                  className="flex-1 py-3 bg-blue-500 hover:bg-blue-600 text-white font-semibold rounded-xl transition disabled:bg-blue-300"
                 >
                   {isLoading ? '가입 중...' : '완료'}
                 </button>
@@ -510,7 +510,7 @@ function SignupPageInner() {
 
           <p className="text-center text-sm text-gray-500 mt-6">
             이미 계정이 있으신가요?{' '}
-            <Link href="/login" className="text-brand-blue-dark font-medium hover:underline">
+            <Link href="/login" className="text-blue-600 font-medium hover:underline">
               로그인
             </Link>
           </p>

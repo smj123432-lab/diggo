@@ -18,7 +18,7 @@ const STATUS_BAR: Record<JobStatus, string> = {
 const STATUS_BADGE: Record<JobStatus, string> = {
   open:        'text-emerald-700 bg-emerald-50',
   closed:      'text-gray-500 bg-gray-100',
-  in_progress: 'text-brand-blue-deep bg-blue-50',
+  in_progress: 'text-blue-700 bg-blue-50',
   completed:   'text-emerald-700 bg-emerald-50',
   settled:     'text-emerald-700 bg-emerald-50',
 }
@@ -51,7 +51,7 @@ export function ManagerJobCard({ job }: ManagerJobCardProps) {
                 {JOB_STATUS_LABELS[effectiveStatus]}
               </span>
               {(job.equipment_codes as EquipmentCode[]).map((code) => (
-                <span key={code} className="bg-brand-blue text-white text-xs font-bold px-2 py-0.5 rounded-md">
+                <span key={code} className="bg-blue-500 text-white text-xs font-bold px-2 py-0.5 rounded-md">
                   {EQUIPMENT_LABELS[code]}
                 </span>
               ))}

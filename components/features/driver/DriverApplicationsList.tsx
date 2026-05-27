@@ -42,7 +42,7 @@ const STAGE_BAR: Record<StageFilter, string> = {
 
 const STAGE_BADGE: Record<StageFilter, string> = {
   all:                '',
-  applying:           'bg-blue-50 text-brand-blue-deep',
+  applying:           'bg-blue-50 text-blue-700',
   confirmed:          'bg-emerald-50 text-emerald-700',
   pending_settlement: 'bg-amber-50 text-amber-700',
   settled:            'bg-emerald-50 text-emerald-700',
@@ -101,8 +101,8 @@ export function DriverApplicationsList({ applications }: Props) {
               onClick={() => setFilter(tab.value)}
               className={`shrink-0 text-xs font-semibold px-3.5 py-1.5 rounded-full transition-colors ${
                 filter === tab.value
-                  ? 'bg-brand-blue text-white'
-                  : 'bg-white border border-gray-200 text-gray-500 hover:border-blue-300 hover:text-brand-blue-dark'
+                  ? 'bg-blue-500 text-white'
+                  : 'bg-white border border-gray-200 text-gray-500 hover:border-blue-300 hover:text-blue-600'
               }`}
             >
               {tab.label}{count > 0 ? ` (${count})` : ''}
@@ -121,7 +121,7 @@ export function DriverApplicationsList({ applications }: Props) {
           {filter === 'all' && (
             <Link
               href="/jobs"
-              className="inline-block bg-brand-blue text-white font-bold px-6 py-3 rounded-2xl text-sm hover:bg-brand-blue-dark transition-colors"
+              className="inline-block bg-blue-500 text-white font-bold px-6 py-3 rounded-2xl text-sm hover:bg-blue-600 transition-colors"
             >
               일감 찾아보기
             </Link>
@@ -171,7 +171,7 @@ export function DriverApplicationsList({ applications }: Props) {
                           </span>
                         )}
                         {equipment && (
-                          <span className="bg-brand-blue text-white text-xs font-bold px-2 py-0.5 rounded-md">
+                          <span className="bg-blue-500 text-white text-xs font-bold px-2 py-0.5 rounded-md">
                             {EQUIPMENT_LABELS[equipment.model_code]}
                           </span>
                         )}

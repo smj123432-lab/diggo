@@ -95,7 +95,7 @@ export default async function MypagePage() {
           <div className="bg-slate-50/50 border border-slate-100 rounded-2xl p-5">
             <div className="flex items-center gap-5">
               {/* 아바타 */}
-              <div className="w-16 h-16 rounded-2xl bg-brand-blue-dark flex items-center justify-center text-2xl font-black text-white shrink-0">
+              <div className="w-16 h-16 rounded-2xl bg-blue-600 flex items-center justify-center text-2xl font-black text-white shrink-0">
                 {initial}
               </div>
 
@@ -103,11 +103,11 @@ export default async function MypagePage() {
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 flex-wrap mb-0.5">
                   <h1 className="text-lg font-black text-gray-900">{profile.name}</h1>
-                  <span className="text-xs font-bold bg-brand-blue-dark text-white px-2 py-0.5 rounded-full">
+                  <span className="text-xs font-bold bg-blue-600 text-white px-2 py-0.5 rounded-full">
                     {roleLabel}
                   </span>
                   {profile.is_certified && (
-                    <span className="inline-flex items-center gap-1 text-xs font-bold border border-blue-200 text-brand-blue-dark bg-blue-50 px-2 py-0.5 rounded-full">
+                    <span className="inline-flex items-center gap-1 text-xs font-bold border border-blue-200 text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full">
                       <svg className="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={3}>
                         <path d="M20 6L9 17l-5-5" strokeLinecap="round" strokeLinejoin="round" />
                       </svg>
@@ -136,7 +136,7 @@ export default async function MypagePage() {
               {/* 프로필 수정 버튼 */}
               <Link
                 href="/mypage/edit"
-                className="self-start shrink-0 text-xs font-semibold text-brand-blue-dark border border-blue-200 bg-white hover:bg-blue-50 px-3 py-1.5 rounded-lg transition-colors"
+                className="self-start shrink-0 text-xs font-semibold text-blue-600 border border-blue-200 bg-white hover:bg-blue-50 px-3 py-1.5 rounded-lg transition-colors"
               >
                 프로필 수정
               </Link>
@@ -145,7 +145,7 @@ export default async function MypagePage() {
             {/* 소장 배지 행 */}
             {profile.role === 'manager' && (
               <div className="mt-4 pt-4 border-t border-slate-100 flex flex-wrap gap-2">
-                <span className="inline-flex items-center text-xs font-semibold border border-blue-200 text-brand-blue-dark bg-white px-3 py-1 rounded-full">
+                <span className="inline-flex items-center text-xs font-semibold border border-blue-200 text-blue-600 bg-white px-3 py-1 rounded-full">
                   누적 일감 {jobCount}건
                 </span>
                 {profile.garage_address && (
@@ -164,7 +164,7 @@ export default async function MypagePage() {
           {/* ── 기사 정보 카드 ── */}
           {profile.role === 'driver' && (
             <div className="bg-white rounded-2xl border border-gray-200 p-5">
-              <p className="text-xs font-semibold text-brand-blue-dark mb-3">기사 정보</p>
+              <p className="text-xs font-semibold text-blue-600 mb-3">기사 정보</p>
 
               {/* 보유 장비 */}
               <div className="border border-blue-100 bg-blue-50/30 rounded-xl p-3 mb-3">
@@ -172,7 +172,7 @@ export default async function MypagePage() {
                 {equipments.length > 0 ? (
                   <div className="flex gap-1.5 flex-wrap">
                     {equipments.map((eq) => (
-                      <span key={eq.id} className="bg-brand-blue-dark text-white text-xs font-bold px-2.5 py-1 rounded-lg">
+                      <span key={eq.id} className="bg-blue-600 text-white text-xs font-bold px-2.5 py-1 rounded-lg">
                         {EQUIPMENT_LABELS[eq.model_code]}
                       </span>
                     ))}
@@ -193,7 +193,7 @@ export default async function MypagePage() {
                 <div className={`border rounded-xl p-3 text-center ${certApproved ? 'border-blue-100 bg-blue-50/30' : 'border-red-100 bg-red-50/30'}`}>
                   <p className="text-xs text-gray-400 mb-1.5">면허·안전교육</p>
                   {certApproved ? (
-                    <p className="text-sm font-bold text-brand-blue-dark">이수완료</p>
+                    <p className="text-sm font-bold text-blue-600">이수완료</p>
                   ) : (
                     <div className="flex flex-col items-center gap-1.5">
                       <p className="text-sm font-bold text-gray-400">미등록</p>
@@ -224,32 +224,32 @@ export default async function MypagePage() {
                   <>
                     <Link href="/manager/jobs" className="flex-1 flex items-center gap-3 px-4 hover:bg-blue-50 transition-colors group">
                       <span className="w-8 h-8 rounded-lg bg-blue-50 group-hover:bg-blue-100 flex items-center justify-center transition-colors shrink-0">
-                        <svg className="w-4 h-4 text-brand-blue-dark" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+                        <svg className="w-4 h-4 text-blue-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
                           <rect x="3" y="3" width="18" height="18" rx="2" />
                           <path d="M9 9h6M9 13h6M9 17h4" strokeLinecap="round" />
                         </svg>
                       </span>
-                      <span className="text-sm font-semibold text-gray-700 group-hover:text-brand-blue-dark transition-colors">내 일감 관리</span>
+                      <span className="text-sm font-semibold text-gray-700 group-hover:text-blue-600 transition-colors">내 일감 관리</span>
                       <svg className="w-4 h-4 text-gray-300 ml-auto" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}><path d="M9 18l6-6-6-6" /></svg>
                     </Link>
                     <Link href="/mypage/ledger" className="flex-1 flex items-center gap-3 px-4 hover:bg-blue-50 transition-colors group">
                       <span className="w-8 h-8 rounded-lg bg-blue-50 group-hover:bg-blue-100 flex items-center justify-center transition-colors shrink-0">
-                        <svg className="w-4 h-4 text-brand-blue-dark" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+                        <svg className="w-4 h-4 text-blue-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
                           <path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2" />
                           <rect x="9" y="3" width="6" height="4" rx="1" />
                           <line x1="9" y1="12" x2="15" y2="12" /><line x1="9" y1="16" x2="13" y2="16" />
                         </svg>
                       </span>
-                      <span className="text-sm font-semibold text-gray-700 group-hover:text-brand-blue-dark transition-colors">소장 장부</span>
+                      <span className="text-sm font-semibold text-gray-700 group-hover:text-blue-600 transition-colors">소장 장부</span>
                       <svg className="w-4 h-4 text-gray-300 ml-auto" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}><path d="M9 18l6-6-6-6" /></svg>
                     </Link>
                     <Link href="/mypage/reviews" className="flex-1 flex items-center gap-3 px-4 hover:bg-blue-50 transition-colors group">
                       <span className="w-8 h-8 rounded-lg bg-blue-50 group-hover:bg-blue-100 flex items-center justify-center transition-colors shrink-0">
-                        <svg className="w-4 h-4 text-brand-blue-dark" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+                        <svg className="w-4 h-4 text-blue-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
                           <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
                         </svg>
                       </span>
-                      <span className="text-sm font-semibold text-gray-700 group-hover:text-brand-blue-dark transition-colors">받은 평가</span>
+                      <span className="text-sm font-semibold text-gray-700 group-hover:text-blue-600 transition-colors">받은 평가</span>
                       <svg className="w-4 h-4 text-gray-300 ml-auto" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}><path d="M9 18l6-6-6-6" /></svg>
                     </Link>
                   </>
@@ -257,33 +257,33 @@ export default async function MypagePage() {
                   <>
                     <Link href="/mypage/applications" className="flex-1 flex items-center gap-3 px-4 hover:bg-blue-50 transition-colors group">
                       <span className="w-8 h-8 rounded-lg bg-blue-50 group-hover:bg-blue-100 flex items-center justify-center transition-colors shrink-0">
-                        <svg className="w-4 h-4 text-brand-blue-dark" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+                        <svg className="w-4 h-4 text-blue-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
                           <path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2" />
                           <rect x="9" y="3" width="6" height="4" rx="1" />
                           <path d="M9 12l2 2 4-4" strokeLinecap="round" strokeLinejoin="round" />
                         </svg>
                       </span>
-                      <span className="text-sm font-semibold text-gray-700 group-hover:text-brand-blue-dark transition-colors">지원 현황</span>
+                      <span className="text-sm font-semibold text-gray-700 group-hover:text-blue-600 transition-colors">지원 현황</span>
                       <svg className="w-4 h-4 text-gray-300 ml-auto" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}><path d="M9 18l6-6-6-6" /></svg>
                     </Link>
                     <Link href="/mypage/ledger" className="flex-1 flex items-center gap-3 px-4 hover:bg-blue-50 transition-colors group">
                       <span className="w-8 h-8 rounded-lg bg-blue-50 group-hover:bg-blue-100 flex items-center justify-center transition-colors shrink-0">
-                        <svg className="w-4 h-4 text-brand-blue-dark" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+                        <svg className="w-4 h-4 text-blue-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
                           <path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2" />
                           <rect x="9" y="3" width="6" height="4" rx="1" />
                           <line x1="9" y1="12" x2="15" y2="12" /><line x1="9" y1="16" x2="13" y2="16" />
                         </svg>
                       </span>
-                      <span className="text-sm font-semibold text-gray-700 group-hover:text-brand-blue-dark transition-colors">기사 수당 장부</span>
+                      <span className="text-sm font-semibold text-gray-700 group-hover:text-blue-600 transition-colors">기사 수당 장부</span>
                       <svg className="w-4 h-4 text-gray-300 ml-auto" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}><path d="M9 18l6-6-6-6" /></svg>
                     </Link>
                     <Link href="/mypage/reviews" className="flex-1 flex items-center gap-3 px-4 hover:bg-blue-50 transition-colors group">
                       <span className="w-8 h-8 rounded-lg bg-blue-50 group-hover:bg-blue-100 flex items-center justify-center transition-colors shrink-0">
-                        <svg className="w-4 h-4 text-brand-blue-dark" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+                        <svg className="w-4 h-4 text-blue-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
                           <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
                         </svg>
                       </span>
-                      <span className="text-sm font-semibold text-gray-700 group-hover:text-brand-blue-dark transition-colors">받은 평가</span>
+                      <span className="text-sm font-semibold text-gray-700 group-hover:text-blue-600 transition-colors">받은 평가</span>
                       <svg className="w-4 h-4 text-gray-300 ml-auto" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}><path d="M9 18l6-6-6-6" /></svg>
                     </Link>
                   </>
@@ -297,23 +297,23 @@ export default async function MypagePage() {
 
               <Link href="/notifications" className="flex items-center gap-3 px-4 py-3.5 hover:bg-blue-50 transition-colors group">
                 <span className="w-8 h-8 rounded-lg bg-blue-50 group-hover:bg-blue-100 flex items-center justify-center transition-colors">
-                  <svg className="w-4 h-4 text-brand-blue-dark" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+                  <svg className="w-4 h-4 text-blue-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
                     <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
                     <path d="M13.73 21a2 2 0 0 1-3.46 0" />
                   </svg>
                 </span>
-                <span className="text-sm font-semibold text-gray-700 group-hover:text-brand-blue-dark transition-colors">알림 설정</span>
+                <span className="text-sm font-semibold text-gray-700 group-hover:text-blue-600 transition-colors">알림 설정</span>
                 <svg className="w-4 h-4 text-gray-300 ml-auto" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}><path d="M9 18l6-6-6-6" /></svg>
               </Link>
 
               <Link href="/mypage/edit" className="flex items-center gap-3 px-4 py-3.5 hover:bg-blue-50 transition-colors group">
                 <span className="w-8 h-8 rounded-lg bg-blue-50 group-hover:bg-blue-100 flex items-center justify-center transition-colors">
-                  <svg className="w-4 h-4 text-brand-blue-dark" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+                  <svg className="w-4 h-4 text-blue-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
                     <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
                     <path d="M7 11V7a5 5 0 0 1 10 0v4" />
                   </svg>
                 </span>
-                <span className="text-sm font-semibold text-gray-700 group-hover:text-brand-blue-dark transition-colors">비밀번호 변경</span>
+                <span className="text-sm font-semibold text-gray-700 group-hover:text-blue-600 transition-colors">비밀번호 변경</span>
                 <svg className="w-4 h-4 text-gray-300 ml-auto" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}><path d="M9 18l6-6-6-6" /></svg>
               </Link>
 

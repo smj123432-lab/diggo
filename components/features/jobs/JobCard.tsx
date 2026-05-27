@@ -12,7 +12,7 @@ interface JobCardProps {
 const STATUS_BADGE: Record<JobStatus, { label: string; className: string }> = {
   open:        { label: '모집중',    className: 'text-emerald-600' },
   closed:      { label: '마감',      className: 'text-gray-400' },
-  in_progress: { label: '작업중',    className: 'text-brand-blue' },
+  in_progress: { label: '작업중',    className: 'text-blue-500' },
   completed:   { label: '작업완료',  className: 'text-slate-600' },
   settled:     { label: '정산완료',  className: 'text-emerald-600' },
 }
@@ -45,14 +45,14 @@ export function JobCard({ job, isPreferred }: JobCardProps) {
       <div className={`bg-white border rounded-2xl p-5 transition-all h-full flex flex-col ${
         isClosed
           ? 'border-gray-100 opacity-60'
-          : 'border-gray-200 hover:border-brand-blue-light hover:shadow-md group cursor-pointer'
+          : 'border-gray-200 hover:border-blue-300 hover:shadow-md group cursor-pointer'
       }`}>
 
         {/* 배지 행 */}
         <div className="flex items-center gap-1.5 flex-wrap mb-3">
           {/* 장비 코드 — 파란 솔리드 (복수 표시) */}
           {(job.equipment_codes as EquipmentCode[]).map((code) => (
-            <span key={code} className="bg-brand-blue text-white text-xs font-bold px-2.5 py-1 rounded-lg">
+            <span key={code} className="bg-blue-500 text-white text-xs font-bold px-2.5 py-1 rounded-lg">
               {EQUIPMENT_LABELS[code]}
             </span>
           ))}
@@ -73,7 +73,7 @@ export function JobCard({ job, isPreferred }: JobCardProps) {
         </div>
 
         {/* 제목 */}
-        <h3 className="text-gray-900 font-bold text-sm mb-2 group-hover:text-brand-blue-dark transition-colors line-clamp-2 leading-snug">
+        <h3 className="text-gray-900 font-bold text-sm mb-2 group-hover:text-blue-600 transition-colors line-clamp-2 leading-snug">
           {job.title}
         </h3>
 
@@ -113,7 +113,7 @@ export function JobCard({ job, isPreferred }: JobCardProps) {
               {job.profiles.name} 소장
             </span>
             {job.profiles.is_certified && (
-              <span className="inline-flex items-center justify-center bg-brand-blue text-white w-4 h-4 rounded-full leading-none shrink-0">
+              <span className="inline-flex items-center justify-center bg-blue-500 text-white w-4 h-4 rounded-full leading-none shrink-0">
                 <svg className="w-2.5 h-2.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={3}>
                   <path d="M20 6L9 17l-5-5" strokeLinecap="round" strokeLinejoin="round" />
                 </svg>
@@ -129,7 +129,7 @@ export function JobCard({ job, isPreferred }: JobCardProps) {
             {(job.equipment_codes as EquipmentCode[]).map(code => (
               <div key={code} className="flex items-baseline gap-1">
                 <span className="text-xs text-gray-400">{EQUIPMENT_LABELS[code]}</span>
-                <span className="text-brand-blue-dark font-black text-base leading-none">
+                <span className="text-blue-600 font-black text-base leading-none">
                   {(job.pay_amounts as Record<string, number>)[code]?.toLocaleString()}원
                 </span>
               </div>

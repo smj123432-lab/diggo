@@ -19,7 +19,7 @@ export function CopyButton({ text }: Props) {
   return (
     <button
       onClick={handleCopy}
-      className="ml-1.5 p-1.5 rounded-lg text-gray-400 hover:text-brand-blue hover:bg-blue-50 transition-colors shrink-0"
+      className="ml-1.5 p-1.5 rounded-lg text-gray-400 hover:text-blue-500 hover:bg-blue-50 transition-colors shrink-0"
       title="주소 복사"
     >
       {copied ? (

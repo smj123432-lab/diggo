@@ -134,8 +134,8 @@ export function JobList() {
                 onClick={() => toggleEquipment(code)}
                 className={`shrink-0 px-3 py-1.5 rounded-full text-xs font-medium border transition-all ${
                   filters.equipment_codes.includes(code)
-                    ? 'bg-brand-blue border-brand-blue text-white'
-                    : 'bg-white border-gray-200 text-gray-600 hover:border-brand-blue-light'
+                    ? 'bg-blue-500 border-blue-500 text-white'
+                    : 'bg-white border-gray-200 text-gray-600 hover:border-blue-300'
                 }`}
               >
                 {EQUIPMENT_LABELS[code]}
@@ -148,8 +148,8 @@ export function JobList() {
                 onClick={() => toggleJobType(type)}
                 className={`shrink-0 px-3 py-1.5 rounded-full text-xs font-medium border transition-all ${
                   filters.job_types.includes(type)
-                    ? 'bg-brand-blue border-brand-blue text-white'
-                    : 'bg-white border-gray-200 text-gray-600 hover:border-brand-blue-light'
+                    ? 'bg-blue-500 border-blue-500 text-white'
+                    : 'bg-white border-gray-200 text-gray-600 hover:border-blue-300'
                 }`}
               >
                 {JOB_TYPE_LABELS[type]}
@@ -177,7 +177,7 @@ export function JobList() {
                 onChange={(e) => setSearchInput(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
                 placeholder="지역 또는 현장 주소 검색 (예: 성수동, 수원)"
-                className="w-full pl-4 pr-10 py-2.5 bg-white border border-gray-200 rounded-xl text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-blue focus:border-transparent transition shadow-sm"
+                className="w-full pl-4 pr-10 py-2.5 bg-white border border-gray-200 rounded-xl text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition shadow-sm"
               />
               {/* 모바일: 돋보기 아이콘(검색) 또는 X(초기화) — 인풋 내부 오른쪽 */}
               <button
@@ -198,7 +198,7 @@ export function JobList() {
             {/* 검색 버튼 — 데스크톱만 */}
             <button
               onClick={handleSearch}
-              className="hidden md:flex shrink-0 items-center gap-1.5 bg-brand-blue hover:bg-brand-blue-dark text-white text-sm font-semibold px-4 py-2.5 rounded-xl transition-colors shadow-sm"
+              className="hidden md:flex shrink-0 items-center gap-1.5 bg-blue-500 hover:bg-blue-600 text-white text-sm font-semibold px-4 py-2.5 rounded-xl transition-colors shadow-sm"
             >
               <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5}>
                 <circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" />
@@ -221,7 +221,7 @@ export function JobList() {
               <select
                 value={filters.sortBy}
                 onChange={(e) => setFilters((f) => ({ ...f, sortBy: e.target.value as SortBy }))}
-                className="text-sm text-gray-600 border border-gray-200 rounded-xl px-3 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-brand-blue focus:border-transparent cursor-pointer shadow-sm"
+                className="text-sm text-gray-600 border border-gray-200 rounded-xl px-3 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent cursor-pointer shadow-sm"
               >
                 <option value="deadline">마감 임박순</option>
                 {role !== 'manager' && <option value="preferred">내 선호</option>}
@@ -229,7 +229,7 @@ export function JobList() {
               {role === 'manager' && (
                 <Link
                   href="/jobs/new"
-                  className="hidden md:inline-flex items-center gap-1.5 bg-brand-blue hover:bg-brand-blue-dark text-white text-sm font-semibold px-4 py-2 rounded-xl transition-colors shadow-sm"
+                  className="hidden md:inline-flex items-center gap-1.5 bg-blue-500 hover:bg-blue-600 text-white text-sm font-semibold px-4 py-2 rounded-xl transition-colors shadow-sm"
                 >
                   <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5}>
                     <line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" />
@@ -269,7 +269,7 @@ export function JobList() {
                   <p className="text-gray-400 text-sm">다른 지역을 검색해 보세요.</p>
                   <button
                     onClick={handleClearSearch}
-                    className="mt-4 text-brand-blue text-sm hover:underline"
+                    className="mt-4 text-blue-500 text-sm hover:underline"
                   >
                     전체 목록 보기
                   </button>
@@ -300,7 +300,7 @@ export function JobList() {
           <div ref={loadMoreRef} className="py-8 flex justify-center">
             {isFetchingNextPage && (
               <div className="flex items-center gap-2 text-gray-400 text-sm">
-                <div className="w-4 h-4 border-2 border-gray-300 border-t-brand-blue rounded-full animate-spin" />
+                <div className="w-4 h-4 border-2 border-gray-300 border-t-blue-500 rounded-full animate-spin" />
                 불러오는 중...
               </div>
             )}
@@ -315,7 +315,7 @@ export function JobList() {
       {role === 'manager' && (
         <Link
           href="/jobs/new"
-          className="md:hidden fixed bottom-6 right-6 z-50 flex items-center justify-center w-14 h-14 bg-brand-blue hover:bg-brand-blue-dark text-white rounded-full shadow-xl shadow-blue-500/30 active:scale-95 transition-all"
+          className="md:hidden fixed bottom-6 right-6 z-50 flex items-center justify-center w-14 h-14 bg-blue-500 hover:bg-blue-600 text-white rounded-full shadow-xl shadow-blue-500/30 active:scale-95 transition-all"
           aria-label="일감 등록"
         >
           <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5}>

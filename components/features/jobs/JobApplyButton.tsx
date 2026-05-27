@@ -24,7 +24,7 @@ export function JobApplyButton({ jobId, jobStatus, userRole, existingApplication
     return (
       <Link
         href="/login"
-        className="block w-full text-center bg-brand-blue text-white font-bold py-4 rounded-2xl text-base hover:bg-brand-blue-dark transition-colors"
+        className="block w-full text-center bg-blue-500 text-white font-bold py-4 rounded-2xl text-base hover:bg-blue-600 transition-colors"
       >
         로그인 후 지원하기
       </Link>
@@ -78,7 +78,7 @@ export function JobApplyButton({ jobId, jobStatus, userRole, existingApplication
     <button
       onClick={handleApply}
       disabled={isLoading}
-      className="w-full bg-brand-blue text-white font-bold py-4 rounded-2xl text-base hover:bg-brand-blue-dark transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+      className="w-full bg-blue-500 text-white font-bold py-4 rounded-2xl text-base hover:bg-blue-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
     >
       {isLoading ? '지원 중...' : '지원하기'}
     </button>

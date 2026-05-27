@@ -66,7 +66,7 @@ export function ApplicantActions({ applicationId, currentStatus, jobId }: Props)
         <button
           onClick={() => handleChange('reviewing')}
           disabled={isLoading}
-          className="w-full bg-blue-50 hover:bg-blue-100 text-brand-blue-deep font-bold py-3.5 rounded-2xl transition-colors text-sm border border-blue-200 disabled:opacity-50"
+          className="w-full bg-blue-50 hover:bg-blue-100 text-blue-700 font-bold py-3.5 rounded-2xl transition-colors text-sm border border-blue-200 disabled:opacity-50"
         >
           {isLoading ? '처리 중...' : '채팅하며 검토하기'}
         </button>
@@ -74,7 +74,7 @@ export function ApplicantActions({ applicationId, currentStatus, jobId }: Props)
       <button
         onClick={() => handleChange('accepted')}
         disabled={isLoading}
-        className="w-full bg-brand-blue hover:bg-brand-blue-dark text-white font-bold py-3.5 rounded-2xl transition-colors text-sm disabled:opacity-50"
+        className="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-3.5 rounded-2xl transition-colors text-sm disabled:opacity-50"
       >
         {isLoading ? '처리 중...' : '기사 수락 (배차 확정)'}
       </button>

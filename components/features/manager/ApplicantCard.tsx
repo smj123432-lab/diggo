@@ -26,7 +26,7 @@ interface ApplicantCardProps {
 
 const STATUS_STYLE: Record<ApplicationStatus, string> = {
   pending:   'bg-gray-100 text-gray-600',
-  reviewing: 'bg-blue-100 text-brand-blue-deep',
+  reviewing: 'bg-blue-100 text-blue-700',
   accepted:  'bg-emerald-100 text-emerald-700',
   rejected:  'bg-red-100 text-red-500',
 }
@@ -49,7 +49,7 @@ export function ApplicantCard({ jobId, application }: ApplicantCardProps) {
               <div className="flex items-center gap-1.5 mb-0.5">
                 <span className="text-sm font-bold text-gray-900">{driver.name}</span>
                 {driver.is_certified && (
-                  <span className="inline-flex items-center justify-center bg-brand-blue text-white w-4 h-4 rounded-full shrink-0">
+                  <span className="inline-flex items-center justify-center bg-blue-500 text-white w-4 h-4 rounded-full shrink-0">
                     <svg className="w-2.5 h-2.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={3}>
                       <path d="M20 6L9 17l-5-5" strokeLinecap="round" strokeLinejoin="round" />
                     </svg>
@@ -64,7 +64,7 @@ export function ApplicantCard({ jobId, application }: ApplicantCardProps) {
                 )}
                 {equipment && (
                   <><span className="text-gray-200">·</span>
-                  <span className="bg-brand-blue text-white font-bold px-1.5 py-0.5 rounded text-xs">
+                  <span className="bg-blue-500 text-white font-bold px-1.5 py-0.5 rounded text-xs">
                     {EQUIPMENT_LABELS[equipment.model_code]}
                   </span></>
                 )}
@@ -76,7 +76,7 @@ export function ApplicantCard({ jobId, application }: ApplicantCardProps) {
               {APPLICATION_STATUS_LABELS[application.status]}
             </span>
             <span className="text-xs text-gray-400">{appliedAt} 지원</span>
-            <span className="text-xs font-semibold text-brand-blue">상세 보기 →</span>
+            <span className="text-xs font-semibold text-blue-500">상세 보기 →</span>
           </div>
         </div>
       </div>
