@@ -42,7 +42,7 @@ export default async function JobsPage() {
         <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
           {/* 로고 */}
           <Link href="/" className="flex items-center gap-2.5">
-            <ExcavatorIcon className="w-8 h-6 text-blue-400" />
+            <img src="/logo.png" alt="Diggo" className="w-8 h-6 object-contain" />
             <span className="text-lg font-black tracking-tight text-white">
               Diggo<span className="text-blue-400">.</span>
             </span>
