@@ -135,7 +135,7 @@ export default function LoginPage() {
         {/* 로고 영역 — 홈과 동일한 slate-900 + blue 조합 */}
         <div className="flex flex-col items-center mb-10">
           <div className="inline-flex items-center gap-2.5 bg-slate-900 px-6 py-3 rounded-2xl mb-3">
-            <img src="/logo.png" alt="Diggo" className="w-8 h-6 object-contain" />
+            <img src="/logo.png" alt="Diggo" className="h-8 w-auto object-contain" />
             <span className="text-xl font-black tracking-tight text-white">
               Diggo<span className="text-blue-400">.</span>
             </span>

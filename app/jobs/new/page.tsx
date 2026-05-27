@@ -28,7 +28,7 @@ export default async function NewJobPage() {
       <nav className="fixed top-0 inset-x-0 z-50 border-b border-white/10 bg-slate-900/90 backdrop-blur-md">
         <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2.5">
-            <img src="/logo.png" alt="Diggo" className="w-8 h-6 object-contain" />
+            <img src="/logo.png" alt="Diggo" className="h-8 w-auto object-contain" />
             <span className="text-lg font-black tracking-tight text-white">
               Diggo<span className="text-blue-400">.</span>
             </span>
