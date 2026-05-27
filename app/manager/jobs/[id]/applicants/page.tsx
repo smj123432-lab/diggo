@@ -1,13 +1,111 @@
+// 소장 — 특정 일감의 지원자 목록 페이지
+import { notFound } from 'next/navigation'
+import Link from 'next/link'
+import { createClient } from '@/lib/supabase/server'
+import { ApplicantCard } from '@/components/features/manager/ApplicantCard'
+import type { ApplicationStatus, JobStatus, EquipmentCode } from '@/types'
+import { EQUIPMENT_LABELS, JOB_STATUS_LABELS } from '@/types'
+
 interface Props {
   params: { id: string }
 }
 
-export default function ApplicantsPage({ params }: Props) {
+const JOB_STATUS_STYLE: Record<JobStatus, string> = {
+  open:        'bg-emerald-100 text-emerald-700',
+  closed:      'bg-gray-100 text-gray-500',
+  in_progress: 'bg-blue-100 text-blue-700',
+  completed:   'bg-purple-100 text-purple-700',
+  settled:     'bg-emerald-100 text-emerald-700',
+}
+
+export default async function ApplicantsPage({ params }: Props) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+
+  if (!user) notFound()
+
+  const { data: job, error: jobError } = await supabase
+    .from('jobs')
+    .select('id, title, work_date, status, equipment_codes, location')
+    .eq('id', params.id)
+    .eq('manager_id', user.id)
+    .single()
+
+  if (jobError || !job) notFound()
+
+  const { data: applications } = await supabase
+    .from('applications')
+    .select(`
+      id, status, applied_at,
+      profiles(id, name, rating_avg, is_certified, experience_years),
+      equipments(id, model_code, license_number)
+    `)
+    .eq('job_id', params.id)
+    .order('applied_at', { ascending: false })
+
+  const workDate = new Date(job.work_date).toLocaleDateString('ko-KR', {
+    month: 'long', day: 'numeric', weekday: 'short',
+  })
+
+  const today = new Date().toISOString().split('T')[0]
+  const effectiveStatus: JobStatus =
+    job.status === 'open' && job.work_date < today ? 'closed' : job.status as JobStatus
+
   return (
-    <main className="min-h-screen px-4 py-6 max-w-lg mx-auto">
-      <h1 className="text-xl font-bold mb-4">지원자 목록</h1>
-      <p className="text-gray-400 text-sm">일감 ID: {params.id}</p>
-      <p className="text-gray-500 mt-2">구현 예정</p>
+    <main className="min-h-screen bg-gray-50">
+      <div className="bg-white border-b border-gray-100 sticky top-0 z-10">
+        <div className="max-w-3xl mx-auto px-4 py-3 flex items-center gap-3">
+          <Link href="/manager/jobs" className="p-1.5 -ml-1.5 rounded-lg hover:bg-gray-100 transition-colors">
+            <svg className="w-5 h-5 text-gray-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+              <path d="M19 12H5M12 5l-7 7 7 7" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          </Link>
+          <span className="text-sm font-semibold text-gray-700">지원자 목록</span>
+        </div>
+      </div>
+
+      <div className="max-w-3xl mx-auto px-4 py-5">
+        <div className="bg-white rounded-2xl border border-gray-200 p-5 mb-5">
+          <div className="flex items-center gap-2 mb-2">
+            <span className={`text-xs font-semibold px-2.5 py-1 rounded-lg ${JOB_STATUS_STYLE[effectiveStatus]}`}>
+              {JOB_STATUS_LABELS[effectiveStatus]}
+            </span>
+            {(job.equipment_codes as EquipmentCode[]).map((code) => (
+              <span key={code} className="bg-blue-500 text-white text-xs font-bold px-2.5 py-1 rounded-lg">
+                {EQUIPMENT_LABELS[code]}
+              </span>
+            ))}
+          </div>
+          <h1 className="text-base font-bold text-gray-900 mb-1">{job.title}</h1>
+          <p className="text-xs text-gray-400">{workDate} · {job.location}</p>
+        </div>
+
+        <p className="text-sm font-semibold text-gray-700 mb-3">
+          지원자 {(applications ?? []).length}명
+        </p>
+
+        {(applications ?? []).length === 0 ? (
+          <div className="text-center py-16">
+            <p className="text-gray-400 text-sm">아직 지원자가 없습니다.</p>
+          </div>
+        ) : (
+          <div className="space-y-3">
+            {(applications ?? []).map((app) => (
+              <ApplicantCard
+                key={app.id}
+                jobId={params.id}
+                application={app as {
+                  id: string
+                  status: ApplicationStatus
+                  applied_at: string
+                  profiles: { id: string; name: string; rating_avg: number; is_certified: boolean; experience_years: number | null }
+                  equipments: { id: string; model_code: EquipmentCode; license_number: string | null } | null
+                }}
+              />
+            ))}
+          </div>
+        )}
+      </div>
     </main>
   )
 }
