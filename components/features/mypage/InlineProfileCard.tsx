@@ -27,16 +27,25 @@ export function InlineProfileCard({ profile, jobCount = 0 }: Props) {
 
   return (
     <>
-      <div className="bg-white border border-gray-200 rounded-2xl p-5">
-        <div className="flex items-center gap-5">
+      <div className="relative bg-white border border-gray-200 rounded-2xl p-5">
+
+        {/* 우측 상단 고정: 프로필 수정 버튼 */}
+        <button
+          onClick={() => setModalOpen(true)}
+          className="absolute top-4 right-4 text-xs font-semibold text-blue-600 border border-blue-200 bg-white hover:bg-blue-50 px-3 py-1.5 rounded-lg transition-colors"
+        >
+          프로필 수정
+        </button>
+
+        <div className="flex items-center gap-4">
 
           {/* 아바타 */}
           <div className="w-16 h-16 rounded-2xl bg-blue-600 flex items-center justify-center text-2xl font-black text-white shrink-0">
             {initial}
           </div>
 
-          {/* 이름·역할·전화번호·한 줄 소개 */}
-          <div className="flex-1 min-w-0">
+          {/* 이름·역할·평점(기사)·전화번호·한 줄 소개 */}
+          <div className="flex-1 min-w-0 pr-20">
             <div className="flex items-center gap-2 flex-wrap mb-0.5">
               <h1 className="text-lg font-black text-gray-900">{name}</h1>
               <span className="text-xs font-bold bg-blue-600 text-white px-2 py-0.5 rounded-full">
@@ -50,30 +59,17 @@ export function InlineProfileCard({ profile, jobCount = 0 }: Props) {
                   인증
                 </span>
               )}
+              {profile.role === 'driver' && (
+                <span className="text-xs font-semibold text-gray-500">
+                  <span className="text-yellow-400">★</span> {profile.rating_avg?.toFixed(1) ?? '0.0'}
+                </span>
+              )}
             </div>
             <p className="text-sm text-gray-500 mb-1">{phone || '전화번호 미등록'}</p>
             {bio
               ? <p className="text-xs text-gray-500">&ldquo;{bio}&rdquo;</p>
               : <p className="text-xs text-gray-300 italic">한 줄 소개를 등록해 보세요</p>
             }
-          </div>
-
-          {/* 우측: 평점(기사) + 프로필 수정 버튼 */}
-          <div className="flex flex-col items-end gap-2 shrink-0">
-            {profile.role === 'driver' && (
-              <div className="text-center">
-                <p className="text-xs text-gray-400 mb-0.5">평점</p>
-                <p className="text-xl font-black text-gray-900">
-                  <span className="text-yellow-400">★</span> {profile.rating_avg?.toFixed(1) ?? '0.0'}
-                </p>
-              </div>
-            )}
-            <button
-              onClick={() => setModalOpen(true)}
-              className="text-xs font-semibold text-blue-600 border border-blue-200 bg-white hover:bg-blue-50 px-3 py-1.5 rounded-lg transition-colors"
-            >
-              프로필 수정
-            </button>
           </div>
         </div>
 

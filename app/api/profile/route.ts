@@ -87,8 +87,11 @@ export async function PATCH(request: NextRequest) {
 
     return NextResponse.json({ data })
   } catch (error) {
-    console.error('[PATCH /api/profile]', error)
-    const msg = error instanceof Error ? error.message : '프로필 수정에 실패했습니다.'
+    console.error('[PATCH /api/profile]', JSON.stringify(error))
+    const msg =
+      (error as { message?: string })?.message ??
+      (error as { error?: string })?.error ??
+      '프로필 수정에 실패했습니다.'
     return NextResponse.json({ error: msg }, { status: 500 })
   }
 }

@@ -1,9 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { createClient as createAdminClient } from '@supabase/supabase-js'
 
 // POST /api/certifications — 면허·안전교육 서류 제출 (pending 상태로 등록)
 export async function POST(request: NextRequest) {
   try {
+    // 인증 확인은 일반 클라이언트로
     const supabase = await createClient()
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return NextResponse.json({ error: '로그인이 필요합니다.' }, { status: 401 })
@@ -11,24 +13,44 @@ export async function POST(request: NextRequest) {
     const formData = await request.formData()
     const file = formData.get('file') as File | null
     if (!file) return NextResponse.json({ error: '파일이 없습니다.' }, { status: 400 })
+    const certType = (formData.get('cert_type') as string | null) ?? 'general'
 
-    // Supabase Storage에 업로드
+    // Storage 업로드는 service role로 RLS 우회
+    const admin = createAdminClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!
+    )
+
     const ext = file.name.split('.').pop() ?? 'jpg'
-    const path = `${user.id}/${Date.now()}.${ext}`
-    const { error: storageErr } = await supabase.storage
+    const path = `${user.id}/${certType}/${Date.now()}.${ext}`
+    const { error: storageErr } = await admin.storage
       .from('certifications')
       .upload(path, file, { upsert: true })
     if (storageErr) throw storageErr
 
-    const { data: { publicUrl } } = supabase.storage
+    const { data: { publicUrl } } = admin.storage
       .from('certifications')
       .getPublicUrl(path)
 
-    // DB에 pending 레코드 삽입
-    const { error: dbErr } = await supabase
+    // 같은 타입의 기존 서류 삭제 (재업로드 시 재검토)
+    const { error: deleteErr } = await admin
       .from('certifications')
-      .insert({ driver_id: user.id, file_url: publicUrl, status: 'pending' })
+      .delete()
+      .eq('driver_id', user.id)
+      .eq('cert_type', certType)
+    if (deleteErr) throw deleteErr
+
+    // 새 서류 삽입
+    const { error: dbErr } = await admin
+      .from('certifications')
+      .insert({ driver_id: user.id, cert_type: certType, image_url: publicUrl, status: 'pending' })
     if (dbErr) throw dbErr
+
+    // 재업로드 시 인증 초기화 (재검토 필요)
+    await admin
+      .from('profiles')
+      .update({ is_certified: false })
+      .eq('id', user.id)
 
     return NextResponse.json({ ok: true })
   } catch (e) {
