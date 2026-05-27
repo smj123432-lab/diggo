@@ -16,13 +16,6 @@ interface Props {
   jobCount?: number
 }
 
-const PencilIcon = () => (
-  <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
-    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" strokeLinecap="round" strokeLinejoin="round" />
-    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" strokeLinecap="round" strokeLinejoin="round" />
-  </svg>
-)
-
 export function InlineProfileCard({ profile, jobCount = 0 }: Props) {
   const router = useRouter()
   const [editing, setEditing] = useState(false)
@@ -151,7 +144,7 @@ export function InlineProfileCard({ profile, jobCount = 0 }: Props) {
           )}
         </div>
 
-        {/* 우측: 평점(기사) + 연필 */}
+        {/* 우측: 평점(기사) + 수정 버튼 */}
         <div className="flex flex-col items-end gap-2 shrink-0">
           {profile.role === 'driver' && (
             <div className="text-center">
@@ -163,9 +156,8 @@ export function InlineProfileCard({ profile, jobCount = 0 }: Props) {
           )}
           {!editing && (
             <button onClick={openEdit}
-              className="p-1.5 rounded-lg text-gray-400 hover:text-blue-600 hover:bg-blue-50 transition-colors"
-              aria-label="프로필 수정">
-              <PencilIcon />
+              className="text-xs font-semibold text-blue-600 border border-blue-200 bg-white hover:bg-blue-50 px-3 py-1.5 rounded-lg transition-colors">
+              프로필 수정
             </button>
           )}
         </div>

@@ -7,7 +7,8 @@ import { NavButtons } from '@/components/features/home/NavButtons'
 import { NavRoleLink } from '@/components/features/home/NavRoleLink'
 import { DeleteAccountButton } from '@/components/features/mypage/MypageActions'
 import { InlineProfileCard } from '@/components/features/mypage/InlineProfileCard'
-import { InlineDriverInfoCard } from '@/components/features/mypage/InlineDriverInfoCard'
+import type { EquipmentCode } from '@/types'
+import { EQUIPMENT_LABELS } from '@/types'
 
 export const dynamic = 'force-dynamic'
 
@@ -26,6 +27,7 @@ export default async function MypagePage() {
   if (!profile) redirect('/login')
 
   let jobCount = 0
+  let equipments: { id: string; model_code: EquipmentCode }[] = []
   let certApproved = false
 
   if (profile.role === 'manager') {
@@ -37,6 +39,12 @@ export default async function MypagePage() {
   }
 
   if (profile.role === 'driver') {
+    const { data: eqs } = await supabase
+      .from('equipments')
+      .select('id, model_code')
+      .eq('owner_id', user.id)
+    equipments = (eqs ?? []) as { id: string; model_code: EquipmentCode }[]
+
     const { count } = await supabase
       .from('certifications')
       .select('id', { count: 'exact', head: true })
@@ -75,9 +83,52 @@ export default async function MypagePage() {
           {/* 프로필 카드 — 인라인 수정 */}
           <InlineProfileCard profile={profile} jobCount={jobCount} />
 
-          {/* 기사 정보 카드 — 인라인 수정 */}
+          {/* 기사 정보 카드 — 읽기 전용 */}
           {profile.role === 'driver' && (
-            <InlineDriverInfoCard profile={profile} certApproved={certApproved} />
+            <div className="bg-white rounded-2xl border border-gray-200 p-5">
+              <p className="text-sm font-bold text-slate-800 mb-3">기사 정보</p>
+
+              <div className="border border-blue-100 bg-blue-50/30 rounded-xl p-3 mb-3">
+                <p className="text-xs text-gray-400 mb-2">보유 장비</p>
+                {equipments.length > 0 ? (
+                  <div className="flex gap-1.5 flex-wrap">
+                    {equipments.map((eq) => (
+                      <span key={eq.id} className="bg-blue-600 text-white text-xs font-bold px-2.5 py-1 rounded-lg">
+                        {EQUIPMENT_LABELS[eq.model_code]}
+                      </span>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-sm text-gray-400">등록된 장비 없음</p>
+                )}
+              </div>
+
+              <div className="grid grid-cols-3 gap-2">
+                <div className="border border-blue-100 bg-blue-50/30 rounded-xl p-3 text-center">
+                  <p className="text-xs text-gray-400 mb-1.5">현장 경력</p>
+                  <p className="text-sm font-bold text-gray-800">
+                    {profile.experience_years != null ? `${profile.experience_years}년` : '—'}
+                  </p>
+                </div>
+                <div className={`border rounded-xl p-3 text-center ${certApproved ? 'border-blue-100 bg-blue-50/30' : 'border-red-100 bg-red-50/30'}`}>
+                  <p className="text-xs text-gray-400 mb-1.5">면허·안전교육</p>
+                  {certApproved ? (
+                    <p className="text-sm font-bold text-blue-600">이수완료</p>
+                  ) : (
+                    <div className="flex flex-col items-center gap-1.5">
+                      <p className="text-sm font-bold text-gray-400">미등록</p>
+                      <span className="text-xs font-bold text-red-500 bg-red-50 border border-red-200 px-2 py-0.5 rounded-full">등록 필수</span>
+                    </div>
+                  )}
+                </div>
+                <div className="border border-blue-100 bg-blue-50/30 rounded-xl p-3 text-center">
+                  <p className="text-xs text-gray-400 mb-1.5">평점</p>
+                  <p className="text-sm font-bold text-gray-800">
+                    <span className="text-yellow-400">★</span> {profile.rating_avg?.toFixed(1) ?? '0.0'}
+                  </p>
+                </div>
+              </div>
+            </div>
           )}
 
           {/* 바로가기 그리드 */}
