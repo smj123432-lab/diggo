@@ -94,7 +94,7 @@ export default async function ApplicantsPage({ params }: Props) {
               <ApplicantCard
                 key={app.id}
                 jobId={params.id}
-                application={app as {
+                application={app as unknown as {
                   id: string
                   status: ApplicationStatus
                   applied_at: string
