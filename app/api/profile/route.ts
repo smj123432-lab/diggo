@@ -72,6 +72,7 @@ export async function PATCH(request: NextRequest) {
     // bio 컬럼이 DB에 없는 경우 bio 제외 후 재시도
     // (영구 해결: ALTER TABLE profiles ADD COLUMN bio TEXT;)
     if (error?.message?.includes('bio')) {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { bio: _bio, ...updateWithoutBio } = updateData as Record<string, unknown>
       const retry = await supabase
         .from('profiles')
