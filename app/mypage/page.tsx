@@ -92,7 +92,7 @@ export default async function MypagePage() {
         <div className="max-w-3xl mx-auto px-4 py-6 space-y-4">
 
           {/* ── 프로필 카드 ── */}
-          <div className="bg-slate-50/50 border border-slate-100 rounded-2xl p-5">
+          <div className="bg-white border border-gray-200 rounded-2xl p-5">
             <div className="flex items-center gap-5">
               {/* 아바타 */}
               <div className="w-16 h-16 rounded-2xl bg-blue-600 flex items-center justify-center text-2xl font-black text-white shrink-0">
@@ -144,7 +144,7 @@ export default async function MypagePage() {
 
             {/* 소장 배지 행 */}
             {profile.role === 'manager' && (
-              <div className="mt-4 pt-4 border-t border-slate-100 flex flex-wrap gap-2">
+              <div className="mt-4 pt-4 border-t border-gray-200 flex flex-wrap gap-2">
                 <span className="inline-flex items-center text-xs font-semibold border border-blue-200 text-blue-600 bg-white px-3 py-1 rounded-full">
                   누적 일감 {jobCount}건
                 </span>
