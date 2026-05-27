@@ -97,7 +97,7 @@ export function JobForm({
   const toggleEquipment = (code: EquipmentCode) =>
     setForm((f) => {
       if (f.equipment_codes.includes(code)) {
-        const { [code]: _removed, ...rest } = f.payments;
+        const { [code]: _r, ...rest } = f.payments; // eslint-disable-line @typescript-eslint/no-unused-vars
         return {
           ...f,
           equipment_codes: f.equipment_codes.filter((c) => c !== code),

@@ -14,7 +14,6 @@ import {
   JOB_TYPE_LABELS,
   PAY_DUE_LABELS,
   WORK_DURATION_LABELS,
-  formatPayAmounts,
 } from '@/types'
 import type { JobType, JobStatus, ApplicationStatus, EquipmentCode, WorkDuration, PayDueType } from '@/types'
 
@@ -438,14 +437,6 @@ function CalendarIcon() {
   )
 }
 
-function MoneyIcon() {
-  return (
-    <svg className="w-4 h-4 text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
-      <line x1="12" y1="1" x2="12" y2="23" />
-      <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
-    </svg>
-  )
-}
 
 function ExcavatorIcon() {
   return (
