@@ -152,6 +152,7 @@ export function ManagerJobCard({ job, hasReview = false }: ManagerJobCardProps) 
           <ReviewModal
             jobId={job.id}
             revieweeId={revieweeId}
+            revieweeRole="driver"
             onClose={() => setModalOpen(false)}
             onSuccess={() => { setReviewed(true); setModalOpen(false) }}
           />

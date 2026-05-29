@@ -100,12 +100,13 @@ export async function POST(request: NextRequest) {
       if (error.code === '23505') {
         return NextResponse.json({ error: '이미 평가를 작성했습니다.' }, { status: 409 })
       }
-      throw error
+      console.error('[POST /api/reviews] insert error:', JSON.stringify(error))
+      return NextResponse.json({ error: `DB 오류: ${error.code} — ${error.message}` }, { status: 500 })
     }
 
     return NextResponse.json({ data }, { status: 201 })
   } catch (error) {
-    console.error('[POST /api/reviews]', error)
+    console.error('[POST /api/reviews] catch:', error)
     return NextResponse.json({ error: '평가 작성에 실패했습니다.' }, { status: 500 })
   }
 }

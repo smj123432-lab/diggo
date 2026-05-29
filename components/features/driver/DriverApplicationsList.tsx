@@ -243,6 +243,7 @@ export function DriverApplicationsList({ applications }: Props) {
         <ReviewModal
           jobId={reviewTarget.jobId}
           revieweeId={reviewTarget.managerId}
+          revieweeRole="manager"
           onClose={() => setReviewTarget(null)}
           onSuccess={() => {
             // 해당 app.id를 찾아서 완료 처리
