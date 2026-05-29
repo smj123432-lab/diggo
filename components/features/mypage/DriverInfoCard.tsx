@@ -59,7 +59,7 @@ export function DriverInfoCard({ profile, initialEquipments, certApproved, certP
           <div className={`border rounded-xl p-3 text-center ${certApproved ? 'border-blue-100 bg-blue-50/30' : certPending ? 'border-yellow-100 bg-yellow-50/30' : 'border-red-100 bg-red-50/30'}`}>
             <p className="text-xs text-gray-400 mb-1.5">면허·안전교육</p>
             {certApproved ? (
-              <p className="text-sm font-bold text-blue-600">이수완료</p>
+              <p className="text-sm font-bold text-blue-600">등록완료</p>
             ) : certPending ? (
               <div className="flex flex-col items-center gap-1.5">
                 <p className="text-sm font-bold text-yellow-600">제출완료</p>
