@@ -22,6 +22,7 @@ export interface Profile {
   role: UserRole
   phone: string | null
   bio: string | null
+  avatar_url: string | null
   experience_years: number | null
   garage_address: string | null
   latitude: number | null

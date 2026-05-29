@@ -1,9 +1,10 @@
 'use client'
 
 // 마이페이지 프로필 카드 — [프로필 수정] 버튼 클릭 시 모달 팝업
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import type { Profile } from '@/types'
 import { ProfileEditModal } from './ProfileEditModal'
+import { toast } from 'sonner'
 
 const ROLE_LABEL: Record<string, string> = {
   driver: '기사', manager: '소장', admin: '관리자',
@@ -16,14 +17,40 @@ interface Props {
 
 export function InlineProfileCard({ profile, jobCount = 0 }: Props) {
   const [modalOpen, setModalOpen] = useState(false)
-
-  // 낙관적 업데이트용 로컬 상태
   const [name, setName] = useState(profile.name ?? '')
   const [phone, setPhone] = useState(profile.phone ?? '')
   const [bio, setBio] = useState(profile.bio ?? '')
   const [garage, setGarage] = useState(profile.garage_address ?? '')
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(profile.avatar_url ?? null)
+  const [uploading, setUploading] = useState(false)
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
   const initial = name?.charAt(0) ?? '?'
+
+  async function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    setUploading(true)
+    try {
+      const formData = new FormData()
+      formData.append('file', file)
+      const res = await fetch('/api/profile/avatar', { method: 'POST', body: formData })
+      const json = await res.json()
+      if (!res.ok) {
+        toast.error(json.error ?? '업로드에 실패했습니다.')
+        return
+      }
+      setAvatarUrl(json.avatar_url)
+      toast.success('프로필 사진이 변경되었습니다.')
+    } catch {
+      toast.error('업로드에 실패했습니다.')
+    } finally {
+      setUploading(false)
+      // input 초기화 (같은 파일 재선택 가능)
+      if (fileInputRef.current) fileInputRef.current.value = ''
+    }
+  }
 
   return (
     <>
@@ -39,12 +66,53 @@ export function InlineProfileCard({ profile, jobCount = 0 }: Props) {
 
         <div className="flex items-center gap-4">
 
-          {/* 아바타 */}
-          <div className="w-16 h-16 rounded-2xl bg-blue-600 flex items-center justify-center text-2xl font-black text-white shrink-0">
-            {initial}
+          {/* 아바타 + 연필 아이콘 */}
+          <div className="relative shrink-0 group">
+            <button
+              onClick={() => fileInputRef.current?.click()}
+              disabled={uploading}
+              className="w-16 h-16 rounded-2xl overflow-hidden block focus:outline-none"
+            >
+              {avatarUrl ? (
+                <img
+                  src={avatarUrl}
+                  alt={name}
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <div className="w-full h-full bg-blue-600 flex items-center justify-center text-2xl font-black text-white">
+                  {uploading ? (
+                    <svg className="w-6 h-6 text-white animate-spin" viewBox="0 0 24 24" fill="none">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
+                    </svg>
+                  ) : initial}
+                </div>
+              )}
+            </button>
+
+            {/* 연필 아이콘 오버레이 */}
+            <button
+              onClick={() => fileInputRef.current?.click()}
+              disabled={uploading}
+              className="absolute -bottom-1 -right-1 w-6 h-6 bg-blue-500 hover:bg-blue-600 border-2 border-white rounded-full flex items-center justify-center shadow-sm transition-colors"
+            >
+              <svg className="w-3 h-3 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5}>
+                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" strokeLinecap="round" strokeLinejoin="round" />
+                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            </button>
+
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/jpeg,image/png,image/webp"
+              className="hidden"
+              onChange={handleFileChange}
+            />
           </div>
 
-          {/* 이름·역할·평점(기사)·전화번호·한 줄 소개 */}
+          {/* 이름·역할·평점·전화번호·한 줄 소개 */}
           <div className="flex-1 min-w-0 pr-20">
             <div className="flex items-center gap-2 flex-wrap mb-0.5">
               <h1 className="text-lg font-black text-gray-900">{name}</h1>
