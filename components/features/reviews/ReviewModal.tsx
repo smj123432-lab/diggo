@@ -7,7 +7,8 @@ import { toast } from 'sonner'
 
 const TAGS = [
   { id: 'punctual',      label: '⏱️ 시간 약속을 잘 지켜요' },
-  { id: 'skilled',       label: '🚜 장비 숙련도가 높아요' },
+  { id: 'skilled',       label: '🏗️ 장비 숙련도가 높아요' },
+  { id: 'experienced',   label: '💪 실력이 경력에 맞아요' },
   { id: 'communication', label: '💬 소통이 잘 돼요' },
   { id: 'clean',         label: '🧹 현장 마무리가 깔끔해요' },
 ]
@@ -24,6 +25,7 @@ interface Props {
 
 export function ReviewModal({ jobId, revieweeId, onClose, onSuccess }: Props) {
   const [revieweeName, setRevieweeName] = useState<string | null>(null)
+  const [experienceYears, setExperienceYears] = useState<number | null>(null)
   const [rating, setRating] = useState(0)
   const [hovered, setHovered] = useState(0)
   const [selectedTags, setSelectedTags] = useState<string[]>([])
@@ -33,7 +35,10 @@ export function ReviewModal({ jobId, revieweeId, onClose, onSuccess }: Props) {
   useEffect(() => {
     fetch(`/api/profiles/${revieweeId}`)
       .then((r) => r.json())
-      .then((j) => setRevieweeName(j.name ?? null))
+      .then((j) => {
+        setRevieweeName(j.name ?? null)
+        setExperienceYears(j.experience_years ?? null)
+      })
       .catch(() => {})
   }, [revieweeId])
 
@@ -96,10 +101,19 @@ export function ReviewModal({ jobId, revieweeId, onClose, onSuccess }: Props) {
             </button>
           </div>
           <h2 className="text-base font-bold text-white leading-snug">
-            {revieweeName
-              ? <>{revieweeName} 기사님과의<br />작업은 어떠셨나요?</>
-              : '작업은 어떠셨나요?'
-            }
+            {revieweeName ? (
+              <>
+                <span>{revieweeName} 기사님</span>
+                {experienceYears != null && (
+                  <span className="ml-1.5 text-xs font-semibold bg-white/20 text-white px-2 py-0.5 rounded-full align-middle">
+                    {experienceYears}년 경력
+                  </span>
+                )}
+                <br />과의 작업은 어떠셨나요?
+              </>
+            ) : (
+              '작업은 어떠셨나요?'
+            )}
           </h2>
         </div>
 

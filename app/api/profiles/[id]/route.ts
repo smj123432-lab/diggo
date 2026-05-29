@@ -11,11 +11,15 @@ export async function GET(
 
     const { data } = await supabase
       .from('profiles')
-      .select('name, rating_avg')
+      .select('name, rating_avg, experience_years')
       .eq('id', params.id)
       .single()
 
-    return NextResponse.json({ name: data?.name ?? null, rating_avg: data?.rating_avg ?? null })
+    return NextResponse.json({
+      name: data?.name ?? null,
+      rating_avg: data?.rating_avg ?? null,
+      experience_years: data?.experience_years ?? null,
+    })
   } catch (error) {
     console.error('[GET /api/profiles/[id]]', error)
     return NextResponse.json({ name: null, rating_avg: null })
