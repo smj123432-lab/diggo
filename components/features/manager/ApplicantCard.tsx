@@ -15,12 +15,15 @@ interface ApplicantCardProps {
       rating_avg: number
       is_certified: boolean
       experience_years: number | null
+      avatar_url: string | null
+      bio: string | null
     }
     equipments: {
       id: string
       model_code: EquipmentCode
       license_number: string | null
     } | null
+    driverEquipments: EquipmentCode[]
   }
 }
 
@@ -32,7 +35,7 @@ const STATUS_STYLE: Record<ApplicationStatus, string> = {
 }
 
 export function ApplicantCard({ jobId, application }: ApplicantCardProps) {
-  const { profiles: driver, equipments: equipment } = application
+  const { profiles: driver, driverEquipments } = application
   const appliedAt = new Date(application.applied_at).toLocaleDateString('ko-KR', {
     month: 'numeric', day: 'numeric',
   })
@@ -41,12 +44,22 @@ export function ApplicantCard({ jobId, application }: ApplicantCardProps) {
     <Link href={`/manager/jobs/${jobId}/applicants/${application.id}`}>
       <div className="bg-white border border-gray-200 rounded-2xl p-5 hover:border-blue-300 hover:shadow-md transition-all">
         <div className="flex items-start justify-between gap-3">
-          <div className="flex items-center gap-3 min-w-0">
-            <div className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-600 font-bold text-sm shrink-0">
-              {driver.name.charAt(0)}
+          <div className="flex items-start gap-3 min-w-0 flex-1">
+
+            {/* 아바타 */}
+            <div className="w-11 h-11 rounded-full overflow-hidden shrink-0 bg-gray-200 flex items-center justify-center">
+              {driver.avatar_url ? (
+                <img src={driver.avatar_url} alt={driver.name} className="w-full h-full object-cover" />
+              ) : (
+                <svg className="w-6 h-6 text-gray-400" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"/>
+                </svg>
+              )}
             </div>
-            <div className="min-w-0">
-              <div className="flex items-center gap-1.5 mb-0.5">
+
+            <div className="min-w-0 flex-1">
+              {/* 이름 + 인증 */}
+              <div className="flex items-center gap-1.5 mb-1">
                 <span className="text-sm font-bold text-gray-900">{driver.name}</span>
                 {driver.is_certified && (
                   <span className="inline-flex items-center justify-center bg-blue-500 text-white w-4 h-4 rounded-full shrink-0">
@@ -56,21 +69,38 @@ export function ApplicantCard({ jobId, application }: ApplicantCardProps) {
                   </span>
                 )}
               </div>
-              <div className="flex items-center gap-2 text-xs text-gray-400">
-                <span className="text-yellow-400">★</span>
-                <span>{driver.rating_avg.toFixed(1)}</span>
+
+              {/* 평점 · 경력 · 보유 장비 */}
+              <div className="flex items-center flex-wrap gap-1.5 text-xs text-gray-400 mb-1.5">
+                <span className="flex items-center gap-0.5">
+                  <span className="text-yellow-400">★</span>
+                  <span>{driver.rating_avg.toFixed(1)}</span>
+                </span>
                 {driver.experience_years !== null && (
                   <><span className="text-gray-200">·</span><span>경력 {driver.experience_years}년</span></>
                 )}
-                {equipment && (
-                  <><span className="text-gray-200">·</span>
-                  <span className="bg-blue-500 text-white font-bold px-1.5 py-0.5 rounded text-xs">
-                    {EQUIPMENT_LABELS[equipment.model_code]}
-                  </span></>
+                {driverEquipments.length > 0 && (
+                  <>
+                    <span className="text-gray-200">·</span>
+                    <div className="flex flex-wrap gap-1">
+                      {driverEquipments.map((code) => (
+                        <span key={code} className="bg-blue-500 text-white font-bold px-1.5 py-0.5 rounded text-xs">
+                          {EQUIPMENT_LABELS[code]}
+                        </span>
+                      ))}
+                    </div>
+                  </>
                 )}
               </div>
+
+              {/* 자기소개 */}
+              {driver.bio && (
+                <p className="text-xs text-gray-400 line-clamp-1">&ldquo;{driver.bio}&rdquo;</p>
+              )}
             </div>
           </div>
+
+          {/* 우측: 상태 + 날짜 */}
           <div className="flex flex-col items-end gap-2 shrink-0">
             <span className={`text-xs font-semibold px-2.5 py-1 rounded-lg ${STATUS_STYLE[application.status]}`}>
               {APPLICATION_STATUS_LABELS[application.status]}

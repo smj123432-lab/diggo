@@ -42,22 +42,32 @@ export default async function ApplicantsPage({ params }: Props) {
   const driverIds = (rawApps ?? []).map((a) => a.driver_id).filter(Boolean)
   const equipmentIds = (rawApps ?? []).map((a) => a.equipment_id).filter(Boolean)
 
-  const [{ data: profiles }, { data: equipments }] = await Promise.all([
+  const [{ data: profiles }, { data: equipments }, { data: driverEquipments }] = await Promise.all([
     driverIds.length > 0
-      ? supabase.from('profiles').select('id, name, rating_avg, is_certified, experience_years').in('id', driverIds)
+      ? supabase.from('profiles').select('id, name, rating_avg, is_certified, experience_years, avatar_url, bio').in('id', driverIds)
       : Promise.resolve({ data: [] }),
     equipmentIds.length > 0
       ? supabase.from('equipments').select('id, model_code, license_number').in('id', equipmentIds)
+      : Promise.resolve({ data: [] }),
+    driverIds.length > 0
+      ? supabase.from('equipments').select('id, owner_id, model_code').in('owner_id', driverIds)
       : Promise.resolve({ data: [] }),
   ])
 
   const profileMap = new Map((profiles ?? []).map((p) => [p.id, p]))
   const equipmentMap = new Map((equipments ?? []).map((e) => [e.id, e]))
+  const driverEquipmentMap = new Map<string, EquipmentCode[]>()
+  for (const eq of (driverEquipments ?? [])) {
+    const list = driverEquipmentMap.get(eq.owner_id) ?? []
+    list.push(eq.model_code as EquipmentCode)
+    driverEquipmentMap.set(eq.owner_id, list)
+  }
 
   const applications = (rawApps ?? []).map((app) => ({
     ...app,
     profiles: profileMap.get(app.driver_id) ?? null,
     equipments: app.equipment_id ? (equipmentMap.get(app.equipment_id) ?? null) : null,
+    driverEquipments: driverEquipmentMap.get(app.driver_id) ?? [],
   }))
 
   const workDate = new Date(job.work_date).toLocaleDateString('ko-KR', {
@@ -115,8 +125,9 @@ export default async function ApplicantsPage({ params }: Props) {
                   id: string
                   status: ApplicationStatus
                   applied_at: string
-                  profiles: { id: string; name: string; rating_avg: number; is_certified: boolean; experience_years: number | null }
+                  profiles: { id: string; name: string; rating_avg: number; is_certified: boolean; experience_years: number | null; avatar_url: string | null; bio: string | null }
                   equipments: { id: string; model_code: EquipmentCode; license_number: string | null } | null
+                  driverEquipments: EquipmentCode[]
                 }}
               />
             ))}
