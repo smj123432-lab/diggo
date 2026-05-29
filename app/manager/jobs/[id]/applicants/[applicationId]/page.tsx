@@ -33,7 +33,7 @@ export default async function ApplicantDetailPage({ params }: Props) {
 
   const [{ data: jobData }, { data: driverData }, { data: equipmentData }] = await Promise.all([
     supabase.from('jobs').select('id, title, manager_id').eq('id', application.job_id).single(),
-    supabase.from('profiles').select('id, name, rating_avg, is_certified, experience_years, phone, preferred_equipment_codes').eq('id', application.driver_id).single(),
+    supabase.from('profiles').select('id, name, rating_avg, is_certified, experience_years, phone, preferred_equipment_codes, avatar_url, bio').eq('id', application.driver_id).single(),
     application.equipment_id
       ? supabase.from('equipments').select('id, model_code, license_number').eq('id', application.equipment_id).single()
       : Promise.resolve({ data: null }),
@@ -46,6 +46,7 @@ export default async function ApplicantDetailPage({ params }: Props) {
     id: string; name: string; rating_avg: number; is_certified: boolean
     experience_years: number | null; phone: string | null
     preferred_equipment_codes: EquipmentCode[]
+    avatar_url: string | null; bio: string | null
   }
   const equipment = equipmentData as {
     id: string; model_code: EquipmentCode; license_number: string | null
@@ -72,8 +73,14 @@ export default async function ApplicantDetailPage({ params }: Props) {
 
         <div className="bg-white rounded-2xl border border-gray-200 p-5">
           <div className="flex items-center gap-4 mb-4">
-            <div className="w-14 h-14 rounded-full bg-slate-100 flex items-center justify-center text-slate-600 font-bold text-xl shrink-0">
-              {driver.name.charAt(0)}
+            <div className="w-16 h-16 rounded-full overflow-hidden bg-gray-200 flex items-center justify-center shrink-0">
+              {driver.avatar_url ? (
+                <img src={driver.avatar_url} alt={driver.name} className="w-full h-full object-cover" />
+              ) : (
+                <svg className="w-8 h-8 text-gray-400" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"/>
+                </svg>
+              )}
             </div>
             <div>
               <div className="flex items-center gap-2 mb-1">
@@ -94,6 +101,9 @@ export default async function ApplicantDetailPage({ params }: Props) {
                   <><span className="text-gray-200">·</span><span>경력 {driver.experience_years}년</span></>
                 )}
               </div>
+              {driver.bio && (
+                <p className="text-xs text-gray-400 mt-1.5">&ldquo;{driver.bio}&rdquo;</p>
+              )}
             </div>
           </div>
 
