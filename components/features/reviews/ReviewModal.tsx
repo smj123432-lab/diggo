@@ -88,9 +88,9 @@ export function ReviewModal({ jobId, revieweeId, onClose, onSuccess }: Props) {
       <div className="relative w-full max-w-sm bg-white rounded-3xl shadow-2xl overflow-hidden">
 
         {/* 헤더 */}
-        <div className="bg-gradient-to-br from-violet-600 to-violet-500 px-6 pt-6 pb-8">
+        <div className="bg-gradient-to-br from-blue-600 to-blue-500 px-6 pt-6 pb-8">
           <div className="flex items-start justify-between mb-3">
-            <span className="text-xs font-semibold text-violet-200 uppercase tracking-wide">작업 평가</span>
+            <span className="text-xs font-semibold text-blue-200 uppercase tracking-wide">작업 평가</span>
             <button
               onClick={onClose}
               className="w-7 h-7 flex items-center justify-center rounded-full bg-white/20 hover:bg-white/30 text-white transition-colors"
@@ -132,7 +132,7 @@ export function ReviewModal({ jobId, revieweeId, onClose, onSuccess }: Props) {
               </button>
             ))}
           </div>
-          <p className={`text-center text-sm font-bold transition-colors ${activeRating > 0 ? 'text-violet-600' : 'text-gray-300'}`}>
+          <p className={`text-center text-sm font-bold transition-colors ${activeRating > 0 ? 'text-blue-600' : 'text-gray-300'}`}>
             {RATING_TEXT[activeRating] || '별점을 선택해주세요'}
           </p>
         </div>
@@ -149,8 +149,8 @@ export function ReviewModal({ jobId, revieweeId, onClose, onSuccess }: Props) {
                   onClick={() => toggleTag(tag.id)}
                   className={`text-xs font-semibold px-3 py-1.5 rounded-full border transition-all active:scale-95 ${
                     active
-                      ? 'bg-violet-600 border-violet-600 text-white shadow-sm'
-                      : 'bg-white border-gray-200 text-gray-500 hover:border-violet-300 hover:text-violet-600'
+                      ? 'bg-blue-600 border-blue-600 text-white shadow-sm'
+                      : 'bg-white border-gray-200 text-gray-500 hover:border-blue-300 hover:text-blue-600'
                   }`}
                 >
                   {tag.label}
@@ -168,7 +168,7 @@ export function ReviewModal({ jobId, revieweeId, onClose, onSuccess }: Props) {
               onChange={(e) => setComment(e.target.value.slice(0, MAX_COMMENT))}
               placeholder="한 줄 평가를 남겨보세요 (선택사항)"
               rows={3}
-              className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-800 placeholder-gray-300 resize-none focus:outline-none focus:border-violet-400 transition-colors"
+              className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-800 placeholder-gray-300 resize-none focus:outline-none focus:border-blue-400 transition-colors"
             />
             <span className={`absolute bottom-3 right-3 text-xs tabular-nums ${comment.length >= MAX_COMMENT ? 'text-red-400' : 'text-gray-300'}`}>
               {comment.length} / {MAX_COMMENT}
@@ -183,7 +183,7 @@ export function ReviewModal({ jobId, revieweeId, onClose, onSuccess }: Props) {
             disabled={loading || !canSubmit}
             className={`w-full font-bold py-3.5 rounded-2xl text-sm transition-all ${
               canSubmit
-                ? 'bg-violet-600 hover:bg-violet-700 text-white shadow-lg shadow-violet-200 active:scale-[0.98]'
+                ? 'bg-blue-600 hover:bg-blue-700 text-white shadow-lg shadow-blue-200 active:scale-[0.98]'
                 : 'bg-slate-100 text-slate-400 cursor-not-allowed'
             }`}
           >
