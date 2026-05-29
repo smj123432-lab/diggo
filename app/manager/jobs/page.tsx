@@ -17,6 +17,7 @@ type FilterValue = 'all' | JobStatus
 interface JobWithCount extends Job {
   applicant_count: number
   pending_count: number
+  accepted_driver_id?: string | null
 }
 
 export default function ManagerJobsPage() {
@@ -25,6 +26,7 @@ export default function ManagerJobsPage() {
   const [jobs, setJobs] = useState<JobWithCount[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [filter, setFilter] = useState<FilterValue>('all')
+  const [reviewedJobIds, setReviewedJobIds] = useState<Set<string>>(new Set())
 
   useEffect(() => {
     // role이 null이면 아직 프로필 fetch 중 — 리다이렉트 보류
@@ -36,10 +38,34 @@ export default function ManagerJobsPage() {
   useEffect(() => {
     if (!user || role !== 'manager') return
     setIsLoading(true)
-    fetch('/api/jobs/mine')
-      .then((r) => r.json())
-      .then((json) => {
-        setJobs(json.data ?? [])
+
+    Promise.all([
+      fetch('/api/jobs/mine').then((r) => r.json()),
+      fetch('/api/reviews?type=given').then((r) => r.json()),
+    ])
+      .then(async ([jobsJson, reviewsJson]) => {
+        const rawJobs: JobWithCount[] = jobsJson.data ?? []
+        const reviewedIds = new Set<string>((reviewsJson.data ?? []) as string[])
+        setReviewedJobIds(reviewedIds)
+
+        // 정산완료 일감의 accepted_driver_id 조회
+        const settledIds = rawJobs.filter((j) => j.status === 'settled').map((j) => j.id)
+
+        if (settledIds.length > 0) {
+          const res = await fetch(`/api/applications/accepted?job_ids=${settledIds.join(',')}`)
+          if (res.ok) {
+            const { data } = await res.json() as { data: { job_id: string; driver_id: string }[] }
+            const driverMap = new Map((data ?? []).map((a) => [a.job_id, a.driver_id]))
+            setJobs(rawJobs.map((j) => ({
+              ...j,
+              accepted_driver_id: driverMap.get(j.id) ?? null,
+            })))
+          } else {
+            setJobs(rawJobs)
+          }
+        } else {
+          setJobs(rawJobs)
+        }
       })
       .finally(() => setIsLoading(false))
   }, [user, role])
@@ -129,7 +155,11 @@ export default function ManagerJobsPage() {
           ) : (
             <div className="flex flex-col gap-4">
               {filtered.map((job) => (
-                <ManagerJobCard key={job.id} job={job} />
+                <ManagerJobCard
+                  key={job.id}
+                  job={job}
+                  hasReview={reviewedJobIds.has(job.id)}
+                />
               ))}
             </div>
           )}

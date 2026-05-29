@@ -1,7 +1,62 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 
-// POST /api/reviews — 평가 작성 (완료된 일감에만)
+// GET /api/reviews?type=given|received
+// given → 내가 작성한 리뷰의 job_id 배열 (hasReview 체크용)
+// received → 내가 받은 리뷰 목록
+export async function GET(request: NextRequest) {
+  try {
+    const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return NextResponse.json({ error: '로그인이 필요합니다.' }, { status: 401 })
+
+    const { searchParams } = new URL(request.url)
+    const type = searchParams.get('type') ?? 'received'
+
+    if (type === 'given') {
+      const { data } = await supabase
+        .from('reviews')
+        .select('job_id')
+        .eq('reviewer_id', user.id)
+      return NextResponse.json({ data: (data ?? []).map((r) => r.job_id) })
+    }
+
+    // received
+    const { data: reviews } = await supabase
+      .from('reviews')
+      .select('id, rating, comment, created_at, job_id, reviewer_id')
+      .eq('reviewee_id', user.id)
+      .order('created_at', { ascending: false })
+
+    if (!reviews || reviews.length === 0) {
+      return NextResponse.json({ data: [] })
+    }
+
+    const jobIds = Array.from(new Set(reviews.map((r) => r.job_id)))
+    const reviewerIds = Array.from(new Set(reviews.map((r) => r.reviewer_id)))
+
+    const [{ data: jobs }, { data: reviewers }] = await Promise.all([
+      supabase.from('jobs').select('id, title').in('id', jobIds),
+      supabase.from('profiles').select('id, name').in('id', reviewerIds),
+    ])
+
+    const jobMap = new Map((jobs ?? []).map((j) => [j.id, j.title]))
+    const reviewerMap = new Map((reviewers ?? []).map((r) => [r.id, r.name]))
+
+    const data = reviews.map((r) => ({
+      ...r,
+      job_title: jobMap.get(r.job_id) ?? null,
+      reviewer_name: reviewerMap.get(r.reviewer_id) ?? null,
+    }))
+
+    return NextResponse.json({ data })
+  } catch (error) {
+    console.error('[GET /api/reviews]', error)
+    return NextResponse.json({ error: '조회에 실패했습니다.' }, { status: 500 })
+  }
+}
+
+// POST /api/reviews — 평가 작성 (정산완료 일감에만)
 export async function POST(request: NextRequest) {
   try {
     const supabase = await createClient()
@@ -24,15 +79,15 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: '평점은 1~5 사이의 정수여야 합니다.' }, { status: 400 })
     }
 
-    // 완료된 일감인지 확인
+    // 정산완료 일감인지 확인
     const { data: job } = await supabase
       .from('jobs')
       .select('status')
       .eq('id', job_id)
       .single()
 
-    if (job?.status !== 'completed') {
-      return NextResponse.json({ error: '완료된 일감에만 평가를 작성할 수 있습니다.' }, { status: 400 })
+    if (job?.status !== 'settled') {
+      return NextResponse.json({ error: '정산이 완료된 일감에만 평가를 작성할 수 있습니다.' }, { status: 400 })
     }
 
     const { data, error } = await supabase

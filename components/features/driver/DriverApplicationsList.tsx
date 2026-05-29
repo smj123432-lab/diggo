@@ -5,11 +5,13 @@ import { useState } from 'react'
 import Link from 'next/link'
 import type { EquipmentCode, JobStatus } from '@/types'
 import { EQUIPMENT_LABELS } from '@/types'
+import { ReviewModal } from '@/components/features/reviews/ReviewModal'
 
 export interface DriverApplication {
   id: string
   status: string
   applied_at: string
+  hasReview: boolean
   job: {
     id: string
     title: string
@@ -18,6 +20,7 @@ export interface DriverApplication {
     equipment_codes: EquipmentCode[]
     location: string
     pay_amounts: Record<string, number>
+    manager_id: string
   }
   equipment: { id: string; model_code: EquipmentCode } | null
 }
@@ -64,6 +67,11 @@ interface Props {
 
 export function DriverApplicationsList({ applications }: Props) {
   const [filter, setFilter] = useState<StageFilter>('all')
+  const [reviewTarget, setReviewTarget] = useState<{ jobId: string; managerId: string } | null>(null)
+  const [reviewedIds, setReviewedIds] = useState<Set<string>>(
+    () => new Set(applications.filter((a) => a.hasReview).map((a) => a.id))
+  )
+
   const withStage = applications.map((app) => ({
     ...app,
     stage: app.status === 'rejected' ? null : getStage(app.status, app.job.status),
@@ -132,6 +140,9 @@ export function DriverApplicationsList({ applications }: Props) {
           {filtered.map((app) => {
             const { job, equipment, stage } = app
             const effectiveStage = stage ?? 'applying'
+            const isSettled = effectiveStage === 'settled'
+            const isRejected = app.status === 'rejected'
+            const alreadyReviewed = reviewedIds.has(app.id)
 
             const workDate = new Date(job.work_date).toLocaleDateString('ko-KR', {
               month: 'numeric', day: 'numeric', weekday: 'short',
@@ -145,61 +156,101 @@ export function DriverApplicationsList({ applications }: Props) {
               : `${payMin.toLocaleString()}~${payMax.toLocaleString()}원`
 
             const stageLabel = STAGE_TABS.find((t) => t.value === effectiveStage)
-            const isRejected = app.status === 'rejected'
+
+            const cardContent = (
+              <div className={`bg-white border rounded-2xl overflow-hidden flex transition-all ${
+                isRejected ? 'border-gray-100 opacity-60' :
+                isSettled ? 'border-gray-200' :
+                'border-gray-200 hover:border-blue-300 hover:shadow-md'
+              }`}>
+                {/* 좌측 컬러 바 */}
+                {!isRejected && (
+                  <div className={`w-1.5 shrink-0 ${STAGE_BAR[effectiveStage]}`} />
+                )}
+
+                <div className="flex-1 px-4 py-4 flex items-center gap-4">
+                  {/* 좌측: 뱃지·제목·위치 */}
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-1.5 flex-wrap mb-2">
+                      {isRejected ? (
+                        <span className="bg-red-50 text-red-400 text-xs font-semibold px-2 py-0.5 rounded-md">
+                          거절됨
+                        </span>
+                      ) : (
+                        <span className={`text-xs font-semibold px-2 py-0.5 rounded-md ${STAGE_BADGE[effectiveStage]}`}>
+                          {stageLabel?.label}
+                        </span>
+                      )}
+                      {equipment && (
+                        <span className="bg-blue-500 text-white text-xs font-bold px-2 py-0.5 rounded-md">
+                          {EQUIPMENT_LABELS[equipment.model_code]}
+                        </span>
+                      )}
+                    </div>
+                    <h3 className="text-sm font-bold text-gray-900 mb-1 line-clamp-1">{job.title}</h3>
+                    <p className="text-xs text-gray-400 flex items-center gap-1">
+                      <svg className="w-3 h-3 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+                        <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
+                        <circle cx="12" cy="10" r="3" />
+                      </svg>
+                      {job.location}
+                    </p>
+                  </div>
+
+                  {/* 우측: 날짜·금액·리뷰 버튼 */}
+                  <div className="flex flex-col items-end gap-1.5 shrink-0">
+                    <span className="text-xs text-slate-400">{workDate}</span>
+                    <span className="text-sm font-bold text-gray-800">{payText}</span>
+                    {!isRejected && isSettled ? (
+                      alreadyReviewed ? (
+                        <span className="text-xs font-semibold text-gray-400 bg-gray-100 px-2.5 py-1 rounded-lg">
+                          평가 완료
+                        </span>
+                      ) : (
+                        <button
+                          onClick={() => setReviewTarget({ jobId: job.id, managerId: job.manager_id })}
+                          className="text-xs font-semibold text-blue-600 bg-blue-50 hover:bg-blue-100 border border-blue-200 px-2.5 py-1 rounded-lg transition-colors active:scale-95"
+                        >
+                          리뷰 남기기
+                        </button>
+                      )
+                    ) : (
+                      !isRejected && stageLabel?.desc && (
+                        <span className="text-xs text-gray-400">{stageLabel.desc}</span>
+                      )
+                    )}
+                  </div>
+                </div>
+              </div>
+            )
+
+            // 정산완료 항목은 Link 없이 렌더링 (리뷰 버튼 클릭 시 이동 방지)
+            if (isSettled) {
+              return <div key={app.id}>{cardContent}</div>
+            }
 
             return (
               <Link key={app.id} href={`/jobs/${job.id}`} className="block">
-                <div className={`bg-white border rounded-2xl overflow-hidden flex transition-all hover:shadow-md ${
-                  isRejected ? 'border-gray-100 opacity-60' : 'border-gray-200 hover:border-blue-300'
-                }`}>
-                  {/* 좌측 컬러 바 */}
-                  {!isRejected && (
-                    <div className={`w-1.5 shrink-0 ${STAGE_BAR[effectiveStage]}`} />
-                  )}
-
-                  <div className="flex-1 px-4 py-4 flex items-center gap-4">
-                    {/* 좌측: 뱃지·제목·위치 */}
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-1.5 flex-wrap mb-2">
-                        {isRejected ? (
-                          <span className="bg-red-50 text-red-400 text-xs font-semibold px-2 py-0.5 rounded-md">
-                            거절됨
-                          </span>
-                        ) : (
-                          <span className={`text-xs font-semibold px-2 py-0.5 rounded-md ${STAGE_BADGE[effectiveStage]}`}>
-                            {stageLabel?.label}
-                          </span>
-                        )}
-                        {equipment && (
-                          <span className="bg-blue-500 text-white text-xs font-bold px-2 py-0.5 rounded-md">
-                            {EQUIPMENT_LABELS[equipment.model_code]}
-                          </span>
-                        )}
-                      </div>
-                      <h3 className="text-sm font-bold text-gray-900 mb-1 line-clamp-1">{job.title}</h3>
-                      <p className="text-xs text-gray-400 flex items-center gap-1">
-                        <svg className="w-3 h-3 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
-                          <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
-                          <circle cx="12" cy="10" r="3" />
-                        </svg>
-                        {job.location}
-                      </p>
-                    </div>
-
-                    {/* 우측: 날짜·금액 */}
-                    <div className="flex flex-col items-end gap-1.5 shrink-0">
-                      <span className="text-xs text-slate-400">{workDate}</span>
-                      <span className="text-sm font-bold text-gray-800">{payText}</span>
-                      {!isRejected && stageLabel?.desc && (
-                        <span className="text-xs text-gray-400">{stageLabel.desc}</span>
-                      )}
-                    </div>
-                  </div>
-                </div>
+                {cardContent}
               </Link>
             )
           })}
         </div>
+      )}
+
+      {/* 리뷰 모달 */}
+      {reviewTarget && (
+        <ReviewModal
+          jobId={reviewTarget.jobId}
+          revieweeId={reviewTarget.managerId}
+          onClose={() => setReviewTarget(null)}
+          onSuccess={() => {
+            // 해당 app.id를 찾아서 완료 처리
+            const appId = applications.find((a) => a.job.id === reviewTarget.jobId)?.id
+            if (appId) setReviewedIds((prev) => { const next = new Set(prev); next.add(appId); return next })
+            setReviewTarget(null)
+          }}
+        />
       )}
     </>
   )
