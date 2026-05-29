@@ -1,9 +1,19 @@
 'use client'
 
-// 평가 작성 모달 — 별점 + 코멘트
-import { useState } from 'react'
+// 평가 작성 모달 — 별점 + 키워드 태그 + 코멘트
+import { useState, useEffect } from 'react'
 import { createPortal } from 'react-dom'
 import { toast } from 'sonner'
+
+const TAGS = [
+  { id: 'punctual',      label: '⏱️ 시간 약속을 잘 지켜요' },
+  { id: 'skilled',       label: '🚜 장비 숙련도가 높아요' },
+  { id: 'communication', label: '💬 소통이 잘 돼요' },
+  { id: 'clean',         label: '🧹 현장 마무리가 깔끔해요' },
+]
+
+const RATING_TEXT = ['', '별로였어요', '아쉬웠어요', '보통이에요', '좋았어요', '최고였어요!']
+const MAX_COMMENT = 100
 
 interface Props {
   jobId: string
@@ -13,22 +23,39 @@ interface Props {
 }
 
 export function ReviewModal({ jobId, revieweeId, onClose, onSuccess }: Props) {
+  const [revieweeName, setRevieweeName] = useState<string | null>(null)
   const [rating, setRating] = useState(0)
   const [hovered, setHovered] = useState(0)
+  const [selectedTags, setSelectedTags] = useState<string[]>([])
   const [comment, setComment] = useState('')
   const [loading, setLoading] = useState(false)
 
+  useEffect(() => {
+    fetch(`/api/profiles/${revieweeId}`)
+      .then((r) => r.json())
+      .then((j) => setRevieweeName(j.name ?? null))
+      .catch(() => {})
+  }, [revieweeId])
+
+  function toggleTag(id: string) {
+    setSelectedTags((prev) =>
+      prev.includes(id) ? prev.filter((t) => t !== id) : [...prev, id]
+    )
+  }
+
   async function handleSubmit() {
-    if (rating === 0) {
-      toast.error('별점을 선택해주세요.')
-      return
-    }
+    if (rating === 0) return
     setLoading(true)
+
+    // 선택 태그 + 한 줄 평가를 합쳐서 comment로 저장
+    const tagText = TAGS.filter((t) => selectedTags.includes(t.id)).map((t) => t.label).join(', ')
+    const fullComment = [tagText, comment.trim()].filter(Boolean).join('\n') || null
+
     try {
       const res = await fetch('/api/reviews', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ job_id: jobId, reviewee_id: revieweeId, rating, comment: comment.trim() || null }),
+        body: JSON.stringify({ job_id: jobId, reviewee_id: revieweeId, rating, comment: fullComment }),
       })
       const json = await res.json()
       if (!res.ok) {
@@ -44,71 +71,112 @@ export function ReviewModal({ jobId, revieweeId, onClose, onSuccess }: Props) {
     }
   }
 
-  return createPortal(
-    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center">
-      {/* 배경 */}
-      <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
+  const activeRating = hovered || rating
+  const canSubmit = rating > 0
 
-      {/* 모달 */}
-      <div className="relative w-full max-w-sm mx-4 bg-white rounded-3xl p-6 shadow-2xl">
+  return createPortal(
+    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center px-4">
+      {/* 배경 */}
+      <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={onClose} />
+
+      {/* 모달 카드 */}
+      <div className="relative w-full max-w-sm bg-white rounded-3xl shadow-2xl overflow-hidden">
+
         {/* 헤더 */}
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-base font-bold text-slate-900">평가 작성</h2>
+        <div className="bg-gradient-to-br from-violet-600 to-violet-500 px-6 pt-6 pb-8">
+          <div className="flex items-start justify-between mb-3">
+            <span className="text-xs font-semibold text-violet-200 uppercase tracking-wide">작업 평가</span>
+            <button
+              onClick={onClose}
+              className="w-7 h-7 flex items-center justify-center rounded-full bg-white/20 hover:bg-white/30 text-white transition-colors"
+            >
+              <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5}>
+                <path d="M18 6 6 18M6 6l12 12" strokeLinecap="round" />
+              </svg>
+            </button>
+          </div>
+          <h2 className="text-base font-bold text-white leading-snug">
+            {revieweeName
+              ? <>{revieweeName} 기사님과의<br />작업은 어떠셨나요?</>
+              : '작업은 어떠셨나요?'
+            }
+          </h2>
+        </div>
+
+        {/* 별점 — 헤더와 겹치게 올림 */}
+        <div className="-mt-5 mx-6 bg-white rounded-2xl shadow-md px-6 py-4 mb-5">
+          <div className="flex justify-center gap-2 mb-1.5">
+            {[1, 2, 3, 4, 5].map((star) => (
+              <button
+                key={star}
+                onClick={() => setRating(star)}
+                onMouseEnter={() => setHovered(star)}
+                onMouseLeave={() => setHovered(0)}
+                className="text-4xl transition-transform hover:scale-110 active:scale-95"
+              >
+                <span className={activeRating >= star ? 'text-yellow-400' : 'text-gray-200'}>★</span>
+              </button>
+            ))}
+          </div>
+          <p className={`text-center text-sm font-bold transition-colors ${activeRating > 0 ? 'text-violet-600' : 'text-gray-300'}`}>
+            {RATING_TEXT[activeRating] || '별점을 선택해주세요'}
+          </p>
+        </div>
+
+        {/* 키워드 태그 */}
+        <div className="px-6 mb-5">
+          <p className="text-xs font-semibold text-gray-400 mb-2.5">기사님의 장점을 선택해 주세요 (복수 선택 가능)</p>
+          <div className="flex flex-wrap gap-2">
+            {TAGS.map((tag) => {
+              const active = selectedTags.includes(tag.id)
+              return (
+                <button
+                  key={tag.id}
+                  onClick={() => toggleTag(tag.id)}
+                  className={`text-xs font-semibold px-3 py-1.5 rounded-full border transition-all active:scale-95 ${
+                    active
+                      ? 'bg-violet-600 border-violet-600 text-white shadow-sm'
+                      : 'bg-white border-gray-200 text-gray-500 hover:border-violet-300 hover:text-violet-600'
+                  }`}
+                >
+                  {tag.label}
+                </button>
+              )
+            })}
+          </div>
+        </div>
+
+        {/* 코멘트 */}
+        <div className="px-6 mb-6">
+          <div className="relative">
+            <textarea
+              value={comment}
+              onChange={(e) => setComment(e.target.value.slice(0, MAX_COMMENT))}
+              placeholder="한 줄 평가를 남겨보세요 (선택사항)"
+              rows={3}
+              className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-800 placeholder-gray-300 resize-none focus:outline-none focus:border-violet-400 transition-colors"
+            />
+            <span className={`absolute bottom-3 right-3 text-xs tabular-nums ${comment.length >= MAX_COMMENT ? 'text-red-400' : 'text-gray-300'}`}>
+              {comment.length} / {MAX_COMMENT}
+            </span>
+          </div>
+        </div>
+
+        {/* 제출 버튼 */}
+        <div className="px-6 pb-6">
           <button
-            onClick={onClose}
-            className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100 text-gray-400 transition-colors"
+            onClick={handleSubmit}
+            disabled={loading || !canSubmit}
+            className={`w-full font-bold py-3.5 rounded-2xl text-sm transition-all ${
+              canSubmit
+                ? 'bg-violet-600 hover:bg-violet-700 text-white shadow-lg shadow-violet-200 active:scale-[0.98]'
+                : 'bg-slate-100 text-slate-400 cursor-not-allowed'
+            }`}
           >
-            <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5}>
-              <path d="M18 6 6 18M6 6l12 12" strokeLinecap="round" />
-            </svg>
+            {loading ? '제출 중...' : '평가 제출'}
           </button>
         </div>
 
-        {/* 별점 */}
-        <div className="flex justify-center gap-2 mb-6">
-          {[1, 2, 3, 4, 5].map((star) => (
-            <button
-              key={star}
-              onClick={() => setRating(star)}
-              onMouseEnter={() => setHovered(star)}
-              onMouseLeave={() => setHovered(0)}
-              className="text-4xl transition-transform active:scale-90 hover:scale-110"
-            >
-              <span className={(hovered || rating) >= star ? 'text-yellow-400' : 'text-gray-200'}>
-                ★
-              </span>
-            </button>
-          ))}
-        </div>
-
-        {/* 별점 텍스트 */}
-        <p className="text-center text-sm font-semibold text-gray-500 mb-5">
-          {rating === 0 && '별점을 선택해주세요'}
-          {rating === 1 && '⭐ 별로였어요'}
-          {rating === 2 && '⭐⭐ 아쉬웠어요'}
-          {rating === 3 && '⭐⭐⭐ 보통이에요'}
-          {rating === 4 && '⭐⭐⭐⭐ 좋았어요'}
-          {rating === 5 && '⭐⭐⭐⭐⭐ 최고였어요!'}
-        </p>
-
-        {/* 코멘트 */}
-        <textarea
-          value={comment}
-          onChange={(e) => setComment(e.target.value)}
-          placeholder="한 줄 평가 (선택사항)"
-          maxLength={200}
-          rows={3}
-          className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-800 placeholder-gray-300 resize-none focus:outline-none focus:border-blue-400 mb-5"
-        />
-
-        {/* 제출 버튼 */}
-        <button
-          onClick={handleSubmit}
-          disabled={loading || rating === 0}
-          className="w-full bg-blue-500 hover:bg-blue-600 disabled:bg-gray-200 disabled:text-gray-400 text-white font-bold py-3.5 rounded-2xl text-sm transition-colors"
-        >
-          {loading ? '제출 중...' : '평가 제출'}
-        </button>
       </div>
     </div>,
     document.body,
