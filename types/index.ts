@@ -68,7 +68,7 @@ export interface Job {
 }
 
 export interface JobWithManager extends Job {
-  profiles: Pick<Profile, 'id' | 'name' | 'rating_avg' | 'is_certified'>
+  profiles: Pick<Profile, 'id' | 'name' | 'rating_avg' | 'is_certified' | 'avatar_url'>
 }
 
 // equipment_codes 배열을 레이블 문자열로 변환

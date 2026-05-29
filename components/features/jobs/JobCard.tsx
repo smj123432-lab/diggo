@@ -109,6 +109,14 @@ export function JobCard({ job, isPreferred }: JobCardProps) {
         {/* 소장 정보 + 가격 */}
         <div className="flex items-center justify-between mt-auto">
           <div className="flex items-center gap-1.5">
+            {/* 아바타 */}
+            <div className="w-6 h-6 rounded-full overflow-hidden shrink-0 bg-blue-600 flex items-center justify-center">
+              {job.profiles.avatar_url ? (
+                <img src={job.profiles.avatar_url} alt={job.profiles.name} className="w-full h-full object-cover" />
+              ) : (
+                <span className="text-white text-xs font-black">{job.profiles.name?.charAt(0) ?? '?'}</span>
+              )}
+            </div>
             <span className="text-xs font-medium text-gray-700">
               {job.profiles.name} 소장
             </span>
