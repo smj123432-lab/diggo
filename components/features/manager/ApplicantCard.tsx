@@ -43,11 +43,11 @@ export function ApplicantCard({ jobId, application }: ApplicantCardProps) {
   return (
     <Link href={`/manager/jobs/${jobId}/applicants/${application.id}`}>
       <div className="bg-white border border-gray-200 rounded-2xl p-5 hover:border-blue-300 hover:shadow-md transition-all">
-        <div className="flex items-center justify-between gap-3">
-          <div className="flex gap-3 min-w-0 flex-1">
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12, minWidth: 0, flex: 1 }}>
 
             {/* 아바타 */}
-            <div className="w-14 h-14 rounded-full overflow-hidden bg-gray-200 flex items-center justify-center shrink-0 self-center">
+            <div className="rounded-full overflow-hidden bg-gray-200 flex items-center justify-center shrink-0" style={{ width: 56, height: 56, alignSelf: 'center' }}>
               {driver.avatar_url ? (
                 <img src={driver.avatar_url} alt={driver.name} className="w-full h-full object-cover" />
               ) : (
