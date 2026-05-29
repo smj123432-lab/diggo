@@ -3,6 +3,7 @@
 // 소장 내 일감 카드 — 좌측 컬러 바 + 정보 우측 정렬
 import { useState } from 'react'
 import Link from 'next/link'
+import { toast } from 'sonner'
 import type { Job, JobStatus, EquipmentCode } from '@/types'
 import { EQUIPMENT_LABELS, JOB_STATUS_LABELS, PAY_DUE_LABELS } from '@/types'
 import { ReviewModal } from '@/components/features/reviews/ReviewModal'
@@ -31,7 +32,6 @@ const STATUS_BADGE: Record<JobStatus, string> = {
 export function ManagerJobCard({ job, hasReview = false }: ManagerJobCardProps) {
   const [modalOpen, setModalOpen] = useState(false)
   const [reviewed, setReviewed] = useState(hasReview)
-  // accepted_driver_id가 API에서 오면 바로 쓰고, 없으면 클릭 시 fetch
   const [revieweeId, setRevieweeId] = useState<string | null>(job.accepted_driver_id ?? null)
   const [fetching, setFetching] = useState(false)
 
@@ -46,40 +46,38 @@ export function ManagerJobCard({ job, hasReview = false }: ManagerJobCardProps) 
   const showApplicants = effectiveStatus === 'open' || effectiveStatus === 'closed'
   const isSettled = effectiveStatus === 'settled'
 
-  async function handleReviewClick(e: React.MouseEvent) {
-    e.preventDefault()
-    e.stopPropagation()
+  async function handleReviewClick() {
+    let driverId = revieweeId
 
-    if (revieweeId) {
-      setModalOpen(true)
-      return
+    if (!driverId) {
+      setFetching(true)
+      try {
+        const res = await fetch(`/api/jobs/${job.id}/accepted-driver`)
+        const json = await res.json()
+        driverId = json.driver_id ?? null
+        if (driverId) setRevieweeId(driverId)
+      } catch {
+        toast.error('기사 정보를 불러오지 못했습니다.')
+        setFetching(false)
+        return
+      }
+      setFetching(false)
     }
 
-    // accepted_driver_id가 없으면 직접 조회
-    setFetching(true)
-    try {
-      const res = await fetch(`/api/applications/accepted?job_ids=${job.id}`)
-      const json = await res.json()
-      const id = (json.data as { job_id: string; driver_id: string }[])?.[0]?.driver_id ?? null
-      if (id) {
-        setRevieweeId(id)
-        setModalOpen(true)
-      }
-    } finally {
-      setFetching(false)
+    if (driverId) {
+      setModalOpen(true)
+    } else {
+      toast.error('배차된 기사 정보를 찾을 수 없습니다.')
     }
   }
 
-  const cardInner = (
-    <div className={`bg-white border border-gray-200 rounded-2xl overflow-hidden flex transition-all ${
-      isSettled ? '' : 'hover:border-blue-300 hover:shadow-md'
+  const cardBody = (
+    <div className={`bg-white border border-gray-200 rounded-2xl overflow-hidden flex ${
+      !isSettled ? 'hover:border-blue-300 hover:shadow-md transition-all cursor-pointer' : ''
     }`}>
-      {/* 좌측 컬러 바 */}
       <div className={`w-1.5 shrink-0 ${STATUS_BAR[effectiveStatus]}`} />
 
-      {/* 본문 — 좌측 메타 + 우측 그룹 */}
       <div className="flex-1 px-4 py-4 flex items-center gap-4">
-
         {/* 좌측: 뱃지·제목·위치 */}
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-1.5 flex-wrap mb-2">
@@ -104,7 +102,7 @@ export function ManagerJobCard({ job, hasReview = false }: ManagerJobCardProps) 
           </p>
         </div>
 
-        {/* 우측: 날짜·지급일 + 지원자/상태/리뷰 */}
+        {/* 우측: 날짜·지급일 + 액션 */}
         <div className="flex flex-col items-end gap-2 shrink-0">
           <p className="text-xs text-slate-400">
             {workDate} · {PAY_DUE_LABELS[job.pay_due_type]}
@@ -135,31 +133,36 @@ export function ManagerJobCard({ job, hasReview = false }: ManagerJobCardProps) 
               </button>
             )
           ) : (
-            <span className="text-xs text-gray-400 px-4 py-2">
+            <span className="text-xs text-gray-400">
               {effectiveStatus === 'in_progress' && '작업중'}
               {effectiveStatus === 'completed' && '정산 대기중'}
             </span>
           )}
         </div>
-
       </div>
     </div>
   )
 
-  return (
-    <>
-      <Link href={showApplicants ? `/manager/jobs/${job.id}/applicants` : `/jobs/${job.id}`} className="block">
-        {cardInner}
-      </Link>
+  // 정산완료는 Link 없이 — 버튼 클릭 이벤트 간섭 방지
+  if (isSettled) {
+    return (
+      <>
+        <div>{cardBody}</div>
+        {modalOpen && revieweeId && (
+          <ReviewModal
+            jobId={job.id}
+            revieweeId={revieweeId}
+            onClose={() => setModalOpen(false)}
+            onSuccess={() => { setReviewed(true); setModalOpen(false) }}
+          />
+        )}
+      </>
+    )
+  }
 
-      {modalOpen && revieweeId && (
-        <ReviewModal
-          jobId={job.id}
-          revieweeId={revieweeId}
-          onClose={() => setModalOpen(false)}
-          onSuccess={() => { setReviewed(true); setModalOpen(false) }}
-        />
-      )}
-    </>
+  return (
+    <Link href={showApplicants ? `/manager/jobs/${job.id}/applicants` : `/jobs/${job.id}`} className="block">
+      {cardBody}
+    </Link>
   )
 }
