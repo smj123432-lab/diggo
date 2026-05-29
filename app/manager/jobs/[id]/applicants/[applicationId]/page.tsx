@@ -72,8 +72,8 @@ export default async function ApplicantDetailPage({ params }: Props) {
       <div className="max-w-3xl mx-auto px-4 py-5 space-y-4">
 
         <div className="bg-white rounded-2xl border border-gray-200 p-5">
-          <div className="flex gap-4 mb-4" style={{ alignItems: 'center' }}>
-            <div className="rounded-full overflow-hidden bg-gray-200 flex items-center justify-center shrink-0" style={{ width: 64, height: 64, alignSelf: 'center' }}>
+          <div className="flex gap-4 mb-4" style={{ alignItems: 'center', minHeight: 88 }}>
+            <div className="rounded-full overflow-hidden bg-gray-200 flex items-center justify-center shrink-0" style={{ width: 64, height: 64 }}>
               {driver.avatar_url ? (
                 <img src={driver.avatar_url} alt={driver.name} className="w-full h-full object-cover" />
               ) : (
