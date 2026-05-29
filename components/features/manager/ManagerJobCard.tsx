@@ -31,6 +31,9 @@ const STATUS_BADGE: Record<JobStatus, string> = {
 export function ManagerJobCard({ job, hasReview = false }: ManagerJobCardProps) {
   const [modalOpen, setModalOpen] = useState(false)
   const [reviewed, setReviewed] = useState(hasReview)
+  // accepted_driver_id가 API에서 오면 바로 쓰고, 없으면 클릭 시 fetch
+  const [revieweeId, setRevieweeId] = useState<string | null>(job.accepted_driver_id ?? null)
+  const [fetching, setFetching] = useState(false)
 
   const workDate = new Date(job.work_date).toLocaleDateString('ko-KR', {
     month: 'numeric', day: 'numeric', weekday: 'short',
@@ -42,6 +45,30 @@ export function ManagerJobCard({ job, hasReview = false }: ManagerJobCardProps) 
 
   const showApplicants = effectiveStatus === 'open' || effectiveStatus === 'closed'
   const isSettled = effectiveStatus === 'settled'
+
+  async function handleReviewClick(e: React.MouseEvent) {
+    e.preventDefault()
+    e.stopPropagation()
+
+    if (revieweeId) {
+      setModalOpen(true)
+      return
+    }
+
+    // accepted_driver_id가 없으면 직접 조회
+    setFetching(true)
+    try {
+      const res = await fetch(`/api/applications/accepted?job_ids=${job.id}`)
+      const json = await res.json()
+      const id = (json.data as { job_id: string; driver_id: string }[])?.[0]?.driver_id ?? null
+      if (id) {
+        setRevieweeId(id)
+        setModalOpen(true)
+      }
+    } finally {
+      setFetching(false)
+    }
+  }
 
   const cardInner = (
     <div className={`bg-white border border-gray-200 rounded-2xl overflow-hidden flex transition-all ${
@@ -77,7 +104,7 @@ export function ManagerJobCard({ job, hasReview = false }: ManagerJobCardProps) 
           </p>
         </div>
 
-        {/* 우측: 날짜·지급일 + 지원자/상태 */}
+        {/* 우측: 날짜·지급일 + 지원자/상태/리뷰 */}
         <div className="flex flex-col items-end gap-2 shrink-0">
           <p className="text-xs text-slate-400">
             {workDate} · {PAY_DUE_LABELS[job.pay_due_type]}
@@ -93,24 +120,24 @@ export function ManagerJobCard({ job, hasReview = false }: ManagerJobCardProps) 
                 지원자 {job.applicant_count}명 →
               </span>
             </div>
-          ) : isSettled && job.accepted_driver_id ? (
+          ) : isSettled ? (
             reviewed ? (
               <span className="text-xs font-semibold text-gray-400 bg-gray-100 px-2.5 py-1 rounded-lg">
                 평가 완료
               </span>
             ) : (
               <button
-                onClick={(e) => { e.preventDefault(); e.stopPropagation(); setModalOpen(true) }}
-                className="text-xs font-semibold text-blue-600 bg-blue-50 hover:bg-blue-100 border border-blue-200 px-2.5 py-1 rounded-lg transition-colors active:scale-95"
+                onClick={handleReviewClick}
+                disabled={fetching}
+                className="text-xs font-semibold text-blue-600 bg-blue-50 hover:bg-blue-100 border border-blue-200 px-2.5 py-1 rounded-lg transition-colors active:scale-95 disabled:opacity-50"
               >
-                리뷰 남기기
+                {fetching ? '...' : '리뷰 남기기'}
               </button>
             )
           ) : (
             <span className="text-xs text-gray-400 px-4 py-2">
               {effectiveStatus === 'in_progress' && '작업중'}
               {effectiveStatus === 'completed' && '정산 대기중'}
-              {effectiveStatus === 'settled' && '정산 완료'}
             </span>
           )}
         </div>
@@ -125,10 +152,10 @@ export function ManagerJobCard({ job, hasReview = false }: ManagerJobCardProps) 
         {cardInner}
       </Link>
 
-      {modalOpen && job.accepted_driver_id && (
+      {modalOpen && revieweeId && (
         <ReviewModal
           jobId={job.id}
-          revieweeId={job.accepted_driver_id}
+          revieweeId={revieweeId}
           onClose={() => setModalOpen(false)}
           onSuccess={() => { setReviewed(true); setModalOpen(false) }}
         />
