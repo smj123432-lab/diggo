@@ -43,29 +43,9 @@ export default function ManagerJobsPage() {
       fetch('/api/jobs/mine').then((r) => r.json()),
       fetch('/api/reviews?type=given').then((r) => r.json()),
     ])
-      .then(async ([jobsJson, reviewsJson]) => {
-        const rawJobs: JobWithCount[] = jobsJson.data ?? []
-        const reviewedIds = new Set<string>((reviewsJson.data ?? []) as string[])
-        setReviewedJobIds(reviewedIds)
-
-        // 정산완료 일감의 accepted_driver_id 조회
-        const settledIds = rawJobs.filter((j) => j.status === 'settled').map((j) => j.id)
-
-        if (settledIds.length > 0) {
-          const res = await fetch(`/api/applications/accepted?job_ids=${settledIds.join(',')}`)
-          if (res.ok) {
-            const { data } = await res.json() as { data: { job_id: string; driver_id: string }[] }
-            const driverMap = new Map((data ?? []).map((a) => [a.job_id, a.driver_id]))
-            setJobs(rawJobs.map((j) => ({
-              ...j,
-              accepted_driver_id: driverMap.get(j.id) ?? null,
-            })))
-          } else {
-            setJobs(rawJobs)
-          }
-        } else {
-          setJobs(rawJobs)
-        }
+      .then(([jobsJson, reviewsJson]) => {
+        setJobs(jobsJson.data ?? [])
+        setReviewedJobIds(new Set<string>((reviewsJson.data ?? []) as string[]))
       })
       .finally(() => setIsLoading(false))
   }, [user, role])
