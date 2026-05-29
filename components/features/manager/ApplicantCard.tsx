@@ -43,15 +43,15 @@ export function ApplicantCard({ jobId, application }: ApplicantCardProps) {
   return (
     <Link href={`/manager/jobs/${jobId}/applicants/${application.id}`}>
       <div className="bg-white border border-gray-200 rounded-2xl p-5 hover:border-blue-300 hover:shadow-md transition-all">
-        <div className="flex items-start justify-between gap-3">
-          <div className="flex items-start gap-3 min-w-0 flex-1">
+        <div className="flex items-center justify-between gap-3">
+          <div className="flex items-center gap-3 min-w-0 flex-1">
 
             {/* 아바타 */}
-            <div className="w-11 h-11 rounded-full overflow-hidden shrink-0 bg-gray-200 flex items-center justify-center">
+            <div className="w-14 h-14 rounded-full overflow-hidden shrink-0 bg-gray-200 flex items-center justify-center">
               {driver.avatar_url ? (
                 <img src={driver.avatar_url} alt={driver.name} className="w-full h-full object-cover" />
               ) : (
-                <svg className="w-6 h-6 text-gray-400" viewBox="0 0 24 24" fill="currentColor">
+                <svg className="w-7 h-7 text-gray-400" viewBox="0 0 24 24" fill="currentColor">
                   <path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"/>
                 </svg>
               )}
