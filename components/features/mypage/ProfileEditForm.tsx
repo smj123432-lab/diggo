@@ -91,8 +91,9 @@ export function ProfileEditForm({ profile }: Props) {
         <p className="text-sm font-bold text-slate-800">기본 정보</p>
 
         <div>
-          <label className="block text-xs font-semibold text-gray-500 mb-1.5">이름</label>
+          <label htmlFor="profile-name" className="block text-xs font-semibold text-gray-500 mb-1.5">이름</label>
           <input
+            id="profile-name"
             type="text"
             value={name}
             onChange={e => setName(e.target.value)}
@@ -102,8 +103,9 @@ export function ProfileEditForm({ profile }: Props) {
         </div>
 
         <div>
-          <label className="block text-xs font-semibold text-gray-500 mb-1.5">전화번호</label>
+          <label htmlFor="profile-phone" className="block text-xs font-semibold text-gray-500 mb-1.5">전화번호</label>
           <input
+            id="profile-phone"
             type="tel"
             value={phone}
             onChange={e => setPhone(e.target.value)}
@@ -113,8 +115,9 @@ export function ProfileEditForm({ profile }: Props) {
         </div>
 
         <div>
-          <label className="block text-xs font-semibold text-gray-500 mb-1.5">한 줄 소개</label>
+          <label htmlFor="profile-bio" className="block text-xs font-semibold text-gray-500 mb-1.5">한 줄 소개</label>
           <input
+            id="profile-bio"
             type="text"
             value={bio}
             onChange={e => setBio(e.target.value)}
@@ -132,8 +135,9 @@ export function ProfileEditForm({ profile }: Props) {
           <p className="text-sm font-bold text-slate-800">기사 정보</p>
 
           <div>
-            <label className="block text-xs font-semibold text-gray-500 mb-1.5">현장 경력 (년)</label>
+            <label htmlFor="profile-experience" className="block text-xs font-semibold text-gray-500 mb-1.5">현장 경력 (년)</label>
             <input
+              id="profile-experience"
               type="number"
               value={experienceYears}
               onChange={e => setExperienceYears(e.target.value)}

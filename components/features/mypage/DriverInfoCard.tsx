@@ -3,7 +3,7 @@
 // 기사 정보 카드 — 보유 장비·경력·면허 표시 + 정보 수정 버튼
 import { useState } from 'react'
 import type { Profile, EquipmentCode } from '@/types'
-import { EQUIPMENT_LABELS } from '@/types'
+import { EquipmentBadge } from '@/components/ui/EquipmentBadge'
 import { DriverInfoEditModal } from './DriverInfoEditModal'
 
 interface Props {
@@ -38,9 +38,7 @@ export function DriverInfoCard({ profile, initialEquipments, certApproved, certP
           {equipments.length > 0 ? (
             <div className="flex gap-1.5 flex-wrap">
               {equipments.map((eq) => (
-                <span key={eq.id} className="bg-blue-600 text-white text-xs font-bold px-2.5 py-1 rounded-lg">
-                  {EQUIPMENT_LABELS[eq.model_code]}
-                </span>
+                <EquipmentBadge key={eq.id} code={eq.model_code} />
               ))}
             </div>
           ) : (

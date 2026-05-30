@@ -45,14 +45,17 @@ export async function POST(request: NextRequest) {
     // 캐시 무효화를 위한 타임스탬프 쿼리 파라미터
     const avatarUrl = `${publicUrl}?t=${Date.now()}`
 
-    await admin
+    const { error: updateErr } = await admin
       .from('profiles')
       .update({ avatar_url: avatarUrl })
       .eq('id', user.id)
 
+    if (updateErr) throw updateErr
+
     return NextResponse.json({ avatar_url: avatarUrl })
   } catch (error) {
     console.error('[POST /api/profile/avatar]', error)
-    return NextResponse.json({ error: '업로드에 실패했습니다.' }, { status: 500 })
+    const msg = error instanceof Error ? error.message : String(error)
+    return NextResponse.json({ error: `업로드 실패: ${msg}` }, { status: 500 })
   }
 }

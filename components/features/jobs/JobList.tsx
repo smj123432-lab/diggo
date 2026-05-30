@@ -173,6 +173,7 @@ export function JobList() {
           <div className="absolute left-0 top-0 bottom-1 flex items-center bg-gradient-to-r from-white via-white/90 to-transparent pl-2 pr-6">
             <button
               onClick={() => chipScrollRef.current?.scrollBy({ left: -160, behavior: 'smooth' })}
+              aria-label="이전 필터"
               className="w-7 h-7 flex items-center justify-center rounded-full bg-white border border-gray-200 shadow-sm text-gray-500 active:scale-95 transition-transform"
             >
               <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5}>
@@ -186,6 +187,7 @@ export function JobList() {
           <div className="absolute right-0 top-0 bottom-1 flex items-center bg-gradient-to-l from-white via-white/90 to-transparent pr-2 pl-6">
             <button
               onClick={() => chipScrollRef.current?.scrollBy({ left: 160, behavior: 'smooth' })}
+              aria-label="다음 필터"
               className="w-7 h-7 flex items-center justify-center rounded-full bg-white border border-gray-200 shadow-sm text-gray-500 active:scale-95 transition-transform"
             >
               <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5}>

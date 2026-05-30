@@ -1,6 +1,7 @@
 // 기사 — 내 지원 현황 페이지
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
+import { Suspense } from 'react'
 import { createClient } from '@/lib/supabase/server'
 import { DriverApplicationsList } from '@/components/features/driver/DriverApplicationsList'
 import type { DriverApplication } from '@/components/features/driver/DriverApplicationsList'
@@ -86,7 +87,9 @@ export default async function DriverApplicationsPage() {
       </div>
 
       <div className="max-w-3xl mx-auto px-4 py-5">
-        <DriverApplicationsList applications={applications} />
+        <Suspense>
+          <DriverApplicationsList applications={applications} />
+        </Suspense>
       </div>
     </main>
   )

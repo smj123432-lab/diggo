@@ -1,7 +1,11 @@
 // 지원자 카드 컴포넌트
 import Link from 'next/link'
 import type { ApplicationStatus, EquipmentCode } from '@/types'
-import { APPLICATION_STATUS_LABELS, EQUIPMENT_LABELS } from '@/types'
+import { APPLICATION_STATUS_LABELS } from '@/types'
+import { Avatar } from '@/components/ui/Avatar'
+import { CertBadge } from '@/components/ui/CertBadge'
+import { EquipmentBadge } from '@/components/ui/EquipmentBadge'
+import { RatingDisplay } from '@/components/ui/RatingDisplay'
 
 interface ApplicantCardProps {
   jobId: string
@@ -46,36 +50,18 @@ export function ApplicantCard({ jobId, application }: ApplicantCardProps) {
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 12, minWidth: 0, flex: 1 }}>
 
-            {/* 아바타 */}
-            <div className="rounded-full overflow-hidden bg-gray-200 flex items-center justify-center shrink-0" style={{ width: 56, height: 56, alignSelf: 'center' }}>
-              {driver.avatar_url ? (
-                <img src={driver.avatar_url} alt={driver.name} className="w-full h-full object-cover" />
-              ) : (
-                <svg className="w-7 h-7 text-gray-400" viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"/>
-                </svg>
-              )}
-            </div>
+            <Avatar src={driver.avatar_url} name={driver.name} size="md" />
 
             <div className="min-w-0 flex-1">
               {/* 이름 + 인증 */}
               <div className="flex items-center gap-1.5 mb-1">
                 <span className="text-sm font-bold text-gray-900">{driver.name}</span>
-                {driver.is_certified && (
-                  <span className="inline-flex items-center justify-center bg-blue-500 text-white w-4 h-4 rounded-full shrink-0">
-                    <svg className="w-2.5 h-2.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={3}>
-                      <path d="M20 6L9 17l-5-5" strokeLinecap="round" strokeLinejoin="round" />
-                    </svg>
-                  </span>
-                )}
+                {driver.is_certified && <CertBadge />}
               </div>
 
               {/* 평점 · 경력 · 보유 장비 */}
               <div className="flex items-center flex-wrap gap-1.5 text-xs text-gray-400 mb-1.5">
-                <span className="flex items-center gap-0.5">
-                  <span className="text-yellow-400">★</span>
-                  <span>{driver.rating_avg.toFixed(1)}</span>
-                </span>
+                <RatingDisplay value={driver.rating_avg} />
                 {driver.experience_years !== null && (
                   <><span className="text-gray-200">·</span><span>경력 {driver.experience_years}년</span></>
                 )}
@@ -84,9 +70,7 @@ export function ApplicantCard({ jobId, application }: ApplicantCardProps) {
                     <span className="text-gray-200">·</span>
                     <div className="flex flex-wrap gap-1">
                       {driverEquipments.map((code) => (
-                        <span key={code} className="bg-blue-500 text-white font-bold px-1.5 py-0.5 rounded text-xs">
-                          {EQUIPMENT_LABELS[code]}
-                        </span>
+                        <EquipmentBadge key={code} code={code} size="sm" />
                       ))}
                     </div>
                   </>

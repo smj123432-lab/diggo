@@ -2,6 +2,10 @@
 import Link from 'next/link'
 import type { JobWithManager, JobType, JobStatus, EquipmentCode } from '@/types'
 import { EQUIPMENT_LABELS, JOB_TYPE_LABELS, PAY_DUE_LABELS, WORK_DURATION_LABELS } from '@/types'
+import { Avatar } from '@/components/ui/Avatar'
+import { CertBadge } from '@/components/ui/CertBadge'
+import { EquipmentBadge } from '@/components/ui/EquipmentBadge'
+import { RatingDisplay } from '@/components/ui/RatingDisplay'
 
 interface JobCardProps {
   job: JobWithManager
@@ -52,9 +56,7 @@ export function JobCard({ job, isPreferred }: JobCardProps) {
         <div className="flex items-center gap-1.5 flex-wrap mb-3">
           {/* 장비 코드 — 파란 솔리드 (복수 표시) */}
           {(job.equipment_codes as EquipmentCode[]).map((code) => (
-            <span key={code} className="bg-blue-500 text-white text-xs font-bold px-2.5 py-1 rounded-lg">
-              {EQUIPMENT_LABELS[code]}
-            </span>
+            <EquipmentBadge key={code} code={code} />
           ))}
           {/* 일 종류 — 토목: 초록 / 철거: 주황 */}
           <span className={`text-xs font-medium px-2.5 py-1 rounded-lg ${JOB_TYPE_BADGE[job.job_type]}`}>
@@ -109,31 +111,13 @@ export function JobCard({ job, isPreferred }: JobCardProps) {
         {/* 소장 정보 + 가격 */}
         <div className="flex items-center justify-between mt-auto">
           <div className="flex items-center gap-1.5">
-            {/* 아바타 */}
-            <div className="w-6 h-6 rounded-full overflow-hidden shrink-0 bg-gray-200 flex items-center justify-center">
-              {job.profiles.avatar_url ? (
-                <img src={job.profiles.avatar_url} alt={job.profiles.name} className="w-full h-full object-cover" />
-              ) : (
-                <svg className="w-4 h-4 text-gray-400" viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"/>
-                </svg>
-              )}
-            </div>
+            <Avatar src={job.profiles.avatar_url} name={job.profiles.name} size="sm" />
             <span className="text-xs font-medium text-gray-700">
               {job.profiles.name} 소장
             </span>
-            {job.profiles.is_certified && (
-              <span className="inline-flex items-center justify-center bg-blue-500 text-white w-4 h-4 rounded-full leading-none shrink-0">
-                <svg className="w-2.5 h-2.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={3}>
-                  <path d="M20 6L9 17l-5-5" strokeLinecap="round" strokeLinejoin="round" />
-                </svg>
-              </span>
-            )}
+            {job.profiles.is_certified && <CertBadge />}
             <span className="text-gray-300 text-xs mx-0.5">|</span>
-            <span className="text-xs text-gray-400 flex items-center gap-0.5">
-              <span className="text-yellow-400">★</span>
-              {job.profiles.rating_avg.toFixed(1)}
-            </span>
+            <RatingDisplay value={job.profiles.rating_avg} className="text-xs text-gray-400" />
           </div>
           <div className="flex flex-col items-end gap-0.5 shrink-0">
             {(job.equipment_codes as EquipmentCode[]).map(code => (

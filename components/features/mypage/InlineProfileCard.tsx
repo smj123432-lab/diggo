@@ -95,6 +95,7 @@ export function InlineProfileCard({ profile, jobCount = 0 }: Props) {
             <button
               onClick={() => fileInputRef.current?.click()}
               disabled={uploading}
+              aria-label="프로필 사진 변경"
               className="absolute -bottom-1 -right-1 w-6 h-6 bg-blue-500 hover:bg-blue-600 border-2 border-white rounded-full flex items-center justify-center shadow-sm transition-colors"
             >
               <svg className="w-3 h-3 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5}>

@@ -1,11 +1,12 @@
 'use client'
 
 // 기사 — 지원한 일감 목록 + 4단계 필터
-import { useState } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import Link from 'next/link'
+import { useRouter, useSearchParams } from 'next/navigation'
 import type { EquipmentCode, JobStatus } from '@/types'
-import { EQUIPMENT_LABELS } from '@/types'
-import { ReviewModal } from '@/components/features/reviews/ReviewModal'
+import { EquipmentBadge } from '@/components/ui/EquipmentBadge'
+import { ReviewModal } from '@/components/features/mypage/ReviewModal'
 
 export interface DriverApplication {
   id: string
@@ -66,8 +67,28 @@ interface Props {
 }
 
 export function DriverApplicationsList({ applications }: Props) {
-  const [filter, setFilter] = useState<StageFilter>('all')
+  const router = useRouter()
+  const searchParams = useSearchParams()
+  const [filter, setFilter] = useState<StageFilter>(() => {
+    const s = searchParams.get('stage')
+    return STAGE_TABS.some((t) => t.value === s) ? (s as StageFilter) : 'all'
+  })
   const [reviewTarget, setReviewTarget] = useState<{ jobId: string; managerId: string } | null>(null)
+  const [tabScrollState, setTabScrollState] = useState({ canLeft: false, canRight: true })
+  const tabScrollRef = useRef<HTMLDivElement>(null)
+
+  function handleTabScroll() {
+    const el = tabScrollRef.current
+    if (!el) return
+    setTabScrollState({
+      canLeft: el.scrollLeft > 0,
+      canRight: el.scrollLeft + el.clientWidth < el.scrollWidth - 1,
+    })
+  }
+
+  useEffect(() => {
+    requestAnimationFrame(handleTabScroll)
+  }, [])
   const [reviewedIds, setReviewedIds] = useState<Set<string>>(
     () => new Set(applications.filter((a) => a.hasReview).map((a) => a.id))
   )
@@ -100,23 +121,63 @@ export function DriverApplicationsList({ applications }: Props) {
   return (
     <>
       {/* 필터 탭 */}
-      <div className="flex gap-1.5 overflow-x-auto pb-1 mb-5">
-        {STAGE_TABS.map((tab) => {
-          const count = counts[tab.value]
-          return (
+      <div className="relative mb-5">
+        <div
+          ref={tabScrollRef}
+          className="overflow-x-auto no-scrollbar"
+          onScroll={handleTabScroll}
+        >
+          <div className="flex gap-1.5 pb-1 w-max pr-10">
+            {STAGE_TABS.map((tab) => {
+              const count = counts[tab.value]
+              return (
+                <button
+                  key={tab.value}
+                  onClick={() => {
+                    setFilter(tab.value)
+                    const p = new URLSearchParams(searchParams.toString())
+                    if (tab.value === 'all') p.delete('stage')
+                    else p.set('stage', tab.value)
+                    router.replace(`?${p.toString()}`, { scroll: false })
+                  }}
+                  className={`shrink-0 text-xs font-semibold px-3.5 py-1.5 rounded-full transition-colors ${
+                    filter === tab.value
+                      ? 'bg-blue-500 text-white'
+                      : 'bg-white border border-gray-200 text-gray-500 hover:border-blue-300 hover:text-blue-600'
+                  }`}
+                >
+                  {tab.label}{count > 0 ? ` (${count})` : ''}
+                </button>
+              )
+            })}
+          </div>
+        </div>
+        {tabScrollState.canLeft && (
+          <div className="absolute left-0 top-0 bottom-1 flex items-center bg-gradient-to-r from-white via-white/90 to-transparent pr-6">
             <button
-              key={tab.value}
-              onClick={() => setFilter(tab.value)}
-              className={`shrink-0 text-xs font-semibold px-3.5 py-1.5 rounded-full transition-colors ${
-                filter === tab.value
-                  ? 'bg-blue-500 text-white'
-                  : 'bg-white border border-gray-200 text-gray-500 hover:border-blue-300 hover:text-blue-600'
-              }`}
+              onClick={() => tabScrollRef.current?.scrollBy({ left: -160, behavior: 'smooth' })}
+              aria-label="이전 필터"
+              className="w-7 h-7 flex items-center justify-center rounded-full bg-white border border-gray-200 shadow-sm text-gray-500 active:scale-95 transition-transform"
             >
-              {tab.label}{count > 0 ? ` (${count})` : ''}
+              <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5}>
+                <path d="M15 18l-6-6 6-6" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
             </button>
-          )
-        })}
+          </div>
+        )}
+        {tabScrollState.canRight && (
+          <div className="absolute right-0 top-0 bottom-1 flex items-center bg-gradient-to-l from-white via-white/90 to-transparent pl-6">
+            <button
+              onClick={() => tabScrollRef.current?.scrollBy({ left: 160, behavior: 'smooth' })}
+              aria-label="다음 필터"
+              className="w-7 h-7 flex items-center justify-center rounded-full bg-white border border-gray-200 shadow-sm text-gray-500 active:scale-95 transition-transform"
+            >
+              <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5}>
+                <path d="M9 18l6-6-6-6" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            </button>
+          </div>
+        )}
       </div>
 
       <p className="text-sm font-semibold text-gray-700 mb-4">{filtered.length}건</p>
@@ -181,11 +242,7 @@ export function DriverApplicationsList({ applications }: Props) {
                           {stageLabel?.label}
                         </span>
                       )}
-                      {equipment && (
-                        <span className="bg-blue-500 text-white text-xs font-bold px-2 py-0.5 rounded-md">
-                          {EQUIPMENT_LABELS[equipment.model_code]}
-                        </span>
-                      )}
+                      {equipment && <EquipmentBadge code={equipment.model_code} size="sm" />}
                     </div>
                     <h3 className="text-sm font-bold text-gray-900 mb-1 line-clamp-1">{job.title}</h3>
                     <p className="text-xs text-gray-400 flex items-center gap-1">

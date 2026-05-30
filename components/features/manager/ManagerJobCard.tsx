@@ -3,10 +3,12 @@
 // 소장 내 일감 카드 — 좌측 컬러 바 + 정보 우측 정렬
 import { useState } from 'react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 import type { Job, JobStatus, EquipmentCode } from '@/types'
-import { EQUIPMENT_LABELS, JOB_STATUS_LABELS, PAY_DUE_LABELS } from '@/types'
-import { ReviewModal } from '@/components/features/reviews/ReviewModal'
+import { JOB_STATUS_LABELS, PAY_DUE_LABELS } from '@/types'
+import { EquipmentBadge } from '@/components/ui/EquipmentBadge'
+import { ReviewModal } from '@/components/features/mypage/ReviewModal'
 
 interface ManagerJobCardProps {
   job: Job & { applicant_count: number; pending_count: number; accepted_driver_id?: string | null }
@@ -30,10 +32,33 @@ const STATUS_BADGE: Record<JobStatus, string> = {
 }
 
 export function ManagerJobCard({ job, hasReview = false }: ManagerJobCardProps) {
+  const router = useRouter()
   const [modalOpen, setModalOpen] = useState(false)
   const [reviewed, setReviewed] = useState(hasReview)
   const [revieweeId, setRevieweeId] = useState<string | null>(job.accepted_driver_id ?? null)
   const [fetching, setFetching] = useState(false)
+  const [completing, setCompleting] = useState(false)
+
+  async function handleComplete(e: React.MouseEvent) {
+    e.preventDefault()
+    e.stopPropagation()
+    if (!window.confirm('작업이 완료됐나요? 정산대기 상태로 전환됩니다.')) return
+    setCompleting(true)
+    try {
+      const res = await fetch(`/api/jobs/${job.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: 'completed' }),
+      })
+      if (!res.ok) throw new Error()
+      toast.success('작업 완료 처리됐습니다. 정산대기로 전환됩니다.')
+      router.refresh()
+    } catch {
+      toast.error('상태 변경에 실패했습니다.')
+    } finally {
+      setCompleting(false)
+    }
+  }
 
   const workDate = new Date(job.work_date).toLocaleDateString('ko-KR', {
     month: 'numeric', day: 'numeric', weekday: 'short',
@@ -85,9 +110,7 @@ export function ManagerJobCard({ job, hasReview = false }: ManagerJobCardProps) 
               {JOB_STATUS_LABELS[effectiveStatus]}
             </span>
             {(job.equipment_codes as EquipmentCode[]).map((code) => (
-              <span key={code} className="bg-blue-500 text-white text-xs font-bold px-2 py-0.5 rounded-md">
-                {EQUIPMENT_LABELS[code]}
-              </span>
+              <EquipmentBadge key={code} code={code} size="sm" />
             ))}
           </div>
 
@@ -132,10 +155,17 @@ export function ManagerJobCard({ job, hasReview = false }: ManagerJobCardProps) 
                 {fetching ? '...' : '리뷰 남기기'}
               </button>
             )
+          ) : effectiveStatus === 'in_progress' ? (
+            <button
+              onClick={handleComplete}
+              disabled={completing}
+              className="text-xs font-semibold text-emerald-600 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 px-2.5 py-1 rounded-lg transition-colors active:scale-95 disabled:opacity-50 whitespace-nowrap"
+            >
+              {completing ? '처리중...' : '작업 완료'}
+            </button>
           ) : (
-            <span className="text-xs text-gray-400">
-              {effectiveStatus === 'in_progress' && '작업중'}
-              {effectiveStatus === 'completed' && '정산 대기중'}
+            <span className="text-xs font-semibold text-amber-600 bg-amber-50 px-2.5 py-1 rounded-lg">
+              정산 대기중
             </span>
           )}
         </div>
