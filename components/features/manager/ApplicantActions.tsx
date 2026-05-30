@@ -61,7 +61,7 @@ export function ApplicantActions({ applicationId, currentStatus, jobId }: Props)
   }
 
   return (
-    <div className="flex flex-col gap-2">
+    <div className="flex flex-col gap-2.5">
       {currentStatus === 'pending' && (
         <button
           onClick={() => handleChange('reviewing')}
@@ -81,7 +81,7 @@ export function ApplicantActions({ applicationId, currentStatus, jobId }: Props)
       <button
         onClick={() => handleChange('rejected')}
         disabled={isLoading}
-        className="w-full text-center text-xs text-gray-400 hover:text-red-500 transition-colors py-1 disabled:cursor-not-allowed"
+        className="w-full text-center text-sm font-medium text-slate-500 hover:text-red-500 transition-colors py-1.5 disabled:cursor-not-allowed"
       >
         거절하기
       </button>

@@ -22,6 +22,7 @@ export interface Profile {
   role: UserRole
   phone: string | null
   bio: string | null
+  avatar_url: string | null
   experience_years: number | null
   garage_address: string | null
   latitude: number | null
@@ -67,7 +68,7 @@ export interface Job {
 }
 
 export interface JobWithManager extends Job {
-  profiles: Pick<Profile, 'id' | 'name' | 'rating_avg' | 'is_certified'>
+  profiles: Pick<Profile, 'id' | 'name' | 'rating_avg' | 'is_certified' | 'avatar_url'>
 }
 
 // equipment_codes 배열을 레이블 문자열로 변환

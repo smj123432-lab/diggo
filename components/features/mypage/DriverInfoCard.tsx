@@ -3,7 +3,7 @@
 // 기사 정보 카드 — 보유 장비·경력·면허 표시 + 정보 수정 버튼
 import { useState } from 'react'
 import type { Profile, EquipmentCode } from '@/types'
-import { EQUIPMENT_LABELS } from '@/types'
+import { EquipmentBadge } from '@/components/ui/EquipmentBadge'
 import { DriverInfoEditModal } from './DriverInfoEditModal'
 
 interface Props {
@@ -38,9 +38,7 @@ export function DriverInfoCard({ profile, initialEquipments, certApproved, certP
           {equipments.length > 0 ? (
             <div className="flex gap-1.5 flex-wrap">
               {equipments.map((eq) => (
-                <span key={eq.id} className="bg-blue-600 text-white text-xs font-bold px-2.5 py-1 rounded-lg">
-                  {EQUIPMENT_LABELS[eq.model_code]}
-                </span>
+                <EquipmentBadge key={eq.id} code={eq.model_code} />
               ))}
             </div>
           ) : (
@@ -59,7 +57,7 @@ export function DriverInfoCard({ profile, initialEquipments, certApproved, certP
           <div className={`border rounded-xl p-3 text-center ${certApproved ? 'border-blue-100 bg-blue-50/30' : certPending ? 'border-yellow-100 bg-yellow-50/30' : 'border-red-100 bg-red-50/30'}`}>
             <p className="text-xs text-gray-400 mb-1.5">면허·안전교육</p>
             {certApproved ? (
-              <p className="text-sm font-bold text-blue-600">이수완료</p>
+              <p className="text-sm font-bold text-blue-600">등록완료</p>
             ) : certPending ? (
               <div className="flex flex-col items-center gap-1.5">
                 <p className="text-sm font-bold text-yellow-600">제출완료</p>

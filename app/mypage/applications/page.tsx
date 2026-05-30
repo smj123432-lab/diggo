@@ -1,6 +1,7 @@
 // 기사 — 내 지원 현황 페이지
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
+import { Suspense } from 'react'
 import { createClient } from '@/lib/supabase/server'
 import { DriverApplicationsList } from '@/components/features/driver/DriverApplicationsList'
 import type { DriverApplication } from '@/components/features/driver/DriverApplicationsList'
@@ -32,11 +33,11 @@ export default async function DriverApplicationsPage() {
   const jobIds = (rawApps ?? []).map((a) => a.job_id).filter(Boolean)
   const equipmentIds = (rawApps ?? []).map((a) => a.equipment_id).filter(Boolean)
 
-  const [{ data: jobs }, { data: equipments }] = await Promise.all([
+  const [{ data: jobs }, { data: equipments }, { data: givenReviews }] = await Promise.all([
     jobIds.length > 0
       ? supabase
           .from('jobs')
-          .select('id, title, work_date, status, equipment_codes, location, pay_amounts')
+          .select('id, title, work_date, status, equipment_codes, location, pay_amounts, manager_id')
           .in('id', jobIds)
       : Promise.resolve({ data: [] }),
     equipmentIds.length > 0
@@ -45,10 +46,15 @@ export default async function DriverApplicationsPage() {
           .select('id, model_code')
           .in('id', equipmentIds)
       : Promise.resolve({ data: [] }),
+    supabase
+      .from('reviews')
+      .select('job_id')
+      .eq('reviewer_id', user.id),
   ])
 
   const jobMap = new Map((jobs ?? []).map((j) => [j.id, j]))
   const equipmentMap = new Map((equipments ?? []).map((e) => [e.id, e]))
+  const reviewedJobIds = new Set((givenReviews ?? []).map((r) => r.job_id))
 
   const applications: DriverApplication[] = (rawApps ?? [])
     .map((app) => {
@@ -58,6 +64,7 @@ export default async function DriverApplicationsPage() {
         id: app.id,
         status: app.status,
         applied_at: app.applied_at,
+        hasReview: reviewedJobIds.has(app.job_id),
         job: job as DriverApplication['job'],
         equipment: app.equipment_id
           ? (equipmentMap.get(app.equipment_id) as { id: string; model_code: EquipmentCode } | null) ?? null
@@ -80,7 +87,9 @@ export default async function DriverApplicationsPage() {
       </div>
 
       <div className="max-w-3xl mx-auto px-4 py-5">
-        <DriverApplicationsList applications={applications} />
+        <Suspense>
+          <DriverApplicationsList applications={applications} />
+        </Suspense>
       </div>
     </main>
   )

@@ -22,12 +22,12 @@ export async function GET() {
 
     const jobIds = (data ?? []).map((j) => j.id)
 
-    // 2단계: 지원자 수 별도 조회
-    let appData: { id: string; job_id: string; status: string }[] = []
+    // 2단계: 지원자 수 + 배차된 기사 ID 별도 조회
+    let appData: { id: string; job_id: string; status: string; driver_id: string }[] = []
     if (jobIds.length > 0) {
       const { data: apps, error: appError } = await supabase
         .from('applications')
-        .select('id, job_id, status')
+        .select('id, job_id, status, driver_id')
         .in('job_id', jobIds)
       if (appError) {
         console.error('[GET /api/jobs/mine] applications error:', JSON.stringify(appError))
@@ -36,7 +36,7 @@ export async function GET() {
       }
     }
 
-    const appMap = new Map<string, { id: string; status: string }[]>()
+    const appMap = new Map<string, { id: string; status: string; driver_id: string }[]>()
     for (const app of appData) {
       const list = appMap.get(app.job_id) ?? []
       list.push(app)
@@ -45,10 +45,12 @@ export async function GET() {
 
     const jobs = (data ?? []).map((job) => {
       const applications = appMap.get(job.id) ?? []
+      const acceptedApp = applications.find((a) => a.status === 'accepted')
       return {
         ...job,
         applicant_count: applications.length,
         pending_count: applications.filter((a) => a.status === 'pending').length,
+        accepted_driver_id: acceptedApp?.driver_id ?? null,
       }
     })
 

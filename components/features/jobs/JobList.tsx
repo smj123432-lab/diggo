@@ -15,7 +15,18 @@ export function JobList() {
   const { profile, role } = useAuthStore()
   const [filters, setFilters] = useState<JobFilters>(DEFAULT_FILTERS)
   const [searchInput, setSearchInput] = useState('')
+  const [chipScrollState, setChipScrollState] = useState({ canLeft: false, canRight: true })
   const loadMoreRef = useRef<HTMLDivElement>(null)
+  const chipScrollRef = useRef<HTMLDivElement>(null)
+
+  const handleChipScroll = () => {
+    const el = chipScrollRef.current
+    if (!el) return
+    setChipScrollState({
+      canLeft: el.scrollLeft > 0,
+      canRight: el.scrollLeft + el.clientWidth < el.scrollWidth - 1,
+    })
+  }
 
   const handleSearch = () => {
     const keyword = searchInput.trim() || undefined
@@ -117,8 +128,8 @@ export function JobList() {
   return (
     <div>
       {/* ── 모바일 전용 칩 필터 ── */}
-      <div className="md:hidden mb-4 -mx-6">
-        <div className="overflow-x-auto no-scrollbar">
+      <div className="md:hidden mb-4 -mx-6 relative">
+        <div ref={chipScrollRef} className="overflow-x-auto no-scrollbar" onScroll={handleChipScroll}>
           <div className="flex gap-2 pb-1 w-max pl-6 pr-12">
             {hasActiveFilters && (
               <button
@@ -157,6 +168,34 @@ export function JobList() {
             ))}
           </div>
         </div>
+        {/* 왼쪽 스크롤 버튼 */}
+        {chipScrollState.canLeft && (
+          <div className="absolute left-0 top-0 bottom-1 flex items-center bg-gradient-to-r from-white via-white/90 to-transparent pl-2 pr-6">
+            <button
+              onClick={() => chipScrollRef.current?.scrollBy({ left: -160, behavior: 'smooth' })}
+              aria-label="이전 필터"
+              className="w-7 h-7 flex items-center justify-center rounded-full bg-white border border-gray-200 shadow-sm text-gray-500 active:scale-95 transition-transform"
+            >
+              <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5}>
+                <path d="M15 18l-6-6 6-6" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            </button>
+          </div>
+        )}
+        {/* 오른쪽 스크롤 버튼 */}
+        {chipScrollState.canRight && (
+          <div className="absolute right-0 top-0 bottom-1 flex items-center bg-gradient-to-l from-white via-white/90 to-transparent pr-2 pl-6">
+            <button
+              onClick={() => chipScrollRef.current?.scrollBy({ left: 160, behavior: 'smooth' })}
+              aria-label="다음 필터"
+              className="w-7 h-7 flex items-center justify-center rounded-full bg-white border border-gray-200 shadow-sm text-gray-500 active:scale-95 transition-transform"
+            >
+              <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5}>
+                <path d="M9 18l6-6-6-6" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            </button>
+          </div>
+        )}
       </div>
 
       {/* ── 데스크톱: 사이드바 + 그리드 / 모바일: 그리드만 ── */}
