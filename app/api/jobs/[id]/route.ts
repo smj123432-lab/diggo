@@ -1,15 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
-import { revalidatePath } from 'next/cache'
+import { revalidatePath, revalidateTag } from 'next/cache'
 
 // GET /api/jobs/[id] — 일감 상세
-export async function GET(_: NextRequest, { params }: { params: { id: string } }) {
+export async function GET(_: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params
   try {
     const supabase = await createClient()
     const { data, error } = await supabase
       .from('jobs')
       .select('*, profiles(id, name, rating_avg, is_certified, phone)')
-      .eq('id', params.id)
+      .eq('id', id)
       .single()
 
     if (error) throw error
@@ -23,7 +24,8 @@ export async function GET(_: NextRequest, { params }: { params: { id: string } }
 }
 
 // PATCH /api/jobs/[id] — 일감 수정 / 상태 변경 (소장 전용)
-export async function PATCH(request: NextRequest, { params }: { params: { id: string } }) {
+export async function PATCH(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params
   try {
     const supabase = await createClient()
     const {
@@ -46,7 +48,7 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
     const { data, error } = await supabase
       .from('jobs')
       .update(update)
-      .eq('id', params.id)
+      .eq('id', id)
       .eq('manager_id', user.id)
       .select()
       .single()
@@ -54,7 +56,8 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
     if (error) throw error
 
     revalidatePath('/jobs')
-    revalidatePath(`/jobs/${params.id}`)
+    revalidatePath(`/jobs/${id}`)
+    revalidateTag('jobs', 'max')
 
     return NextResponse.json({ data })
   } catch (error) {
@@ -64,7 +67,8 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
 }
 
 // DELETE /api/jobs/[id] — 일감 삭제 (소장 전용, 모집중/마감 상태만)
-export async function DELETE(_: NextRequest, { params }: { params: { id: string } }) {
+export async function DELETE(_: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params
   try {
     const supabase = await createClient()
     const { data: { user } } = await supabase.auth.getUser()
@@ -77,7 +81,7 @@ export async function DELETE(_: NextRequest, { params }: { params: { id: string 
     const { data: job } = await supabase
       .from('jobs')
       .select('status, manager_id')
-      .eq('id', params.id)
+      .eq('id', id)
       .single()
 
     if (!job || job.manager_id !== user.id) {
@@ -90,11 +94,12 @@ export async function DELETE(_: NextRequest, { params }: { params: { id: string 
     const { error } = await supabase
       .from('jobs')
       .delete()
-      .eq('id', params.id)
+      .eq('id', id)
 
     if (error) throw error
 
     revalidatePath('/jobs')
+    revalidateTag('jobs', 'max')
 
     return NextResponse.json({ success: true })
   } catch (error) {

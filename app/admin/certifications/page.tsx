@@ -5,8 +5,6 @@ import { createClient } from '@/lib/supabase/server'
 import { createClient as createAdminClient } from '@supabase/supabase-js'
 import { CertDriverList, type DriverEntry } from '@/components/features/admin/CertDriverList'
 
-export const dynamic = 'force-dynamic'
-
 const STATUS_TABS = [
   { label: '전체', value: 'all' },
   { label: '대기중', value: 'pending' },

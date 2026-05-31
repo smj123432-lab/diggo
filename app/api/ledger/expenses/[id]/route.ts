@@ -4,8 +4,9 @@ import { createClient } from '@/lib/supabase/server'
 // DELETE /api/ledger/expenses/[id] — 지출 삭제 (기사 본인만)
 export async function DELETE(
   _: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params
   try {
     const supabase = await createClient()
     const {
@@ -19,7 +20,7 @@ export async function DELETE(
     const { error } = await supabase
       .from('ledger_expenses')
       .delete()
-      .eq('id', params.id)
+      .eq('id', id)
       .eq('driver_id', user.id)
 
     if (error) throw error

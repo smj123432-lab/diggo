@@ -9,8 +9,9 @@ import {
 
 export async function GET(
   _: NextRequest,
-  { params }: { params: { date: string } }
+  { params }: { params: Promise<{ date: string }> }
 ) {
+  const { date } = await params
   try {
     const supabase = await createClient()
     const {
@@ -21,7 +22,7 @@ export async function GET(
       return NextResponse.json({ error: '로그인이 필요합니다.' }, { status: 401 })
     }
 
-    const { date } = params // YYYY-MM-DD
+    // date는 함수 상단에서 await params로 이미 추출됨
 
     const { data: profile } = await supabase
       .from('profiles')

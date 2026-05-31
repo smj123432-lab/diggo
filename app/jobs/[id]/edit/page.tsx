@@ -7,10 +7,11 @@ import type { EquipmentCode, JobType, PayDueType, WorkDuration } from '@/types'
 
 
 interface Props {
-  params: { id: string }
+  params: Promise<{ id: string }>
 }
 
 export default async function JobEditPage({ params }: Props) {
+  const { id } = await params
   const supabase = await createClient()
 
   const { data: { user } } = await supabase.auth.getUser()
@@ -19,11 +20,11 @@ export default async function JobEditPage({ params }: Props) {
   const { data: job, error } = await supabase
     .from('jobs')
     .select('*')
-    .eq('id', params.id)
+    .eq('id', id)
     .single()
 
   if (error || !job) notFound()
-  if (job.manager_id !== user.id) redirect(`/jobs/${params.id}`)
+  if (job.manager_id !== user.id) redirect(`/jobs/${id}`)
 
   const equipment_codes = (job.equipment_codes as EquipmentCode[]) ?? []
   const pay_amounts = (job.pay_amounts as Record<string, number>) ?? {}
@@ -60,7 +61,7 @@ export default async function JobEditPage({ params }: Props) {
       <div className="bg-white border-b border-gray-100 sticky top-0 z-10">
         <div className="max-w-lg mx-auto px-4 py-3 flex items-center gap-3">
           <Link
-            href={`/jobs/${params.id}`}
+            href={`/jobs/${id}`}
             className="p-1.5 -ml-1.5 rounded-lg hover:bg-gray-100 transition-colors"
           >
             <svg className="w-5 h-5 text-gray-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
@@ -72,7 +73,7 @@ export default async function JobEditPage({ params }: Props) {
       </div>
 
       <div className="max-w-lg mx-auto px-4 py-5">
-        <JobForm mode="edit" jobId={params.id} initialValues={initialValues} />
+        <JobForm mode="edit" jobId={id} initialValues={initialValues} />
       </div>
 
     </main>
