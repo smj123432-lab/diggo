@@ -44,7 +44,10 @@ export function AddExpenseModal({
   // 금액 입력 — 숫자만 추출 후 콤마 포맷 적용
   function handleAmountChange(e: React.ChangeEvent<HTMLInputElement>) {
     const digits = e.target.value.replace(/[^0-9]/g, '')
-    setAmountDisplay(digits ? Number(digits).toLocaleString('ko-KR') : '')
+    const num = Number(digits)
+    // int4 한계 내 최대값으로 클램프
+    const clamped = num > 999_999_999 ? 999_999_999 : num
+    setAmountDisplay(clamped > 0 ? clamped.toLocaleString('ko-KR') : '')
   }
 
   useEffect(() => {
@@ -65,6 +68,10 @@ export function AddExpenseModal({
     const parsedAmount = parseInt(amountDisplay.replace(/,/g, ''), 10)
     if (!parsedAmount || parsedAmount <= 0) {
       toast.error('금액을 입력해주세요.')
+      return
+    }
+    if (parsedAmount > 999_999_999) {
+      toast.error('금액은 999,999,999원 이하로 입력해주세요.')
       return
     }
 
