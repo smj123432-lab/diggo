@@ -256,7 +256,7 @@
 
 | 분류       | 선택                    | 이유                                                      |
 | ---------- | ----------------------- | --------------------------------------------------------- |
-| 프레임워크 | Next.js 14 (App Router) | SSR/ISR로 일감 목록 SEO 대응, 하이브리드 렌더링           |
+| 프레임워크 | Next.js 16 (App Router) | "use cache" + cacheComponents로 정적 캐싱, 하이브리드 렌더링 |
 | 언어       | TypeScript              | 타입 안전성                                               |
 | 스타일     | Tailwind CSS            | 빠른 개발                                                 |
 | 상태관리   | Zustand                 | 유저 세션, role 관리                                      |
@@ -417,30 +417,32 @@ PATCH /api/admin/jobs/[id]               일감 강제 처리
 
 ## 10. 캐싱 전략
 
-### Next.js 서버 캐싱
+### Next.js 서버 캐싱 (Next.js 16 cacheComponents)
 
-| 페이지                   | 전략                       | 주기 |
-| ------------------------ | -------------------------- | ---- |
-| 일감 목록 `/jobs`        | revalidate                 | 30초 |
-| 일감 상세 `/jobs/[id]`   | ISR + generateStaticParams | 1분  |
-| 장부 / 채팅 / 마이페이지 | no-store                   | -    |
-| 관리자                   | force-dynamic              | -    |
+| 페이지                   | 전략                     | 빌드 결과           |
+| ------------------------ | ------------------------ | ------------------- |
+| 일감 목록 `/jobs`        | "use cache" + cacheLife  | ○ Static            |
+| 일감 상세 `/jobs/[id]`   | "use cache" + cacheLife  | ◐ Partial Prerender |
+| 마이페이지 / 장부 등     | "use no-store" (자동)    | ◐ Partial Prerender |
+| API Routes               | 동적                     | ƒ Dynamic           |
 
 ```ts
-// 일감 목록
-export const revalidate = 30;
-
-// 일감 상세 ISR
-export const revalidate = 60;
-export async function generateStaticParams() {
-  const jobs = await getRecentJobs();
-  return jobs.map((job) => ({ id: job.id }));
+// lib/utils/jobs-cache.ts — 공개 데이터 캐싱 (cookies() 없는 createPublicClient 사용)
+export async function getCachedJobsFirstPage() {
+  'use cache'
+  cacheLife('seconds')  // ~30초
+  cacheTag('jobs')
+  // Supabase 쿼리 ...
 }
 
-// 소장 일감 등록 후 즉시 캐시 무효화
-revalidatePath("/jobs");
-revalidateTag("jobs");
+// 일감 등록/수정/삭제 후 즉시 캐시 무효화
+revalidatePath('/jobs')
+revalidateTag('jobs', 'max')  // Next.js 16: 두 번째 인자 필수
 ```
+
+- `createPublicClient()`: cookies() 없는 Supabase 클라이언트 — "use cache" 함수 전용
+- `createClient()`: cookies() + "use no-store" — 인증 필요 페이지 전용
+- 사용자별 데이터(`UserJobSection`): 'use client' + useAuthStore로 클라이언트 처리
 
 ### TanStack Query 클라이언트 캐싱
 
