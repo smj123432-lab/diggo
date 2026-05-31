@@ -176,6 +176,8 @@ export function buildMonthData(params: {
     .filter((e) => e.jobStatus === 'completed')
     .reduce((s, e) => s + e.amount, 0)
 
+  const totalJobPayAmount = jobs.reduce((s, j) => s + j.totalPayAmount, 0)
+
   return {
     year,
     month,
@@ -186,6 +188,7 @@ export function buildMonthData(params: {
     totalExpense,
     netIncome: totalIncome - totalExpense,
     totalJobCount: new Set(jobs.map((j) => j.jobId)).size,
+    totalJobPayAmount,
     totalManualExpense: totalExpense,
   }
 }
