@@ -118,6 +118,12 @@ function LoginForm() {
         {isLoading ? '로그인 중...' : '로그인'}
       </button>
 
+      <div className="text-center">
+        <Link href="/find-password" className="text-sm text-gray-400 hover:text-blue-600 transition-colors">
+          비밀번호를 잊으셨나요?
+        </Link>
+      </div>
+
       <p className="text-center text-sm text-gray-500">
         아직 계정이 없으신가요?{' '}
         <Link href="/signup" className="text-blue-600 font-medium hover:underline">
