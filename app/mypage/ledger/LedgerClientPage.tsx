@@ -1,7 +1,7 @@
 // 장부 클라이언트 페이지 — 필터탭(전체/지급대기/지급완료) + 반응형 레이아웃
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useRef } from 'react'
 import Link from 'next/link'
 import { toast } from 'sonner'
 import type { UserRole, LedgerMonthData, LedgerFilterTab } from '@/types'
@@ -10,6 +10,7 @@ import { LedgerCalendar } from '@/components/features/ledger/LedgerCalendar'
 import { LedgerDayPanel } from '@/components/features/ledger/LedgerDayPanel'
 import { LedgerMonthSummary } from '@/components/features/ledger/LedgerMonthSummary'
 import { AddExpenseModal } from '@/components/features/ledger/AddExpenseModal'
+import { MonthPicker } from '@/components/features/ledger/MonthPicker'
 import { ExcavatorIcon } from '@/components/ui/ExcavatorIcon'
 import { NavButtons } from '@/components/features/home/NavButtons'
 import { NavRoleLink } from '@/components/features/home/NavRoleLink'
@@ -49,6 +50,10 @@ export function LedgerClientPage({ role }: Props) {
   const [selectedDate, setSelectedDate] = useState<string | null>(null)
   const [showAddModal, setShowAddModal] = useState(false)
   const [filterTab, setFilterTab] = useState<LedgerFilterTab>('all')
+
+  const [showMonthPicker, setShowMonthPicker] = useState(false)
+  const [pickerYear, setPickerYear] = useState(now.getFullYear())
+  const dateButtonRef = useRef<HTMLButtonElement>(null)
 
   const { data: monthData, isLoading, refetch } = useLedger(year, month)
   const deleteMutation = useDeleteExpense(year, month)
@@ -168,16 +173,24 @@ export function LedgerClientPage({ role }: Props) {
               {/* 월 이동 (좌) + 필터탭 + 내역 추가 (우) */}
               <div className="flex items-center justify-between mb-3 gap-2">
                 {/* 월 이동 */}
-                <div className="flex items-center gap-2 shrink-0">
+                <div className="flex items-center gap-1.5 shrink-0">
                   <button
                     onClick={handlePrevMonth}
                     className="w-8 h-8 flex items-center justify-center rounded-lg bg-white border border-gray-200 text-gray-600 hover:bg-gray-50"
                   >
                     ‹
                   </button>
-                  <span className="text-base font-black text-gray-900 whitespace-nowrap">
+                  {/* 날짜 텍스트 클릭 → Month Picker */}
+                  <button
+                    ref={dateButtonRef}
+                    onClick={() => {
+                      setPickerYear(year)
+                      setShowMonthPicker((v) => !v)
+                    }}
+                    className="px-2 py-1 text-base font-black text-gray-900 whitespace-nowrap rounded-lg hover:bg-gray-100 transition-colors"
+                  >
                     {year}년 {MONTH_NAMES[month - 1]}
-                  </span>
+                  </button>
                   <button
                     onClick={handleNextMonth}
                     className="w-8 h-8 flex items-center justify-center rounded-lg bg-white border border-gray-200 text-gray-600 hover:bg-gray-50"
@@ -263,6 +276,23 @@ export function LedgerClientPage({ role }: Props) {
           </div>
         </div>
       </div>
+
+      {/* Month Picker */}
+      {showMonthPicker && (
+        <MonthPicker
+          currentYear={year}
+          currentMonth={month}
+          pickerYear={pickerYear}
+          onPickerYearChange={setPickerYear}
+          onSelect={(y, m) => {
+            setYear(y)
+            setMonth(m)
+            setSelectedDate(null)
+          }}
+          onClose={() => setShowMonthPicker(false)}
+          anchorRect={dateButtonRef.current?.getBoundingClientRect() ?? null}
+        />
+      )}
 
       {/* 내역 추가 모달 */}
       {showAddModal && (
