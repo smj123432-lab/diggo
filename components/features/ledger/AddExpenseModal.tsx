@@ -9,8 +9,6 @@ import { LEDGER_EXPENSE_CATEGORIES } from '@/types'
 
 interface AddExpenseModalProps {
   defaultDate?: string // YYYY-MM-DD
-  year: number
-  month: number
   onClose: () => void
   onSaved: () => void
 }
@@ -21,8 +19,6 @@ type EntryType = 'income' | 'expense'
 
 export function AddExpenseModal({
   defaultDate,
-  year,
-  month,
   onClose,
   onSaved,
 }: AddExpenseModalProps) {

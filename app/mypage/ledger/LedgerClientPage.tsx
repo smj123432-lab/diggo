@@ -298,8 +298,6 @@ export function LedgerClientPage({ role }: Props) {
       {showAddModal && (
         <AddExpenseModal
           defaultDate={selectedDate ?? undefined}
-          year={year}
-          month={month}
           onClose={() => setShowAddModal(false)}
           onSaved={() => refetch()}
         />
