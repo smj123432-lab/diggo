@@ -503,3 +503,21 @@ export async function GET(_: NextRequest, { params }: { params: Promise<{ id: st
   <Suspense>{children}</Suspense>
 </Providers>
 ```
+
+### SSR 정렬과 클라이언트 re-fetch 정렬 불일치 — staleTime 만료 후 리스트 순서 교체
+
+**증상**: `/jobs` 페이지 진입 30초 후 포커스 전환 시 일감 목록 순서가 갑자기 바뀜
+
+**원인**: 서버 프리페치(`prefetchInfiniteQuery`)는 `created_at DESC`(최신 등록순)으로 정렬하지만, 클라이언트 `DEFAULT_FILTERS.sortBy = 'deadline'`(마감임박순, `work_date ASC`)이어서 두 정렬 기준이 달랐다. TanStack Query의 `staleTime: 30s` 만료 후 포커스 이벤트가 발생하면 클라이언트가 `/api/jobs?sortBy=deadline`으로 재fetch하여 서버에서 내려온 초기 데이터와 순서가 교체됨. Hydration 직후 즉각 발생하는 현상이 아니라 staleTime 만료 시점에 트리거되는 버그.
+
+**해결**: `lib/utils/jobs-cache.ts`의 `getCachedJobsFirstPage()`에서 `order('work_date', { ascending: true })`로 통일. 서버 프리페치와 클라이언트 re-fetch가 동일한 정렬 기준을 사용하므로 순서 교체 없음.
+
+```typescript
+// 변경 전 (서버 프리페치)
+.order('created_at', { ascending: false })  // 최신 등록순
+
+// 변경 후 (DEFAULT_FILTERS.sortBy = 'deadline'과 일치)
+.order('work_date', { ascending: true })    // 마감임박순
+```
+
+> 서버 SSR 프리페치와 클라이언트 TanStack Query의 `queryKey`, `정렬 기준`, `필터 조건`이 완전히 일치해야 한다. 불일치 시 staleTime 만료 후 리스트가 교체되는 UX 버그 발생.
