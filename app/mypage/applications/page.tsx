@@ -6,6 +6,9 @@ import { createClient } from '@/lib/supabase/server'
 import { DriverApplicationsList } from '@/components/features/driver/DriverApplicationsList'
 import type { DriverApplication } from '@/components/features/driver/DriverApplicationsList'
 import type { EquipmentCode } from '@/types'
+import { ExcavatorIcon } from '@/components/ui/ExcavatorIcon'
+import { NavButtons } from '@/components/features/home/NavButtons'
+import { NavRoleLink } from '@/components/features/home/NavRoleLink'
 
 export const dynamic = 'force-dynamic'
 
@@ -74,23 +77,35 @@ export default async function DriverApplicationsPage() {
     .filter((a): a is DriverApplication => a !== null)
 
   return (
-    <main className="min-h-screen bg-gray-50">
-      <div className="bg-white border-b border-gray-100 sticky top-0 z-10">
-        <div className="max-w-3xl mx-auto px-4 py-3 flex items-center gap-3">
-          <Link href="/jobs" className="p-1.5 -ml-1.5 rounded-lg hover:bg-gray-100 transition-colors">
-            <svg className="w-5 h-5 text-gray-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
-              <path d="M19 12H5M12 5l-7 7 7 7" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
+    <div className="min-h-screen bg-gray-50">
+      <nav className="fixed top-0 inset-x-0 z-50 border-b border-white/10 bg-slate-900/90 backdrop-blur-md">
+        <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
+          <Link href="/" className="flex items-center gap-2.5">
+            <ExcavatorIcon className="w-10 h-8 text-blue-400" />
+            <span className="text-lg font-black tracking-tight text-white">
+              Diggo<span className="text-blue-400">.</span>
+            </span>
           </Link>
-          <span className="text-sm font-semibold text-gray-700">일감 찾기</span>
+          <div className="hidden md:flex items-center gap-1">
+            <Link href="/jobs" className="px-4 py-2 text-sm text-slate-400 hover:text-white hover:bg-white/5 rounded-lg transition-colors">
+              일감 찾기
+            </Link>
+            <Link href="/mypage/ledger" className="px-4 py-2 text-sm text-slate-400 hover:text-white hover:bg-white/5 rounded-lg transition-colors">
+              장부
+            </Link>
+            <NavRoleLink />
+          </div>
+          <NavButtons />
+        </div>
+      </nav>
+
+      <div className="pt-16">
+        <div className="max-w-3xl mx-auto px-4 py-5">
+          <Suspense>
+            <DriverApplicationsList applications={applications} />
+          </Suspense>
         </div>
       </div>
-
-      <div className="max-w-3xl mx-auto px-4 py-5">
-        <Suspense>
-          <DriverApplicationsList applications={applications} />
-        </Suspense>
-      </div>
-    </main>
+    </div>
   )
 }
