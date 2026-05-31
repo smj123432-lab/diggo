@@ -15,17 +15,17 @@ export function LedgerMonthSummary({ income, expense, net, jobCount, pendingNote
   return (
     <div className="bg-white border border-gray-200 rounded-2xl p-4">
       <div className="grid grid-cols-3 gap-2">
-        <div className="text-center">
+        <div className="text-center min-w-0">
           <p className="text-xs text-gray-400 mb-0.5">수익</p>
-          <p className="text-base font-black text-blue-600">{formatKRW(income)}</p>
+          <p className="text-sm font-black text-blue-600 whitespace-nowrap">{formatKRW(income)}</p>
         </div>
-        <div className="text-center border-x border-gray-100">
+        <div className="text-center border-x border-gray-100 min-w-0">
           <p className="text-xs text-gray-400 mb-0.5">지출</p>
-          <p className="text-base font-black text-red-500">{formatKRW(expense)}</p>
+          <p className="text-sm font-black text-red-500 whitespace-nowrap">{formatKRW(expense)}</p>
         </div>
-        <div className="text-center">
+        <div className="text-center min-w-0">
           <p className="text-xs text-gray-400 mb-0.5">총 수익</p>
-          <p className={`text-base font-black ${net >= 0 ? 'text-gray-900' : 'text-red-600'}`}>
+          <p className={`text-sm font-black whitespace-nowrap ${net >= 0 ? 'text-gray-900' : 'text-red-600'}`}>
             {formatKRW(net)}
           </p>
         </div>
