@@ -169,12 +169,18 @@ export function buildMonthData(params: {
 
   const totalIncome = incomes.reduce((s, e) => s + e.amount, 0)
   const totalExpense = expenses.reduce((s, e) => s + e.amount, 0)
+  // 정산대기: job.status === 'completed', 정산완료: 나머지(settled 등)
+  const pendingIncome = incomes
+    .filter((e) => e.jobStatus === 'completed')
+    .reduce((s, e) => s + e.amount, 0)
 
   return {
     year,
     month,
     days,
     totalIncome,
+    pendingIncome,
+    settledIncome: totalIncome - pendingIncome,
     totalExpense,
     netIncome: totalIncome - totalExpense,
     totalJobCount: new Set(jobs.map((j) => j.jobId)).size,

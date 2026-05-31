@@ -1,4 +1,5 @@
-// 장부 클라이언트 페이지 — 달력, 월 요약, 날짜 패널, 지출 추가 모달 통합
+// 장부 클라이언트 페이지 — 달력, 월 요약, 날짜 패널, 내역 추가 모달 통합
+// 데스크탑: 2열 (달력 | 요약+패널), 모바일: 단일 컬럼
 'use client'
 
 import { useState } from 'react'
@@ -25,6 +26,8 @@ const EMPTY_MONTH_DATA: LedgerMonthData = {
   month: new Date().getMonth() + 1,
   days: {},
   totalIncome: 0,
+  pendingIncome: 0,
+  settledIncome: 0,
   totalExpense: 0,
   netIncome: 0,
   totalJobCount: 0,
@@ -44,22 +47,14 @@ export function LedgerClientPage({ role }: Props) {
   const displayData: LedgerMonthData = monthData ?? { ...EMPTY_MONTH_DATA, year, month }
 
   function handlePrevMonth() {
-    if (month === 1) {
-      setYear((y) => y - 1)
-      setMonth(12)
-    } else {
-      setMonth((m) => m - 1)
-    }
+    if (month === 1) { setYear((y) => y - 1); setMonth(12) }
+    else setMonth((m) => m - 1)
     setSelectedDate(null)
   }
 
   function handleNextMonth() {
-    if (month === 12) {
-      setYear((y) => y + 1)
-      setMonth(1)
-    } else {
-      setMonth((m) => m + 1)
-    }
+    if (month === 12) { setYear((y) => y + 1); setMonth(1) }
+    else setMonth((m) => m + 1)
     setSelectedDate(null)
   }
 
@@ -110,9 +105,10 @@ export function LedgerClientPage({ role }: Props) {
 
       {/* 본문 */}
       <div className="pt-16">
-        <div className="max-w-lg mx-auto px-4 py-6 space-y-4">
-          {/* 월 이동 헤더 + 내역 추가 버튼 */}
-          <div className="flex items-center justify-between">
+        <div className="max-w-5xl mx-auto px-4 py-6">
+
+          {/* ── 월 이동 헤더 (공통) ── */}
+          <div className="flex items-center justify-between mb-5">
             <div className="flex items-center gap-3">
               <button
                 onClick={handlePrevMonth}
@@ -138,39 +134,80 @@ export function LedgerClientPage({ role }: Props) {
             </button>
           </div>
 
-          {/* 월 요약 카드 */}
-          {isLoading ? (
-            <div className="bg-white border border-gray-200 rounded-2xl p-4 animate-pulse h-16" />
-          ) : (
-            <LedgerMonthSummary
-              totalIncome={displayData.totalIncome}
-              totalExpense={displayData.totalExpense}
-              netIncome={displayData.netIncome}
-              totalJobCount={displayData.totalJobCount}
-              role={role}
-            />
-          )}
+          {/* ── 반응형 레이아웃 ── */}
+          <div className="lg:grid lg:grid-cols-[1fr_320px] lg:gap-6 lg:items-start">
 
-          {/* 달력 */}
-          {isLoading ? (
-            <div className="bg-white border border-gray-200 rounded-2xl p-4 animate-pulse h-64" />
-          ) : (
-            <LedgerCalendar
-              monthData={displayData}
-              selectedDate={selectedDate}
-              role={role}
-              onDateSelect={handleDateSelect}
-            />
-          )}
+            {/* 좌측: 달력 */}
+            <div>
+              {isLoading ? (
+                <div className="bg-white border border-gray-200 rounded-2xl p-4 animate-pulse h-64" />
+              ) : (
+                <LedgerCalendar
+                  monthData={displayData}
+                  selectedDate={selectedDate}
+                  role={role}
+                  onDateSelect={handleDateSelect}
+                />
+              )}
 
-          {/* 날짜 상세 패널 */}
-          <LedgerDayPanel
-            dayData={selectedDayData}
-            role={role}
-            onClose={() => setSelectedDate(null)}
-            onDelete={handleDeleteExpense}
-            onAddExpense={() => setShowAddModal(true)}
-          />
+              {/* 모바일: 날짜 패널이 달력 아래 */}
+              <div className="lg:hidden mt-4">
+                <LedgerDayPanel
+                  dayData={selectedDayData}
+                  role={role}
+                  onClose={() => setSelectedDate(null)}
+                  onDelete={handleDeleteExpense}
+                  onAddExpense={() => setShowAddModal(true)}
+                />
+              </div>
+            </div>
+
+            {/* 우측: 요약 카드 + 날짜 패널 (데스크탑 전용) */}
+            <div className="hidden lg:block space-y-4 sticky top-24">
+              {/* 월 요약 */}
+              {isLoading ? (
+                <div className="bg-white border border-gray-200 rounded-2xl p-4 animate-pulse h-24" />
+              ) : (
+                <LedgerMonthSummary
+                  totalIncome={displayData.totalIncome}
+                  pendingIncome={displayData.pendingIncome}
+                  settledIncome={displayData.settledIncome}
+                  totalExpense={displayData.totalExpense}
+                  netIncome={displayData.netIncome}
+                  totalJobCount={displayData.totalJobCount}
+                  role={role}
+                />
+              )}
+
+              {/* 날짜 패널 (선택된 날짜 있을 때) */}
+              <LedgerDayPanel
+                dayData={selectedDayData}
+                role={role}
+                onClose={() => setSelectedDate(null)}
+                onDelete={handleDeleteExpense}
+                onAddExpense={() => setShowAddModal(true)}
+              />
+            </div>
+
+          </div>
+
+          {/* 모바일: 월 요약 카드 (달력 + 패널 아래) */}
+          <div className="lg:hidden mt-4">
+            {isLoading ? (
+              <div className="bg-white border border-gray-200 rounded-2xl p-4 animate-pulse h-16" />
+            ) : (
+              <LedgerMonthSummary
+                totalIncome={displayData.totalIncome}
+                pendingIncome={displayData.pendingIncome}
+                settledIncome={displayData.settledIncome}
+                totalExpense={displayData.totalExpense}
+                netIncome={displayData.netIncome}
+                totalJobCount={displayData.totalJobCount}
+                role={role}
+              />
+            )}
+          </div>
+
         </div>
       </div>
 

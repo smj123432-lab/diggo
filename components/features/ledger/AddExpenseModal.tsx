@@ -29,7 +29,7 @@ export function AddExpenseModal({
   const [entryType, setEntryType] = useState<EntryType>('expense')
   const [date, setDate] = useState(defaultDate ?? today)
   const [category, setCategory] = useState('')
-  const [amount, setAmount] = useState('')
+  const [amountDisplay, setAmountDisplay] = useState('') // 화면에 표시되는 콤마 포맷 문자열
   const [memo, setMemo] = useState('')
   const [isSaving, setIsSaving] = useState(false)
   const closeRef = useRef(onClose)
@@ -39,6 +39,12 @@ export function AddExpenseModal({
   function handleTypeChange(type: EntryType) {
     setEntryType(type)
     setCategory('')
+  }
+
+  // 금액 입력 — 숫자만 추출 후 콤마 포맷 적용
+  function handleAmountChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const digits = e.target.value.replace(/[^0-9]/g, '')
+    setAmountDisplay(digits ? Number(digits).toLocaleString('ko-KR') : '')
   }
 
   useEffect(() => {
@@ -56,7 +62,7 @@ export function AddExpenseModal({
       toast.error('카테고리를 선택해주세요.')
       return
     }
-    const parsedAmount = parseInt(amount.replace(/,/g, ''), 10)
+    const parsedAmount = parseInt(amountDisplay.replace(/,/g, ''), 10)
     if (!parsedAmount || parsedAmount <= 0) {
       toast.error('금액을 입력해주세요.')
       return
@@ -165,15 +171,18 @@ export function AddExpenseModal({
           {/* 금액 */}
           <div>
             <label className="block text-xs font-semibold text-gray-500 mb-1">금액 (원)</label>
-            <input
-              type="number"
-              value={amount}
-              onChange={(e) => setAmount(e.target.value)}
-              placeholder="0"
-              min={1}
-              required
-              className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
+            <div className="relative">
+              <input
+                type="text"
+                inputMode="numeric"
+                value={amountDisplay}
+                onChange={handleAmountChange}
+                placeholder="0"
+                required
+                className="w-full border border-gray-200 rounded-xl px-3 py-2 pr-8 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+              <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-gray-400">원</span>
+            </div>
           </div>
 
           {/* 메모 */}
