@@ -1,9 +1,9 @@
 // components/features/ledger/LedgerDayCell.tsx
-// 달력 날짜 셀 — 순수익 단일 배지 (정산대기/완료 색상 구분) + 위치 표시
+// 달력 날짜 셀 — filterTab 기반 순수익 단일 배지 + 위치 표시
 'use client'
 
-import type { LedgerDayData, UserRole } from '@/types'
-import { extractDistrict } from '@/lib/utils/ledger'
+import type { LedgerDayData, UserRole, LedgerFilterTab } from '@/types'
+import { extractDistrict, computeDayNet } from '@/lib/utils/ledger'
 
 interface Props {
   day: number
@@ -12,51 +12,59 @@ interface Props {
   isToday: boolean
   isSelected: boolean
   role: UserRole
+  filterTab: LedgerFilterTab
   onClick: (dateStr: string) => void
 }
 
-export function LedgerDayCell({ day, dateStr, dayData, isToday, isSelected, role, onClick }: Props) {
-  const net = (dayData?.totalIncome ?? 0) - (dayData?.totalExpense ?? 0)
-  const hasJob = (dayData?.jobs.length ?? 0) > 0
-  const firstJobLocation = hasJob ? dayData!.jobs[0].location : null
+export function LedgerDayCell({ day, dateStr, dayData, isToday, isSelected, role, filterTab, onClick }: Props) {
+  const net = dayData ? computeDayNet(dayData, role, filterTab) : null
 
-  // 기사: 정산대기(completed) 여부 판별
-  const hasPending = (dayData?.incomes ?? []).some((i) => i.jobStatus === 'completed')
-  const allPending = hasPending && (dayData?.incomes ?? []).every((i) => i.jobStatus === 'completed')
+  // 필터 기준으로 이 셀에 표시할 위치 텍스트 결정
+  let locationText: string | null = null
+  if (dayData) {
+    if (role === 'driver') {
+      const matchIncomes = filterTab === 'all'
+        ? dayData.incomes
+        : dayData.incomes.filter(i => filterTab === 'pending' ? i.jobStatus === 'completed' : i.jobStatus === 'settled')
+      if (matchIncomes.length > 0 && matchIncomes[0].location) {
+        locationText = extractDistrict(matchIncomes[0].location)
+      }
+    } else {
+      const matchJobs = filterTab === 'all'
+        ? dayData.jobs
+        : dayData.jobs.filter(j => filterTab === 'pending' ? j.jobStatus === 'completed' : j.jobStatus === 'settled')
+      if (matchJobs.length > 0 && matchJobs[0].location) {
+        locationText = extractDistrict(matchJobs[0].location)
+      }
+    }
+  }
 
-  // 순수익 배지 컬러 결정
+  // 배지 색상: 수익이면 파란색, 손실이면 빨간색
   let badgeClass = ''
   let badgeLabel = ''
+  if (net !== null) {
+    const isPositive = net > 0
+    const absVal = `${(Math.abs(net) / 10000).toFixed(0)}만`
+    badgeLabel = isPositive ? `+${absVal}` : `-${absVal}`
+    badgeClass = isPositive ? 'text-blue-600 bg-blue-50' : 'text-red-500 bg-red-50'
 
-  if (net !== 0) {
-    const prefix = net > 0 ? '+' : ''
-    const value = `${prefix}${(net / 10000).toFixed(0)}만`
-
-    if (net > 0 && hasPending) {
-      // 정산대기 포함: 주황/연한 앰버 톤
+    // 정산대기가 포함된 경우 앰버 톤으로 표시
+    if (net > 0 && role === 'driver' && dayData?.incomes.some(i => i.jobStatus === 'completed') && filterTab === 'all') {
       badgeClass = 'text-amber-600 bg-amber-50'
-      badgeLabel = `대기 ${value}`
-    } else if (net > 0) {
-      // 정산완료: 파란색
-      badgeClass = 'text-blue-600 bg-blue-50'
-      badgeLabel = value
-    } else {
-      // 마이너스: 빨간색
-      badgeClass = 'text-red-500 bg-red-50'
-      badgeLabel = value
+      badgeLabel = `대기 +${absVal}`
     }
   }
 
   return (
     <button
       onClick={() => onClick(dateStr)}
-      className={`w-full aspect-square flex flex-col items-center justify-start pt-1 rounded-xl transition-colors text-xs relative
+      className={`w-full aspect-square flex flex-col items-center justify-start pt-1 rounded-xl transition-colors
         ${isSelected ? 'bg-blue-50 ring-1 ring-blue-400' : 'hover:bg-gray-50'}
       `}
     >
       {/* 날짜 숫자 */}
       <span
-        className={`w-6 h-6 flex items-center justify-center rounded-full font-semibold shrink-0
+        className={`w-6 h-6 flex items-center justify-center rounded-full font-semibold text-xs shrink-0
           ${isToday ? 'bg-blue-500 text-white' : 'text-gray-700'}
         `}
       >
@@ -65,33 +73,11 @@ export function LedgerDayCell({ day, dateStr, dayData, isToday, isSelected, role
 
       {/* 배지 영역 */}
       <div className="flex flex-col gap-0.5 mt-0.5 w-full px-0.5">
-        {/* 소장: 현장 위치 + 일당 */}
-        {role === 'manager' && hasJob && (
-          <>
-            {firstJobLocation && (
-              <span className="block w-full text-center text-[9px] font-bold text-emerald-600 bg-emerald-50 rounded-sm truncate px-0.5">
-                {extractDistrict(firstJobLocation)}
-              </span>
-            )}
-            {(() => {
-              const totalPay = dayData!.jobs.reduce((s, j) => s + j.totalPayAmount, 0)
-              return totalPay > 0 ? (
-                <span className="block w-full text-center text-[10px] font-bold text-emerald-700 bg-emerald-50 rounded-sm truncate px-0.5">
-                  -{(totalPay / 10000).toFixed(0)}만
-                </span>
-              ) : null
-            })()}
-          </>
-        )}
-
-        {/* 기사: 현장 위치 (수입 내역 기준) */}
-        {role === 'driver' && (dayData?.incomes.length ?? 0) > 0 && dayData!.incomes[0].location && (
+        {locationText && (
           <span className="block w-full text-center text-[9px] font-bold text-slate-400 bg-slate-50 rounded-sm truncate px-0.5">
-            {extractDistrict(dayData!.incomes[0].location)}
+            {locationText}
           </span>
         )}
-
-        {/* 순수익 단일 배지 */}
         {badgeLabel && (
           <span className={`block w-full text-center text-[10px] font-bold rounded-sm truncate px-0.5 ${badgeClass}`}>
             {badgeLabel}

@@ -135,6 +135,9 @@ export interface LedgerExpenseEntry {
   amount: number
 }
 
+// 장부 필터 탭
+export type LedgerFilterTab = 'all' | 'pending' | 'settled'
+
 // 소장 현장 항목 (job.work_date 기준)
 export interface LedgerJobEntry {
   type: 'job'
@@ -144,6 +147,7 @@ export interface LedgerJobEntry {
   location: string
   equipmentCodes: EquipmentCode[]
   totalPayAmount: number  // pay_amounts 합산 (기사에게 지급할 총 일당)
+  jobStatus: JobStatus
 }
 
 export type LedgerEntry = LedgerIncomeEntry | LedgerExpenseEntry | LedgerJobEntry

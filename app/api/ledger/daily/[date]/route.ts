@@ -32,7 +32,7 @@ export async function GET(
     if (profile?.role === 'manager') {
       const { data: rawJobs } = await supabase
         .from('jobs')
-        .select('id, title, work_date, location, equipment_codes, pay_amounts')
+        .select('id, title, work_date, location, equipment_codes, pay_amounts, status')
         .eq('manager_id', user.id)
         .eq('work_date', date)
 

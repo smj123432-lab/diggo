@@ -7,6 +7,7 @@ import type {
   EquipmentCode,
   PayDueType,
   JobStatus,
+  LedgerFilterTab,
 } from '@/types'
 
 /** 금액을 '1,234,000원' 형식으로 포맷 */
@@ -97,6 +98,7 @@ export function buildJobEntries(
     location: string
     equipment_codes: EquipmentCode[]
     pay_amounts: Record<string, number>
+    status: string
   }>
 ): LedgerJobEntry[] {
   return rawJobs.map((job) => ({
@@ -107,7 +109,45 @@ export function buildJobEntries(
     location: job.location,
     equipmentCodes: job.equipment_codes,
     totalPayAmount: Object.values(job.pay_amounts ?? {}).reduce((s, v) => s + v, 0),
+    jobStatus: job.status as JobStatus,
   }))
+}
+
+/**
+ * 필터탭 기준으로 날짜 셀에 표시할 순수익 계산.
+ * null 반환 시 해당 셀에 배지 미표시.
+ */
+export function computeDayNet(
+  dayData: {
+    totalIncome: number
+    totalExpense: number
+    incomes: Array<{ amount: number; jobStatus: JobStatus }>
+    jobs: Array<{ totalPayAmount: number; jobStatus: JobStatus }>
+  },
+  role: 'driver' | 'manager' | 'admin',
+  filterTab: LedgerFilterTab
+): number | null {
+  if (role === 'manager') {
+    const matchJobs = filterTab === 'all'
+      ? dayData.jobs
+      : dayData.jobs.filter(j => filterTab === 'pending' ? j.jobStatus === 'completed' : j.jobStatus === 'settled')
+    if (matchJobs.length === 0 && filterTab !== 'all') return null
+    const jobPay = matchJobs.reduce((s, j) => s + j.totalPayAmount, 0)
+    const total = jobPay + (filterTab === 'all' ? dayData.totalExpense : 0)
+    return total > 0 ? -total : null
+  }
+
+  // driver
+  if (filterTab === 'all') {
+    const net = dayData.totalIncome - dayData.totalExpense
+    return net !== 0 ? net : null
+  }
+  const matchIncomes = dayData.incomes.filter(i =>
+    filterTab === 'pending' ? i.jobStatus === 'completed' : i.jobStatus === 'settled'
+  )
+  if (matchIncomes.length === 0) return null
+  const filteredIncome = matchIncomes.reduce((s, i) => s + i.amount, 0)
+  return filteredIncome - dayData.totalExpense
 }
 
 /** ledger_expenses raw 데이터 → LedgerExpenseEntry[] */

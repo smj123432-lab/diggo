@@ -2,7 +2,7 @@
 // 커스텀 달력 그리드 — 외부 라이브러리 없이 순수 구현
 'use client'
 
-import type { LedgerMonthData, UserRole } from '@/types'
+import type { LedgerMonthData, UserRole, LedgerFilterTab } from '@/types'
 import { getCalendarWeeks } from '@/lib/utils/ledger'
 import { LedgerDayCell } from './LedgerDayCell'
 
@@ -10,12 +10,13 @@ interface Props {
   monthData: LedgerMonthData
   selectedDate: string | null
   role: UserRole
+  filterTab: LedgerFilterTab
   onDateSelect: (dateStr: string) => void
 }
 
 const WEEKDAYS = ['일', '월', '화', '수', '목', '금', '토']
 
-export function LedgerCalendar({ monthData, selectedDate, role, onDateSelect }: Props) {
+export function LedgerCalendar({ monthData, selectedDate, role, filterTab, onDateSelect }: Props) {
   const { year, month, days } = monthData
   const weeks = getCalendarWeeks(year, month)
   const todayStr = new Date().toISOString().split('T')[0]
@@ -39,9 +40,7 @@ export function LedgerCalendar({ monthData, selectedDate, role, onDateSelect }: 
         {weeks.map((week, wi) => (
           <div key={wi} className="grid grid-cols-7 gap-1">
             {week.map((day, di) => {
-              if (day === null) {
-                return <div key={di} />
-              }
+              if (day === null) return <div key={di} />
               const dateStr = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`
               return (
                 <LedgerDayCell
@@ -52,6 +51,7 @@ export function LedgerCalendar({ monthData, selectedDate, role, onDateSelect }: 
                   isToday={dateStr === todayStr}
                   isSelected={dateStr === selectedDate}
                   role={role}
+                  filterTab={filterTab}
                   onClick={onDateSelect}
                 />
               )

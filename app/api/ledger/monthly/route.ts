@@ -36,7 +36,7 @@ export async function GET(request: NextRequest) {
       // 소장: 자신이 등록한 일감 (work_date 기준)
       const { data: rawJobs } = await supabase
         .from('jobs')
-        .select('id, title, work_date, location, equipment_codes, pay_amounts')
+        .select('id, title, work_date, location, equipment_codes, pay_amounts, status')
         .eq('manager_id', user.id)
         .gte('work_date', startDate)
         .lte('work_date', endDate)
