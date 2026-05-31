@@ -169,9 +169,10 @@ export interface LedgerMonthData {
   settledIncome: number    // 정산완료(settled) 금액
   totalExpense: number
   netIncome: number
-  totalJobCount: number       // 소장용
-  totalJobPayAmount: number   // 소장용: 일감 일당 합산
-  totalManualExpense: number  // 소장용: 수동 지출 합산
+  totalJobCount: number        // 소장용
+  totalJobPayAmount: number    // 소장용: 일감 일당 합산
+  totalManagerExpense: number  // 소장용: 일당 + 수동 지출 합산
+  totalManualExpense: number   // 소장용: 수동 지출 합산
 }
 
 export interface Review {

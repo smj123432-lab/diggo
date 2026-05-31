@@ -33,6 +33,7 @@ const EMPTY_MONTH_DATA: LedgerMonthData = {
   netIncome: 0,
   totalJobCount: 0,
   totalJobPayAmount: 0,
+  totalManagerExpense: 0,
   totalManualExpense: 0,
 }
 
@@ -150,6 +151,7 @@ export function LedgerClientPage({ role }: Props) {
                 netIncome={displayData.netIncome}
                 totalJobCount={displayData.totalJobCount}
                 totalJobPayAmount={displayData.totalJobPayAmount}
+                totalManagerExpense={displayData.totalManagerExpense}
                 role={role}
               />
             )}
@@ -197,6 +199,7 @@ export function LedgerClientPage({ role }: Props) {
                   netIncome={displayData.netIncome}
                   totalJobCount={displayData.totalJobCount}
                   totalJobPayAmount={displayData.totalJobPayAmount}
+                  totalManagerExpense={displayData.totalManagerExpense}
                   role={role}
                 />
               )}

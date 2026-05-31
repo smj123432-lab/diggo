@@ -1,5 +1,5 @@
 // components/features/ledger/LedgerMonthSummary.tsx
-// 월 요약 카드 (총수입 / 총지출 / 순수익 + 정산대기 표시)
+// 월 요약 카드 — 수익 / 지출 / 총 수익 (기사·소장 공통 포맷)
 import { formatKRW } from '@/lib/utils/ledger'
 import type { UserRole } from '@/types'
 
@@ -12,6 +12,7 @@ interface Props {
   netIncome: number
   totalJobCount: number
   totalJobPayAmount: number
+  totalManagerExpense: number
   role: UserRole
 }
 
@@ -24,26 +25,27 @@ export function LedgerMonthSummary({
   netIncome,
   totalJobCount,
   totalJobPayAmount,
+  totalManagerExpense,
   role,
 }: Props) {
   if (role === 'manager') {
-    // 수입 = 일감 일당 합산, 지출 = 수동 지출, 순수익 = 차액
-    const managerNet = totalJobPayAmount - totalExpense
+    // 소장: 수익=0(미구현), 지출=일당+수동, 총 수익=-(지출)
+    const managerNet = -totalManagerExpense
     return (
       <div className="bg-white border border-gray-200 rounded-2xl p-4">
         <div className="grid grid-cols-3 gap-2">
           <div className="text-center">
-            <p className="text-xs text-gray-400 mb-0.5">수입</p>
-            <p className="text-base font-black text-blue-600">{formatKRW(totalJobPayAmount)}</p>
+            <p className="text-xs text-gray-400 mb-0.5">수익</p>
+            <p className="text-base font-black text-blue-600">0원</p>
           </div>
           <div className="text-center border-x border-gray-100">
             <p className="text-xs text-gray-400 mb-0.5">지출</p>
-            <p className="text-base font-black text-red-500">{formatKRW(totalExpense)}</p>
+            <p className="text-base font-black text-red-500">{formatKRW(totalManagerExpense)}</p>
           </div>
           <div className="text-center">
-            <p className="text-xs text-gray-400 mb-0.5">순수익</p>
+            <p className="text-xs text-gray-400 mb-0.5">총 수익</p>
             <p className={`text-base font-black ${managerNet >= 0 ? 'text-gray-900' : 'text-red-600'}`}>
-              {formatKRW(managerNet)}
+              {managerNet === 0 ? '0원' : `-${formatKRW(totalManagerExpense)}`}
             </p>
           </div>
         </div>
@@ -60,12 +62,12 @@ export function LedgerMonthSummary({
     )
   }
 
+  // 기사: 수익 / 지출 / 총 수익
   return (
     <div className="bg-white border border-gray-200 rounded-2xl p-4">
-      {/* 3열 요약 */}
       <div className="grid grid-cols-3 gap-2">
         <div className="text-center">
-          <p className="text-xs text-gray-400 mb-0.5">수입</p>
+          <p className="text-xs text-gray-400 mb-0.5">수익</p>
           <p className="text-base font-black text-blue-600">{formatKRW(totalIncome)}</p>
         </div>
         <div className="text-center border-x border-gray-100">
@@ -73,7 +75,7 @@ export function LedgerMonthSummary({
           <p className="text-base font-black text-red-500">{formatKRW(totalExpense)}</p>
         </div>
         <div className="text-center">
-          <p className="text-xs text-gray-400 mb-0.5">순수익</p>
+          <p className="text-xs text-gray-400 mb-0.5">총 수익</p>
           <p className={`text-base font-black ${netIncome >= 0 ? 'text-gray-900' : 'text-red-600'}`}>
             {formatKRW(netIncome)}
           </p>
@@ -91,9 +93,9 @@ export function LedgerMonthSummary({
         </div>
       )}
 
-      {/* 정산대기 금액 표시 (있을 때만) */}
+      {/* 정산대기 */}
       {pendingIncome > 0 && (
-        <div className="mt-3 pt-3 border-t border-gray-100 flex items-center justify-between">
+        <div className="mt-1.5 flex items-center justify-between">
           <span className="text-xs text-amber-500 font-semibold flex items-center gap-1">
             <span className="w-1.5 h-1.5 rounded-full bg-amber-400 inline-block" />
             정산대기
