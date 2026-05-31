@@ -1,5 +1,5 @@
 // components/features/ledger/LedgerDayPanel.tsx
-// 날짜 클릭 시 하단에 슬라이드업 표시되는 상세 패널
+// 날짜 클릭 상세 패널 — 헤더(날짜+버튼), 리스트, 총 수익 푸터
 'use client'
 
 import { AnimatePresence, motion } from 'framer-motion'
@@ -15,12 +15,27 @@ interface Props {
   onAddExpense: () => void
 }
 
+function computePanelNet(dayData: LedgerDayData, role: UserRole): number {
+  const jobIncome = dayData.incomes.reduce((s, i) => s + i.amount, 0)
+  const manualIncome = dayData.expenses
+    .filter((e) => e.category === '수입')
+    .reduce((s, e) => s + e.amount, 0)
+  const actualExpense = dayData.expenses
+    .filter((e) => e.category !== '수입')
+    .reduce((s, e) => s + e.amount, 0)
+  const jobPay = dayData.jobs.reduce((s, j) => s + j.totalPayAmount, 0)
+
+  return role === 'manager'
+    ? -(jobPay + actualExpense)
+    : jobIncome + manualIncome - actualExpense
+}
+
 export function LedgerDayPanel({ dayData, role, onClose, onDelete, onAddExpense }: Props) {
   const allEntries = dayData
     ? [...dayData.incomes, ...dayData.jobs, ...dayData.expenses]
     : []
 
-  const net = dayData ? dayData.totalIncome - dayData.totalExpense : 0
+  const dayNet = dayData ? computePanelNet(dayData, role) : 0
 
   return (
     <AnimatePresence>
@@ -32,35 +47,29 @@ export function LedgerDayPanel({ dayData, role, onClose, onDelete, onAddExpense 
           transition={{ duration: 0.18 }}
           className="mt-4 bg-white border border-gray-200 rounded-2xl overflow-hidden"
         >
-          {/* 헤더: 날짜 + 순수익 */}
+          {/* 헤더: 날짜 + 버튼들 (총 수익 금액 제거 → 금액이 커도 안 겹침) */}
           <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100">
-            <div className="flex items-center gap-2 min-w-0">
-              <span className="text-sm font-bold text-gray-900 shrink-0">
-                {dayData.date.replace(/-/g, '.')}
-              </span>
-              {net !== 0 && (
-                <span
-                  className={`text-xs font-bold ${net > 0 ? 'text-blue-500' : 'text-red-500'}`}
-                >
-                  {net > 0 ? '+' : ''}{formatKRW(net)}
-                </span>
-              )}
-            </div>
+            <span className="text-sm font-bold text-gray-900 shrink-0">
+              {dayData.date.replace(/-/g, '.')}
+            </span>
             <div className="flex items-center gap-2 shrink-0">
               <button
                 onClick={onAddExpense}
-                className="text-xs font-semibold text-blue-600 bg-blue-50 px-2.5 py-1 rounded-lg"
+                className="text-xs font-semibold text-blue-600 bg-blue-50 hover:bg-blue-100 px-2.5 py-1 rounded-lg transition-colors"
               >
                 + 내역 추가
               </button>
-              <button onClick={onClose} className="text-gray-400 hover:text-gray-600 text-lg leading-none">
+              <button
+                onClick={onClose}
+                className="text-gray-400 hover:text-gray-600 text-lg leading-none transition-colors"
+              >
                 ×
               </button>
             </div>
           </div>
 
           {/* 내역 리스트 */}
-          <div className="px-4 max-h-60 overflow-y-auto">
+          <div className="px-4 max-h-64 overflow-y-auto">
             {allEntries.length === 0 ? (
               <p className="py-6 text-center text-sm text-gray-400">내역이 없습니다.</p>
             ) : (
@@ -73,6 +82,16 @@ export function LedgerDayPanel({ dayData, role, onClose, onDelete, onAddExpense 
               ))
             )}
           </div>
+
+          {/* 푸터: 이 날의 총 수익 (내역이 있을 때만) */}
+          {allEntries.length > 0 && (
+            <div className="flex items-center justify-between px-4 py-3 border-t border-gray-100 bg-gray-50/60">
+              <span className="text-xs font-semibold text-gray-400">이 날의 총 수익</span>
+              <span className={`text-sm font-black whitespace-nowrap ${dayNet >= 0 ? 'text-blue-600' : 'text-red-600'}`}>
+                {dayNet >= 0 ? '+' : ''}{formatKRW(dayNet)}
+              </span>
+            </div>
+          )}
         </motion.div>
       )}
     </AnimatePresence>
