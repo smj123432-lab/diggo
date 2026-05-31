@@ -13,8 +13,8 @@ interface Props {
 
 export function LedgerMonthSummary({ income, expense, net, jobCount, pendingNote, settledNote }: Props) {
   return (
-    <div className="bg-white border border-gray-200 rounded-2xl p-4">
-      <div className="grid grid-cols-3 gap-2">
+    <div className="bg-white border border-gray-200 rounded-2xl p-3 overflow-hidden">
+      <div className="grid grid-cols-3 gap-1">
         <div className="text-center min-w-0 overflow-hidden">
           <p className="text-xs text-gray-400 mb-0.5">수익</p>
           <p className="text-sm font-black text-blue-600 whitespace-nowrap truncate">{formatKRWCompact(income)}</p>

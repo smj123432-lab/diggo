@@ -78,7 +78,7 @@ export function LedgerDayCell({ day, dateStr, dayData, isToday, isSelected, role
           </span>
         )}
         {badgeLabel && (
-          <span className={`block w-full text-center text-[10px] font-bold rounded-sm truncate px-0.5 ${badgeClass}`}>
+          <span className={`block w-full text-center text-[9px] font-bold rounded-sm truncate leading-tight px-0.5 ${badgeClass}`}>
             {badgeLabel}
           </span>
         )}

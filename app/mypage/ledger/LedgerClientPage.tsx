@@ -152,7 +152,7 @@ export function LedgerClientPage({ role }: Props) {
         <div className="max-w-5xl mx-auto px-4 py-5">
 
           {/* 데스크탑: 2열 그리드 / 모바일: 단일 컬럼 */}
-          <div className="lg:grid lg:grid-cols-[1fr_300px] lg:gap-6 lg:items-start">
+          <div className="lg:grid lg:grid-cols-[1fr_280px] lg:gap-5 lg:items-start">
 
             {/* 좌측: 월 이동 + 필터탭 + 달력 */}
             <div>
@@ -203,9 +203,16 @@ export function LedgerClientPage({ role }: Props) {
                       </button>
                     ))}
                   </div>
+                  {/* 날짜 선택 시에만 활성화 */}
                   <button
-                    onClick={() => setShowAddModal(true)}
-                    className="text-xs font-semibold text-white bg-blue-500 hover:bg-blue-600 px-3 py-2 rounded-xl transition-colors whitespace-nowrap shrink-0"
+                    onClick={() => selectedDate && setShowAddModal(true)}
+                    disabled={!selectedDate}
+                    title={selectedDate ? '내역 추가' : '날짜를 먼저 선택해주세요'}
+                    className={`text-xs font-semibold px-3 py-2 rounded-xl transition-all whitespace-nowrap shrink-0 ${
+                      selectedDate
+                        ? 'text-white bg-blue-500 hover:bg-blue-600 cursor-pointer'
+                        : 'text-gray-400 bg-gray-200 cursor-not-allowed'
+                    }`}
                   >
                     + 내역 추가
                   </button>
@@ -239,7 +246,7 @@ export function LedgerClientPage({ role }: Props) {
             </div>
 
             {/* 우측: 요약 카드 + 날짜 패널 (데스크탑 sticky) */}
-            <div className="hidden lg:block space-y-4 sticky top-24">
+            <div className="hidden lg:block space-y-4 sticky top-24 min-w-0 overflow-hidden">
               {isLoading
                 ? <div className="bg-white border border-gray-200 rounded-2xl p-4 animate-pulse h-24" />
                 : <LedgerMonthSummary {...summaryValues} />
