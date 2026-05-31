@@ -21,34 +21,32 @@ export function LedgerDayItem({ entry, onDelete }: Props) {
           💰
         </span>
 
-        {/* 좌측: 제목 + 장비/지급 정보 */}
+        {/* 좌측: 제목 + 장비/지급 정보 + 정산 상태 배지 */}
         <div className="min-w-0 flex-1">
           <p className="text-sm font-semibold text-gray-900 truncate">{entry.title}</p>
-          <p className="text-xs text-gray-400">
-            {entry.equipmentCode ? EQUIPMENT_LABELS[entry.equipmentCode] : ''} · {PAY_DUE_LABELS[entry.payDueType]}
-          </p>
+          <div className="flex items-center gap-1.5 flex-wrap">
+            <p className="text-xs text-gray-400">
+              {entry.equipmentCode ? EQUIPMENT_LABELS[entry.equipmentCode] : ''} · {PAY_DUE_LABELS[entry.payDueType]}
+            </p>
+            {isPending && (
+              <span className="text-[10px] font-bold text-amber-500 bg-amber-50 border border-amber-200 px-1.5 py-0.5 rounded-full">
+                정산대기
+              </span>
+            )}
+            {isSettled && (
+              <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 border border-emerald-200 px-1.5 py-0.5 rounded-full">
+                정산완료
+              </span>
+            )}
+          </div>
         </div>
 
-        {/* 우측: 배지 + 금액 + 삭제 자리 */}
-        <div className="flex flex-col items-end shrink-0 ml-1">
-          {/* 정산 상태 배지 */}
-          {isPending && (
-            <span className="text-[10px] font-bold text-amber-500 bg-amber-50 border border-amber-200 px-1.5 py-0.5 rounded-full mb-0.5">
-              정산대기
-            </span>
-          )}
-          {isSettled && (
-            <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 border border-emerald-200 px-1.5 py-0.5 rounded-full mb-0.5">
-              정산완료
-            </span>
-          )}
-          <div className="flex items-center">
-            <span className={`w-24 text-right text-sm font-bold ${isPending ? 'text-amber-500' : 'text-blue-600'}`}>
-              +{formatKRW(entry.amount)}
-            </span>
-            {/* 수입은 삭제 없음, 지출과 너비 맞춤 */}
-            <span className="w-8" />
-          </div>
+        {/* 우측: 금액 + 삭제 자리 */}
+        <div className="flex items-center shrink-0 ml-1">
+          <span className={`w-24 text-right text-sm font-bold ${isPending ? 'text-amber-500' : 'text-blue-600'}`}>
+            +{formatKRW(entry.amount)}
+          </span>
+          <span className="w-8" />
         </div>
       </div>
     )
