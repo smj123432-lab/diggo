@@ -163,9 +163,10 @@ export interface LedgerMonthData {
   year: number
   month: number
   days: Record<string, LedgerDayData>  // 'YYYY-MM-DD' → LedgerDayData
-  totalIncome: number     // 정산완료 + 정산대기 합산
-  pendingIncome: number   // 정산대기(completed) 금액
-  settledIncome: number   // 정산완료(settled) 금액
+  totalIncome: number      // 정산완료 + 정산대기 합산
+  totalIncomeCount: number // 수입 일감 건수
+  pendingIncome: number    // 정산대기(completed) 금액
+  settledIncome: number    // 정산완료(settled) 금액
   totalExpense: number
   netIncome: number
   totalJobCount: number       // 소장용

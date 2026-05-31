@@ -183,6 +183,7 @@ export function buildMonthData(params: {
     month,
     days,
     totalIncome,
+    totalIncomeCount: incomes.length,
     pendingIncome,
     settledIncome: totalIncome - pendingIncome,
     totalExpense,

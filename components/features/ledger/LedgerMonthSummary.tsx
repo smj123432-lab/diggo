@@ -5,6 +5,7 @@ import type { UserRole } from '@/types'
 
 interface Props {
   totalIncome: number
+  totalIncomeCount: number
   pendingIncome: number
   settledIncome: number
   totalExpense: number
@@ -16,6 +17,7 @@ interface Props {
 
 export function LedgerMonthSummary({
   totalIncome,
+  totalIncomeCount,
   pendingIncome,
   settledIncome,
   totalExpense,
@@ -77,6 +79,17 @@ export function LedgerMonthSummary({
           </p>
         </div>
       </div>
+
+      {/* 이달 현장 건수 */}
+      {totalIncomeCount > 0 && (
+        <div className="mt-3 pt-3 border-t border-gray-100 flex items-center justify-between">
+          <span className="text-xs text-gray-400 font-semibold flex items-center gap-1">
+            <span className="w-1.5 h-1.5 rounded-full bg-blue-400 inline-block" />
+            이달 현장
+          </span>
+          <span className="text-xs font-bold text-gray-500">{totalIncomeCount}건</span>
+        </div>
+      )}
 
       {/* 정산대기 금액 표시 (있을 때만) */}
       {pendingIncome > 0 && (

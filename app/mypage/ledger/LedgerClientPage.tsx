@@ -26,6 +26,7 @@ const EMPTY_MONTH_DATA: LedgerMonthData = {
   month: new Date().getMonth() + 1,
   days: {},
   totalIncome: 0,
+  totalIncomeCount: 0,
   pendingIncome: 0,
   settledIncome: 0,
   totalExpense: 0,
@@ -142,6 +143,7 @@ export function LedgerClientPage({ role }: Props) {
             ) : (
               <LedgerMonthSummary
                 totalIncome={displayData.totalIncome}
+                totalIncomeCount={displayData.totalIncomeCount}
                 pendingIncome={displayData.pendingIncome}
                 settledIncome={displayData.settledIncome}
                 totalExpense={displayData.totalExpense}
@@ -188,6 +190,7 @@ export function LedgerClientPage({ role }: Props) {
               ) : (
                 <LedgerMonthSummary
                   totalIncome={displayData.totalIncome}
+                  totalIncomeCount={displayData.totalIncomeCount}
                   pendingIncome={displayData.pendingIncome}
                   settledIncome={displayData.settledIncome}
                   totalExpense={displayData.totalExpense}
