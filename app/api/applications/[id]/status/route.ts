@@ -4,8 +4,9 @@ import { createClient } from '@/lib/supabase/server'
 // PATCH /api/applications/[id]/status — 지원 상태 변경 (소장: 검토중/수락/거절)
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params
   try {
     const supabase = await createClient()
     const { data: { user } } = await supabase.auth.getUser()
@@ -24,7 +25,7 @@ export async function PATCH(
     const { data: application } = await supabase
       .from('applications')
       .select('id, job_id, jobs(manager_id)')
-      .eq('id', params.id)
+      .eq('id', id)
       .single()
 
     if (!application) {
@@ -39,7 +40,7 @@ export async function PATCH(
     const { data, error } = await supabase
       .from('applications')
       .update({ status })
-      .eq('id', params.id)
+      .eq('id', id)
       .select()
       .single()
 
@@ -49,7 +50,7 @@ export async function PATCH(
     if (status === 'reviewing') {
       await supabase.from('chats').insert({
         job_id: application.job_id,
-        application_id: params.id,
+        application_id: id,
       })
     }
 

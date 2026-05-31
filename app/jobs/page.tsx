@@ -1,6 +1,6 @@
-// 일감 목록 — SSR + 30초 revalidate + TanStack Query HydrationBoundary
+// 일감 목록 — Static + "use cache" + TanStack Query HydrationBoundary
 import { dehydrate, HydrationBoundary, QueryClient } from '@tanstack/react-query'
-import { createClient } from '@/lib/supabase/server'
+import { getCachedJobsFirstPage } from '@/lib/utils/jobs-cache'
 import Link from 'next/link'
 import { ExcavatorIcon } from '@/components/ui/ExcavatorIcon'
 import { NavButtons } from '@/components/features/home/NavButtons'
@@ -8,31 +8,13 @@ import { NavRoleLink } from '@/components/features/home/NavRoleLink'
 import { JobList } from '@/components/features/jobs/JobList'
 import { DEFAULT_FILTERS } from '@/hooks/useJobs'
 
-export const revalidate = 30
-
 export default async function JobsPage() {
   const queryClient = new QueryClient()
 
-  // 서버에서 첫 페이지 프리페치 (offset 기반, 12개)
+  // "use cache" 함수로 첫 페이지 프리페치 — cookies() 없음, Static 분류 가능
   await queryClient.prefetchInfiniteQuery({
     queryKey: ['jobs', DEFAULT_FILTERS],
-    queryFn: async ({ pageParam }) => {
-      const supabase = await createClient()
-      const offset = pageParam as number
-      const limit = 12
-      const from = offset
-      const to = from + limit - 1
-
-      const { data, count } = await supabase
-        .from('jobs')
-        .select('*, profiles(id, name, rating_avg, is_certified, avatar_url)', { count: 'exact' })
-        .eq('status', 'open')
-        .gte('work_date', new Date().toISOString().split('T')[0])
-        .order('created_at', { ascending: false })
-        .range(from, to)
-
-      return { data: data ?? [], count: count ?? 0, offset, limit }
-    },
+    queryFn: () => getCachedJobsFirstPage(),
     initialPageParam: 0,
   })
 

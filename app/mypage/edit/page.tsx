@@ -5,8 +5,6 @@ import { createClient } from '@/lib/supabase/server'
 import { ExcavatorIcon } from '@/components/ui/ExcavatorIcon'
 import { ProfileEditForm } from '@/components/features/mypage/ProfileEditForm'
 
-export const dynamic = 'force-dynamic'
-
 export default async function ProfileEditPage() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()

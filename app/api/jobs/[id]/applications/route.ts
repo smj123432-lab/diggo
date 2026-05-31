@@ -4,8 +4,9 @@ import { createClient } from '@/lib/supabase/server'
 // GET /api/jobs/[id]/applications — 특정 일감의 지원자 목록 (소장 전용)
 export async function GET(
   _request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params
   try {
     const supabase = await createClient()
     const { data: { user } } = await supabase.auth.getUser()
@@ -17,7 +18,7 @@ export async function GET(
     const { data: job } = await supabase
       .from('jobs')
       .select('manager_id')
-      .eq('id', params.id)
+      .eq('id', id)
       .single()
 
     if (!job) {
@@ -34,7 +35,7 @@ export async function GET(
         profiles(id, name, rating_avg, is_certified, experience_years),
         equipments(id, model_code, license_number)
       `)
-      .eq('job_id', params.id)
+      .eq('job_id', id)
       .order('applied_at', { ascending: false })
 
     if (error) throw error

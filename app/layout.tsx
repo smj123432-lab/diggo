@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import { Noto_Sans_KR, DM_Mono } from 'next/font/google'
+import { Suspense } from 'react'
 import './globals.css'
 import Providers from './providers'
 
@@ -30,7 +31,9 @@ export default function RootLayout({
   return (
     <html lang="ko" className={`${notoSansKR.variable} ${dmMono.variable}`}>
       <body className="font-sans antialiased">
-        <Providers>{children}</Providers>
+        <Providers>
+          <Suspense>{children}</Suspense>
+        </Providers>
       </body>
     </html>
   )

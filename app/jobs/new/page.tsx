@@ -7,8 +7,6 @@ import { NavButtons } from '@/components/features/home/NavButtons'
 import { NavRoleLink } from '@/components/features/home/NavRoleLink'
 import { JobForm } from '@/components/features/jobs/JobForm'
 
-export const dynamic = 'force-dynamic'
-
 export default async function NewJobPage() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()

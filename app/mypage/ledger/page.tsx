@@ -1,6 +1,4 @@
 // 장부 페이지 — 서버 컴포넌트: 인증 확인 및 role 전달
-export const dynamic = 'force-dynamic'
-
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { LedgerClientPage } from './LedgerClientPage'

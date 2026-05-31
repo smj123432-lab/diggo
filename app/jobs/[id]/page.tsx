@@ -1,12 +1,8 @@
-// 일감 상세 — ISR 1분
-export const revalidate = 60
-
+// 일감 상세 — Static ("use cache"), 사용자별 영역은 UserJobSection(클라이언트)으로 위임
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
-import { createClient } from '@/lib/supabase/server'
-import { JobApplyButton } from '@/components/features/jobs/JobApplyButton'
-import { JobOwnerActions } from '@/components/features/jobs/JobOwnerActions'
-import { JobStatusBadge } from '@/components/features/jobs/JobStatusBadge'
+import { getCachedJobDetail } from '@/lib/utils/jobs-cache'
+import { UserJobSection } from './UserJobSection'
 import { KakaoMap } from '@/components/features/jobs/KakaoMap'
 import { CopyButton } from '@/components/ui/CopyButton'
 import {
@@ -15,10 +11,10 @@ import {
   PAY_DUE_LABELS,
   WORK_DURATION_LABELS,
 } from '@/types'
-import type { JobType, JobStatus, ApplicationStatus, EquipmentCode, WorkDuration, PayDueType } from '@/types'
+import type { JobType, JobStatus, EquipmentCode, WorkDuration, PayDueType } from '@/types'
 
 interface Props {
-  params: { id: string }
+  params: Promise<{ id: string }>
 }
 
 const STATUS_BADGE: Record<JobStatus, { label: string; className: string }> = {
@@ -35,68 +31,28 @@ const JOB_TYPE_BADGE: Record<JobType, string> = {
 }
 
 export default async function JobDetailPage({ params }: Props) {
-  const supabase = await createClient()
+  const { id } = await params
+  const job = await getCachedJobDetail(id)
+  if (!job) notFound()
 
-  const { data: job, error } = await supabase
-    .from('jobs')
-    .select('*, profiles(id, name, rating_avg, is_certified)')
-    .eq('id', params.id)
-    .single()
-
-  if (error || !job) notFound()
-
-  const { data: { user } } = await supabase.auth.getUser()
-
-  let userRole: string | null = null
-  let isCertified = false
-  let existingApplication: { id: string; status: ApplicationStatus } | null = null
-
-  if (user) {
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('role, is_certified')
-      .eq('id', user.id)
-      .single()
-
-    userRole = profile?.role ?? null
-    isCertified = profile?.is_certified ?? false
-
-    if (userRole === 'driver') {
-      const { data: application } = await supabase
-        .from('applications')
-        .select('id, status')
-        .eq('job_id', params.id)
-        .eq('driver_id', user.id)
-        .maybeSingle()
-
-      existingApplication = application ?? null
-    }
-  }
-
-  const isOwnJob = user?.id === job.manager_id
   const workDate = new Date(job.work_date).toLocaleDateString('ko-KR', {
     year: 'numeric', month: 'long', day: 'numeric', weekday: 'short',
   })
 
-  // work_date가 오늘 이전이면 open → closed 처리 (in_progress 이후는 자동 변경 없음)
   const today = new Date().toISOString().split('T')[0]
   const effectiveStatus: JobStatus = (job.status as JobStatus) === 'open' && (job.work_date as string) < today
     ? 'closed'
     : job.status as JobStatus
   const status = STATUS_BADGE[effectiveStatus]
 
-  // 지급 예정일 계산 (work_date + pay_due_type 오프셋)
   const PAY_DUE_DAYS: Record<string, number> = { same_day: 0, d3: 3, d7: 7, d14: 14, d30: 30 }
   const payDueDays = PAY_DUE_DAYS[job.pay_due_type as string] ?? 0
   const payDueDateObj = new Date(job.work_date as string)
   payDueDateObj.setDate(payDueDateObj.getDate() + payDueDays)
   const payDueDate = payDueDateObj.toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric' })
 
-  // 기사에게만 지원 버튼 노출
-  const showApplyBar = !isOwnJob && userRole !== 'manager'
-
   return (
-    <main className={`min-h-screen bg-gray-50 ${showApplyBar ? 'pb-24 lg:pb-8' : 'pb-8'}`}>
+    <main className="min-h-screen bg-gray-50 pb-24 lg:pb-8">
 
       {/* 헤더 */}
       <div className="bg-white border-b border-gray-100 sticky top-0 z-10">
@@ -120,14 +76,10 @@ export default async function JobDetailPage({ params }: Props) {
             {/* 뱃지 + 제목 */}
             <div className="bg-white rounded-2xl border border-gray-200 p-5">
               <div className="flex items-center gap-1.5 flex-wrap mb-3">
-                {/* 상태 — 소장: 미니 드롭다운, 기타: 정적 배지 */}
-                {isOwnJob ? (
-                  <JobStatusBadge jobId={job.id} effectiveStatus={effectiveStatus} />
-                ) : (
-                  <span className={`text-xs font-semibold px-2.5 py-1 rounded-lg ${status.className}`}>
-                    {status.label}
-                  </span>
-                )}
+                {/* 상태 배지: 정적 표시. 소장 본인의 드롭다운은 UserJobSection이 오버레이 */}
+                <span className={`text-xs font-semibold px-2.5 py-1 rounded-lg ${status.className}`}>
+                  {status.label}
+                </span>
                 {(job.equipment_codes as EquipmentCode[]).map((code) => (
                   <span key={code} className="bg-blue-500 text-white text-xs font-bold px-2.5 py-1 rounded-lg">
                     {EQUIPMENT_LABELS[code]}
@@ -141,11 +93,9 @@ export default async function JobDetailPage({ params }: Props) {
             </div>
 
             {/* 소장 정보 — 모바일 전용 */}
-            {!isOwnJob && (
-              <div className="lg:hidden bg-white rounded-2xl border border-gray-200 p-5">
-                <ManagerBlock job={job} />
-              </div>
-            )}
+            <div className="lg:hidden bg-white rounded-2xl border border-gray-200 p-5">
+              <ManagerBlock job={job} />
+            </div>
 
             {/* 작업 위치 + 지도 */}
             <div className="bg-white rounded-2xl border border-gray-200 p-5">
@@ -169,9 +119,8 @@ export default async function JobDetailPage({ params }: Props) {
 
             {/* 작업 정보 — 모바일 전용 */}
             <div className="lg:hidden bg-white rounded-2xl border border-gray-200 p-5">
-              {/* 장비별 금액 */}
               <p className="text-xs text-gray-400 mb-2">지급 금액 <span className="text-gray-300">(대당)</span></p>
-              {(job.equipment_codes as EquipmentCode[]).map(code => {
+              {(job.equipment_codes as EquipmentCode[]).map((code: EquipmentCode) => {
                 const amt = (job.pay_amounts as Record<string, number>)[code]
                 const days = (job.work_days as Record<string, number>)?.[code]
                 return (
@@ -185,7 +134,6 @@ export default async function JobDetailPage({ params }: Props) {
                 )
               })}
               <p className="text-xs text-gray-400 mb-4">{PAY_DUE_LABELS[job.pay_due_type as PayDueType]}</p>
-
               <div className="border-t border-gray-100 pt-4 space-y-3">
                 <MetaRow
                   icon={<CalendarIcon />}
@@ -194,9 +142,9 @@ export default async function JobDetailPage({ params }: Props) {
                   sub={job.work_duration ? WORK_DURATION_LABELS[job.work_duration as WorkDuration] : undefined}
                 />
                 <MetaRow
-                  icon={<ExcavatorIcon />}
+                  icon={<ExcavatorIconSmall />}
                   label="필요 장비"
-                  value={(job.equipment_codes as EquipmentCode[]).map(c => EQUIPMENT_LABELS[c]).join(' · ')}
+                  value={(job.equipment_codes as EquipmentCode[]).map((c: EquipmentCode) => EQUIPMENT_LABELS[c]).join(' · ')}
                 />
               </div>
             </div>
@@ -227,17 +175,14 @@ export default async function JobDetailPage({ params }: Props) {
               </div>
             )}
 
-            {/* 소장 본인 — 일감 관리 (모바일 전용, 최하단) */}
-            {isOwnJob && (
-              <div className="lg:hidden bg-white rounded-2xl border border-gray-200 p-5">
-                <p className="text-xs text-gray-400 font-medium mb-3">일감 관리</p>
-                <JobOwnerActions jobId={job.id} effectiveStatus={effectiveStatus} payDueDate={payDueDate} />
-              </div>
-            )}
+            {/* 모바일: 소장 일감 관리 — UserJobSection이 렌더 */}
+            <div className="lg:hidden">
+              <UserJobSection job={job} effectiveStatus={effectiveStatus} payDueDate={payDueDate} />
+            </div>
 
           </div>
 
-          {/* ── 우측 퀵 카드 (데스크톱 전용) ── */}
+          {/* ── 우측 퀵 카드 (데스크탑 전용) ── */}
           <div className="hidden lg:block col-span-1">
             <div className="lg:sticky lg:top-24 space-y-3">
               <div className="bg-white rounded-2xl border border-gray-200 px-6 pt-8 pb-6">
@@ -245,7 +190,7 @@ export default async function JobDetailPage({ params }: Props) {
                 {/* 금액 */}
                 <div className="mb-5">
                   <p className="text-xs text-gray-400 mb-2">지급 금액 <span className="text-gray-300">(대당)</span></p>
-                  {(job.equipment_codes as EquipmentCode[]).map(code => {
+                  {(job.equipment_codes as EquipmentCode[]).map((code: EquipmentCode) => {
                     const amt = (job.pay_amounts as Record<string, number>)[code]
                     const days = (job.work_days as Record<string, number>)?.[code]
                     return (
@@ -262,7 +207,6 @@ export default async function JobDetailPage({ params }: Props) {
                 </div>
 
                 <div className="border-t border-gray-100 pt-4 space-y-3 mb-5">
-                  {/* 작업일자 */}
                   <div className="flex items-start gap-2.5">
                     <div className="w-7 h-7 rounded-lg bg-gray-50 flex items-center justify-center shrink-0 mt-0.5">
                       <CalendarIcon />
@@ -272,8 +216,6 @@ export default async function JobDetailPage({ params }: Props) {
                       <p className="text-sm font-semibold text-gray-800">{workDate}</p>
                     </div>
                   </div>
-
-                  {/* 총 작업 기간 */}
                   {job.work_duration && (
                     <div className="flex items-start gap-2.5">
                       <div className="w-7 h-7 rounded-lg bg-gray-50 flex items-center justify-center shrink-0 mt-0.5">
@@ -291,16 +233,14 @@ export default async function JobDetailPage({ params }: Props) {
                       </div>
                     </div>
                   )}
-
-                  {/* 필요 장비 */}
                   <div className="flex items-center gap-2.5">
                     <div className="w-7 h-7 rounded-lg bg-gray-50 flex items-center justify-center shrink-0">
-                      <ExcavatorIcon />
+                      <ExcavatorIconSmall />
                     </div>
                     <div>
                       <p className="text-xs text-gray-400">필요 장비</p>
                       <p className="text-sm font-semibold text-gray-800">
-                        {(job.equipment_codes as EquipmentCode[]).map(c => EQUIPMENT_LABELS[c]).join(' · ')}
+                        {(job.equipment_codes as EquipmentCode[]).map((c: EquipmentCode) => EQUIPMENT_LABELS[c]).join(' · ')}
                       </p>
                     </div>
                   </div>
@@ -332,21 +272,8 @@ export default async function JobDetailPage({ params }: Props) {
                   </div>
                 </div>
 
-                {/* 지원 버튼 (기사) */}
-                {showApplyBar && (
-                  <JobApplyButton
-                    jobId={job.id}
-                    jobStatus={effectiveStatus}
-                    userRole={userRole}
-                    isCertified={isCertified}
-                    existingApplication={existingApplication}
-                  />
-                )}
-
-                {/* 소장 본인 — 상태 제어 (데스크톱) */}
-                {isOwnJob && (
-                  <JobOwnerActions jobId={job.id} effectiveStatus={effectiveStatus} payDueDate={payDueDate} />
-                )}
+                {/* 데스크탑: 사용자별 액션 (지원 버튼 / 소장 관리) */}
+                <UserJobSection job={job} effectiveStatus={effectiveStatus} payDueDate={payDueDate} />
 
               </div>
             </div>
@@ -354,21 +281,6 @@ export default async function JobDetailPage({ params }: Props) {
 
         </div>
       </div>
-
-      {/* 모바일 고정 하단 — 기사 지원 버튼 */}
-      {showApplyBar && (
-        <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur border-t border-gray-200 px-4 py-4 z-20">
-          <div className="max-w-lg mx-auto">
-            <JobApplyButton
-              jobId={job.id}
-              jobStatus={effectiveStatus}
-              userRole={userRole}
-              isCertified={isCertified}
-              existingApplication={existingApplication}
-            />
-          </div>
-        </div>
-      )}
 
     </main>
   )
@@ -441,8 +353,7 @@ function CalendarIcon() {
   )
 }
 
-
-function ExcavatorIcon() {
+function ExcavatorIconSmall() {
   return (
     <svg className="w-4 h-4 text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
       <path d="M4 17l4-8 4 4 4-6" strokeLinecap="round" strokeLinejoin="round" />

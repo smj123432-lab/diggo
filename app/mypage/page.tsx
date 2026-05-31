@@ -11,8 +11,6 @@ import { InlineProfileCard } from '@/components/features/mypage/InlineProfileCar
 import { DriverInfoCard } from '@/components/features/mypage/DriverInfoCard'
 import type { EquipmentCode } from '@/types'
 
-export const dynamic = 'force-dynamic'
-
 export default async function MypagePage() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()

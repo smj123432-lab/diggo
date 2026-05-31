@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
-import { revalidatePath } from 'next/cache'
+import { revalidatePath, revalidateTag } from 'next/cache'
 
 // GET /api/jobs — 일감 목록 (필터, 페이지네이션)
 export async function GET(request: NextRequest) {
@@ -113,6 +113,7 @@ export async function POST(request: NextRequest) {
     if (error) throw error
 
     revalidatePath('/jobs')
+    revalidateTag('jobs', 'max')
 
     return NextResponse.json({ data }, { status: 201 })
   } catch (error) {

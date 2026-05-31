@@ -4,8 +4,9 @@ import { createClient } from '@/lib/supabase/server'
 // GET /api/jobs/[id]/accepted-driver — 배차된 기사 user ID 반환 (소장 리뷰 작성용)
 export async function GET(
   _request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params
   try {
     const supabase = await createClient()
     const { data: { user } } = await supabase.auth.getUser()
@@ -15,7 +16,7 @@ export async function GET(
     const { data: job } = await supabase
       .from('jobs')
       .select('id, manager_id')
-      .eq('id', params.id)
+      .eq('id', id)
       .eq('manager_id', user.id)
       .single()
 
@@ -24,7 +25,7 @@ export async function GET(
     const { data: application } = await supabase
       .from('applications')
       .select('driver_id')
-      .eq('job_id', params.id)
+      .eq('job_id', id)
       .eq('status', 'accepted')
       .single()
 
