@@ -4,7 +4,6 @@ import { useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
-import { createClient } from '@/lib/supabase/client'
 import { ExcavatorIcon } from '@/components/ui/ExcavatorIcon'
 
 function isValidEmail(email: string) {
@@ -25,11 +24,21 @@ export default function FindPasswordPage() {
 
     setIsSending(true)
     try {
-      const supabase = createClient()
-      const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/reset-password`,
+      const res = await fetch('/api/auth/reset-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email,
+          redirectTo: `${window.location.origin}/reset-password`,
+        }),
       })
-      if (error) throw error
+
+      const data = await res.json()
+
+      if (!res.ok) {
+        toast.error(data.error ?? '이메일 발송에 실패했습니다. 잠시 후 다시 시도해 주세요.')
+        return
+      }
 
       setSent(true)
       toast.success('비밀번호 재설정 링크를 전송했습니다.')
