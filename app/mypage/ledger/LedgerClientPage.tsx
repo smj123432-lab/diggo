@@ -134,65 +134,8 @@ export function LedgerClientPage({ role }: Props) {
             </button>
           </div>
 
-          {/* ── 반응형 레이아웃 ── */}
-          <div className="lg:grid lg:grid-cols-[1fr_320px] lg:gap-6 lg:items-start">
-
-            {/* 좌측: 달력 */}
-            <div>
-              {isLoading ? (
-                <div className="bg-white border border-gray-200 rounded-2xl p-4 animate-pulse h-64" />
-              ) : (
-                <LedgerCalendar
-                  monthData={displayData}
-                  selectedDate={selectedDate}
-                  role={role}
-                  onDateSelect={handleDateSelect}
-                />
-              )}
-
-              {/* 모바일: 날짜 패널이 달력 아래 */}
-              <div className="lg:hidden mt-4">
-                <LedgerDayPanel
-                  dayData={selectedDayData}
-                  role={role}
-                  onClose={() => setSelectedDate(null)}
-                  onDelete={handleDeleteExpense}
-                  onAddExpense={() => setShowAddModal(true)}
-                />
-              </div>
-            </div>
-
-            {/* 우측: 요약 카드 + 날짜 패널 (데스크탑 전용) */}
-            <div className="hidden lg:block space-y-4 sticky top-24">
-              {/* 월 요약 */}
-              {isLoading ? (
-                <div className="bg-white border border-gray-200 rounded-2xl p-4 animate-pulse h-24" />
-              ) : (
-                <LedgerMonthSummary
-                  totalIncome={displayData.totalIncome}
-                  pendingIncome={displayData.pendingIncome}
-                  settledIncome={displayData.settledIncome}
-                  totalExpense={displayData.totalExpense}
-                  netIncome={displayData.netIncome}
-                  totalJobCount={displayData.totalJobCount}
-                  role={role}
-                />
-              )}
-
-              {/* 날짜 패널 (선택된 날짜 있을 때) */}
-              <LedgerDayPanel
-                dayData={selectedDayData}
-                role={role}
-                onClose={() => setSelectedDate(null)}
-                onDelete={handleDeleteExpense}
-                onAddExpense={() => setShowAddModal(true)}
-              />
-            </div>
-
-          </div>
-
-          {/* 모바일: 월 요약 카드 (달력 + 패널 아래) */}
-          <div className="lg:hidden mt-4">
+          {/* 모바일: 요약 카드 — 달력 위에 표시 */}
+          <div className="lg:hidden mb-4">
             {isLoading ? (
               <div className="bg-white border border-gray-200 rounded-2xl p-4 animate-pulse h-16" />
             ) : (
@@ -206,6 +149,60 @@ export function LedgerClientPage({ role }: Props) {
                 role={role}
               />
             )}
+          </div>
+
+          {/* ── 반응형 레이아웃 ── */}
+          <div className="lg:grid lg:grid-cols-[1fr_320px] lg:gap-6 lg:items-start">
+
+            {/* 좌측: 달력 + 모바일 날짜 패널 */}
+            <div>
+              {isLoading ? (
+                <div className="bg-white border border-gray-200 rounded-2xl p-4 animate-pulse h-64" />
+              ) : (
+                <LedgerCalendar
+                  monthData={displayData}
+                  selectedDate={selectedDate}
+                  role={role}
+                  onDateSelect={handleDateSelect}
+                />
+              )}
+
+              {/* 모바일: 날짜 패널 — 달력 바로 아래 */}
+              <div className="lg:hidden mt-4">
+                <LedgerDayPanel
+                  dayData={selectedDayData}
+                  role={role}
+                  onClose={() => setSelectedDate(null)}
+                  onDelete={handleDeleteExpense}
+                  onAddExpense={() => setShowAddModal(true)}
+                />
+              </div>
+            </div>
+
+            {/* 우측: 요약 카드 + 날짜 패널 (데스크탑 전용) */}
+            <div className="hidden lg:block space-y-4 sticky top-24">
+              {isLoading ? (
+                <div className="bg-white border border-gray-200 rounded-2xl p-4 animate-pulse h-24" />
+              ) : (
+                <LedgerMonthSummary
+                  totalIncome={displayData.totalIncome}
+                  pendingIncome={displayData.pendingIncome}
+                  settledIncome={displayData.settledIncome}
+                  totalExpense={displayData.totalExpense}
+                  netIncome={displayData.netIncome}
+                  totalJobCount={displayData.totalJobCount}
+                  role={role}
+                />
+              )}
+              <LedgerDayPanel
+                dayData={selectedDayData}
+                role={role}
+                onClose={() => setSelectedDate(null)}
+                onDelete={handleDeleteExpense}
+                onAddExpense={() => setShowAddModal(true)}
+              />
+            </div>
+
           </div>
 
         </div>
