@@ -1,7 +1,7 @@
 'use client'
 
 // 소장 내 일감 목록 페이지
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, Suspense } from 'react'
 import Link from 'next/link'
 import { useAuthStore } from '@/store/auth'
 import { useRouter, useSearchParams } from 'next/navigation'
@@ -28,7 +28,7 @@ const TABS: { value: FilterValue; label: string }[] = [
   { value: 'settled',     label: '정산완료' },
 ]
 
-export default function ManagerJobsPage() {
+function ManagerJobsContent() {
   const { user, role, isLoading: authLoading } = useAuthStore()
   const router = useRouter()
   const searchParams = useSearchParams()
@@ -242,5 +242,13 @@ export default function ManagerJobsPage() {
         </svg>
       </Link>
     </div>
+  )
+}
+
+export default function ManagerJobsPage() {
+  return (
+    <Suspense>
+      <ManagerJobsContent />
+    </Suspense>
   )
 }
