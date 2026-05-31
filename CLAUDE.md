@@ -365,3 +365,60 @@ query = query.eq('status', 'open').gte('work_date', today)
 ```
 
 > 공용 탐색 화면과 개인 대시보드의 필터링 조건을 반드시 분리해야 한다.
+
+### 금액 컬럼 int4 overflow — 큰 금액 INSERT 시 DB 500 에러
+
+**증상**: 금액 입력 후 저장 시 500 에러 발생 (특히 10억 이상)
+
+**원인**: Supabase PostgreSQL `int4` 컬럼의 최대값은 2,147,483,647. 클라이언트에서 최대값 제한 없이 전송하면 DB에서 overflow 에러 발생.
+
+**해결**: 클라이언트 입력 시 999,999,999 이하로 클램프 처리.
+
+```typescript
+const clamped = num > 999_999_999 ? 999_999_999 : num
+```
+
+> `int4` 컬럼을 사용하는 금액 필드는 반드시 클라이언트에서 최대값을 제한해야 한다. 서버 유효성 검사에도 동일 조건 추가.
+
+### 달력 셀 대형 금액 레이아웃 깨짐 — 컴팩트 포맷으로 해결
+
+**증상**: 달력 셀에 "1,200,000원" 같은 긴 금액이 셀 밖으로 넘쳐 레이아웃 붕괴
+
+**원인**: 달력 셀은 공간이 매우 협소해 전체 금액 문자열을 수용 불가.
+
+**해결**: 단위 축약 포맷 함수(`formatKRWCompact`, `formatCellBadge`) 사용. 셀 배지에는 "1만", "123만", "1.0억" 형태로 표시.
+
+```typescript
+// 달력 배지용 (부호 포함, "원" 없음)
+function formatCellBadge(amount: number): string {
+  const abs = Math.abs(amount)
+  const sign = amount >= 0 ? '+' : '-'
+  if (abs >= 100_000_000) return `${sign}${(abs / 100_000_000).toFixed(1)}억`
+  if (abs >= 10_000) return `${sign}${Math.round(abs / 10_000)}만`
+  return `${sign}${abs.toLocaleString()}`
+}
+```
+
+> 공간이 제한된 UI(달력 셀, 배지, 카드 한 줄)에서는 항상 컴팩트 포맷을 사용할 것. `truncate` + `whitespace-nowrap`만으로는 레이아웃이 보장되지 않는다.
+
+### 비밀번호 찾기 — 미가입 이메일도 성공 화면으로 전환되는 버그
+
+**증상**: 가입되지 않은 이메일 입력 시에도 "메일을 확인해 주세요" 성공 화면으로 전환됨
+
+**원인**: Supabase의 "Protect against user enumeration attacks" 옵션이 기본 On. 이 상태에서 `supabase.auth.resetPasswordForEmail()`은 이메일 존재 여부와 무관하게 항상 `error: null`을 반환하도록 설계됨.
+
+**해결**: 클라이언트에서 직접 `resetPasswordForEmail`을 호출하지 않고, API Route를 통해 서버에서 먼저 유저 존재 여부를 확인.
+
+```typescript
+// app/api/auth/reset-password/route.ts
+// Supabase admin REST API로 이메일 존재 여부 확인 (SDK의 getUserByEmail은 v2.105.4 미존재)
+const checkRes = await fetch(
+  `${process.env.NEXT_PUBLIC_SUPABASE_URL}/auth/v1/admin/users?filter=${encodeURIComponent(email)}&per_page=5`,
+  { headers: { apikey: SERVICE_ROLE_KEY, Authorization: `Bearer ${SERVICE_ROLE_KEY}` } }
+)
+const { users } = await checkRes.json()
+const exists = Array.isArray(users) && users.some(u => u.email === email)
+if (!exists) return NextResponse.json({ error: '가입되지 않은 이메일 주소입니다.' }, { status: 404 })
+```
+
+> `auth.admin.getUserByEmail()`은 `@supabase/supabase-js` v2.105.4에 존재하지 않는다. admin REST API를 직접 fetch해야 하며, `filter` 파라미터는 like 검색이므로 반환된 결과에서 정확한 이메일 일치 여부를 재확인해야 한다.

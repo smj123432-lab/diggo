@@ -112,6 +112,73 @@ export interface LedgerExpense {
   created_at: string
 }
 
+// 장부 수입 항목 (기사: accepted application → job)
+export interface LedgerIncomeEntry {
+  type: 'income'
+  date: string            // YYYY-MM-DD
+  jobId: string
+  title: string
+  location: string
+  equipmentCode: EquipmentCode | null
+  amount: number
+  payDueType: PayDueType
+  jobStatus: JobStatus
+}
+
+// 장부 지출 항목 (ledger_expenses)
+export interface LedgerExpenseEntry {
+  type: 'expense'
+  date: string            // YYYY-MM-DD
+  id: string
+  category: string
+  memo: string | null
+  amount: number
+}
+
+// 장부 필터 탭
+export type LedgerFilterTab = 'all' | 'pending' | 'settled'
+
+// 소장 현장 항목 (job.work_date 기준)
+export interface LedgerJobEntry {
+  type: 'job'
+  date: string            // YYYY-MM-DD
+  jobId: string
+  title: string
+  location: string
+  equipmentCodes: EquipmentCode[]
+  totalPayAmount: number  // pay_amounts 합산 (기사에게 지급할 총 일당)
+  jobStatus: JobStatus
+}
+
+export type LedgerEntry = LedgerIncomeEntry | LedgerExpenseEntry | LedgerJobEntry
+
+// 특정 날짜의 모든 장부 항목
+export interface LedgerDayData {
+  date: string
+  incomes: LedgerIncomeEntry[]
+  expenses: LedgerExpenseEntry[]
+  jobs: LedgerJobEntry[]
+  totalIncome: number
+  totalExpense: number
+}
+
+// 월 전체 장부 데이터
+export interface LedgerMonthData {
+  year: number
+  month: number
+  days: Record<string, LedgerDayData>  // 'YYYY-MM-DD' → LedgerDayData
+  totalIncome: number      // 정산완료 + 정산대기 합산
+  totalIncomeCount: number // 수입 일감 건수
+  pendingIncome: number    // 정산대기(completed) 금액
+  settledIncome: number    // 정산완료(settled) 금액
+  totalExpense: number
+  netIncome: number
+  totalJobCount: number        // 소장용
+  totalJobPayAmount: number    // 소장용: 일감 일당 합산
+  totalManagerExpense: number  // 소장용: 일당 + 수동 지출 합산
+  totalManualExpense: number   // 소장용: 수동 지출 합산
+}
+
 export interface Review {
   id: string
   job_id: string
@@ -228,3 +295,16 @@ export const APPLICATION_STATUS_LABELS: Record<ApplicationStatus, string> = {
   accepted: '수락',
   rejected: '거절',
 }
+
+// 지출 카테고리 (기사·소장 공용)
+export const LEDGER_EXPENSE_CATEGORIES = [
+  '주유비',
+  '식대',
+  '공구·소모품',
+  '수리비',
+  '현장경비',
+  '통신비',
+  '기타',
+] as const
+
+export type LedgerExpenseCategory = typeof LEDGER_EXPENSE_CATEGORIES[number]

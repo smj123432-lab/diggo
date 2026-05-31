@@ -230,7 +230,7 @@ export default async function MypagePage() {
                 <svg className="w-4 h-4 text-gray-300 ml-auto" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}><path d="M9 18l6-6-6-6" /></svg>
               </Link>
 
-              <Link href="/mypage/edit" className="flex items-center gap-3 px-4 py-3.5 hover:bg-blue-50 transition-colors group">
+              <Link href="/mypage/password" className="flex items-center gap-3 px-4 py-3.5 hover:bg-blue-50 transition-colors group">
                 <span className="w-8 h-8 rounded-lg bg-blue-50 group-hover:bg-blue-100 flex items-center justify-center transition-colors">
                   <svg className="w-4 h-4 text-blue-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
                     <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
