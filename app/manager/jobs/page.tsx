@@ -1,15 +1,14 @@
 'use client'
 
 // 소장 내 일감 목록 페이지
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
 import { useAuthStore } from '@/store/auth'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { ExcavatorIcon } from '@/components/ui/ExcavatorIcon'
 import { NavButtons } from '@/components/features/home/NavButtons'
 import { NavRoleLink } from '@/components/features/home/NavRoleLink'
 import { ManagerJobCard } from '@/components/features/manager/ManagerJobCard'
-import { ManagerJobStatusFilter } from '@/components/features/manager/ManagerJobStatusFilter'
 import type { Job, JobStatus } from '@/types'
 
 type FilterValue = 'all' | JobStatus
@@ -17,17 +16,46 @@ type FilterValue = 'all' | JobStatus
 interface JobWithCount extends Job {
   applicant_count: number
   pending_count: number
+  accepted_driver_id?: string | null
 }
+
+const TABS: { value: FilterValue; label: string }[] = [
+  { value: 'all',         label: '전체' },
+  { value: 'open',        label: '모집중' },
+  { value: 'closed',      label: '모집마감' },
+  { value: 'in_progress', label: '작업중' },
+  { value: 'completed',   label: '정산대기' },
+  { value: 'settled',     label: '정산완료' },
+]
 
 export default function ManagerJobsPage() {
   const { user, role, isLoading: authLoading } = useAuthStore()
   const router = useRouter()
+  const searchParams = useSearchParams()
   const [jobs, setJobs] = useState<JobWithCount[]>([])
   const [isLoading, setIsLoading] = useState(true)
-  const [filter, setFilter] = useState<FilterValue>('all')
+  const [filter, setFilter] = useState<FilterValue>(() => {
+    const s = searchParams.get('status')
+    return TABS.some((t) => t.value === s) ? (s as FilterValue) : 'all'
+  })
+  const [reviewedJobIds, setReviewedJobIds] = useState<Set<string>>(new Set())
+  const [tabScroll, setTabScroll] = useState({ canLeft: false, canRight: true })
+  const tabScrollRef = useRef<HTMLDivElement>(null)
+
+  function handleTabScroll() {
+    const el = tabScrollRef.current
+    if (!el) return
+    setTabScroll({
+      canLeft: el.scrollLeft > 0,
+      canRight: el.scrollLeft + el.clientWidth < el.scrollWidth - 1,
+    })
+  }
 
   useEffect(() => {
-    // role이 null이면 아직 프로필 fetch 중 — 리다이렉트 보류
+    requestAnimationFrame(handleTabScroll)
+  }, [])
+
+  useEffect(() => {
     if (!authLoading && role !== null && (!user || role !== 'manager')) {
       router.replace('/jobs')
     }
@@ -36,10 +64,14 @@ export default function ManagerJobsPage() {
   useEffect(() => {
     if (!user || role !== 'manager') return
     setIsLoading(true)
-    fetch('/api/jobs/mine')
-      .then((r) => r.json())
-      .then((json) => {
-        setJobs(json.data ?? [])
+
+    Promise.all([
+      fetch('/api/jobs/mine').then((r) => r.json()),
+      fetch('/api/reviews?type=given').then((r) => r.json()),
+    ])
+      .then(([jobsJson, reviewsJson]) => {
+        setJobs(jobsJson.data ?? [])
+        setReviewedJobIds(new Set<string>((reviewsJson.data ?? []) as string[]))
       })
       .finally(() => setIsLoading(false))
   }, [user, role])
@@ -96,11 +128,69 @@ export default function ManagerJobsPage() {
       <div className="pt-16">
         <div className="max-w-3xl mx-auto px-4 py-6">
 
-          <div className="flex items-center justify-between mb-5">
-            <ManagerJobStatusFilter value={filter} onChange={setFilter} counts={counts} />
+          {/* 필터 탭 + 등록 버튼 */}
+          <div className="flex items-center gap-3 mb-5">
+            <div className="relative flex-1 min-w-0">
+              <div
+                ref={tabScrollRef}
+                className="overflow-x-auto no-scrollbar"
+                onScroll={handleTabScroll}
+              >
+                <div className="flex gap-1.5 pb-1 w-max pr-8">
+                  {TABS.map((tab) => {
+                    const count = counts[tab.value]
+                    return (
+                      <button
+                        key={tab.value}
+                        onClick={() => {
+                            setFilter(tab.value)
+                            const p = new URLSearchParams(searchParams.toString())
+                            if (tab.value === 'all') p.delete('status')
+                            else p.set('status', tab.value)
+                            router.replace(`?${p.toString()}`, { scroll: false })
+                          }}
+                        className={`shrink-0 text-xs font-semibold px-3.5 py-1.5 rounded-full transition-colors ${
+                          filter === tab.value
+                            ? 'bg-blue-500 text-white'
+                            : 'bg-white border border-gray-200 text-gray-500 hover:border-blue-300 hover:text-blue-600'
+                        }`}
+                      >
+                        {tab.label}{count > 0 ? ` (${count})` : ''}
+                      </button>
+                    )
+                  })}
+                </div>
+              </div>
+              {tabScroll.canLeft && (
+                <div className="absolute left-0 top-0 bottom-1 flex items-center bg-gradient-to-r from-gray-50 via-gray-50/90 to-transparent pr-6">
+                  <button
+                    onClick={() => tabScrollRef.current?.scrollBy({ left: -160, behavior: 'smooth' })}
+                    aria-label="이전 필터"
+                    className="w-7 h-7 flex items-center justify-center rounded-full bg-white border border-gray-200 shadow-sm text-gray-500 active:scale-95 transition-transform"
+                  >
+                    <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5}>
+                      <path d="M15 18l-6-6 6-6" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+                  </button>
+                </div>
+              )}
+              {tabScroll.canRight && (
+                <div className="absolute right-0 top-0 bottom-1 flex items-center bg-gradient-to-l from-gray-50 via-gray-50/90 to-transparent pl-6">
+                  <button
+                    onClick={() => tabScrollRef.current?.scrollBy({ left: 160, behavior: 'smooth' })}
+                    aria-label="다음 필터"
+                    className="w-7 h-7 flex items-center justify-center rounded-full bg-white border border-gray-200 shadow-sm text-gray-500 active:scale-95 transition-transform"
+                  >
+                    <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5}>
+                      <path d="M9 18l6-6-6-6" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+                  </button>
+                </div>
+              )}
+            </div>
             <Link
               href="/jobs/new"
-              className="shrink-0 ml-3 text-sm bg-blue-500 hover:bg-blue-600 text-white font-bold px-4 py-2 rounded-xl transition-colors"
+              className="hidden md:block shrink-0 text-sm bg-blue-500 hover:bg-blue-600 text-white font-bold px-4 py-2 rounded-xl transition-colors"
             >
               + 등록
             </Link>
@@ -129,13 +219,28 @@ export default function ManagerJobsPage() {
           ) : (
             <div className="flex flex-col gap-4">
               {filtered.map((job) => (
-                <ManagerJobCard key={job.id} job={job} />
+                <ManagerJobCard
+                  key={job.id}
+                  job={job}
+                  hasReview={reviewedJobIds.has(job.id)}
+                />
               ))}
             </div>
           )}
 
         </div>
       </div>
+
+      {/* 모바일 FAB */}
+      <Link
+        href="/jobs/new"
+        className="md:hidden fixed bottom-6 right-6 z-50 flex items-center justify-center w-14 h-14 bg-blue-500 hover:bg-blue-600 text-white rounded-full shadow-xl shadow-blue-500/30 active:scale-95 transition-all"
+        aria-label="일감 등록"
+      >
+        <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5}>
+          <line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" />
+        </svg>
+      </Link>
     </div>
   )
 }

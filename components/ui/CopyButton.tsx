@@ -20,7 +20,7 @@ export function CopyButton({ text }: Props) {
     <button
       onClick={handleCopy}
       className="ml-1.5 p-1.5 rounded-lg text-gray-400 hover:text-blue-500 hover:bg-blue-50 transition-colors shrink-0"
-      title="주소 복사"
+      aria-label="클립보드에 복사"
     >
       {copied ? (
         <svg className="w-3.5 h-3.5 text-emerald-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5}>

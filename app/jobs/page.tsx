@@ -25,7 +25,7 @@ export default async function JobsPage() {
 
       const { data, count } = await supabase
         .from('jobs')
-        .select('*, profiles(id, name, rating_avg, is_certified)', { count: 'exact' })
+        .select('*, profiles(id, name, rating_avg, is_certified, avatar_url)', { count: 'exact' })
         .eq('status', 'open')
         .gte('work_date', new Date().toISOString().split('T')[0])
         .order('created_at', { ascending: false })

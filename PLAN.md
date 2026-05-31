@@ -237,7 +237,7 @@
 | 지원자 상세 (소장) | `/manager/jobs/[id]/applicants/[id]` | ⬜ |
 | 마이페이지 | `/mypage` | ⬜ |
 | 프로필 수정 | `/mypage/edit` | ⬜ |
-| 장부 | `/mypage/ledger` | ⬜ |
+| 장부 | `/mypage/ledger` | ✅ |
 | 내 지원 목록 (기사) | `/mypage/applications` | ⬜ |
 | 받은 평가 (기사) | `/mypage/reviews` | ⬜ |
 | 관리자 대시보드 | `/admin` | ⬜ |
@@ -534,15 +534,18 @@ return (
 | 3    | 홈/랜딩 페이지                        | ✅ 완료 |
 | 4    | 일감 목록 + 필터 + 무한스크롤         | ✅ 완료 |
 | 5    | 일감 등록 폼 + 카카오맵               | ✅ 완료 |
-| 6    | 일감 상세 + 지원 신청                 | ⬜ 미완료 |
-| 7    | 지원자 관리 (소장)                    | ⬜ 미완료 |
-| 8    | 마이페이지 + 프로필 수정              | ⬜ 미완료 |
-| 9    | 내 지원 목록 + 받은 평가 (기사)       | ⬜ 미완료 |
-| 10   | 장부 (달력 + 지출 입력)               | ⬜ 미완료 |
-| 11   | 관리자 대시보드 (인증 승인)           | ✅ 완료 |
-| 12   | 버그 수정 + 마무리                    | ⬜ 미완료 |
+| 6    | 일감 상세 + 지원 신청                 | ✅ 완료 |
+| 7    | 지원자 관리 (소장)                    | ✅ 완료 |
+| 8    | 마이페이지 + 프로필 수정              | ✅ 완료 |
+| 9    | 내 지원 목록 (기사)                   | ✅ 완료 |
+| 10   | 관리자 대시보드 (인증 승인)           | ✅ 완료 |
+| 11   | Vercel 배포 + 버그 수정               | ✅ 완료 |
+| 12   | 받은 평가 UI                          | ⬜ 미완료 |
+| 13   | 장부 UI (달력 + 지출 입력)            | ✅ 완료 |
+| 14   | 채팅 (Supabase Realtime)              | ⬜ 미완료 |
+| 15   | 알림                                  | ⬜ 미완료 |
 
-### 완료 상세 내역 (2026-05-23 기준)
+### 완료 상세 내역 (2026-05-28 기준)
 
 **일감 목록 페이지 (`/jobs`)**
 - 무한스크롤 (첫 진입 12개, 이후 8개씩)
@@ -566,6 +569,49 @@ return (
 - PATCH /api/profile: 블랙리스트 → 화이트리스트 방식
 - POST /api/reviews: rating 범위(1~5) 검증
 - GET /api/address/search: 비로그인 차단
+
+**일감 상세 페이지 (`/jobs/[id]`) — 2026-05-26**
+- 5단계 상태 시스템: open → closed → in_progress → completed → settled
+- 소장 전용 JobStatusBadge (드롭다운/잠금 배지), JobOwnerActions (상태별 동적 버튼)
+- 삭제 안전 모달: "삭제" 입력 안전장치, createPortal, Esc 닫기, 포커스 복원
+- 공용 목록 필터링 분리: status=open AND work_date>=today
+
+**마이페이지 + 인증 시스템 (`/mypage`) — 2026-05-27**
+- 인라인 프로필 카드 (이름/전화/한줄소개 수정), 기사 정보 카드 (경력/장비/인증 상태)
+- 면허증·안전교육 이수증 업로드 → Supabase Storage
+- 재업로드 시 기존 서류 삭제 + is_certified 초기화 (우회 방지)
+- 마이페이지 상태 3단계: 미등록 → 검토중 → 이수완료 (두 서류 모두 approved 시)
+
+**관리자 인증 승인 시스템 (`/admin/certifications`) — 2026-05-27**
+- 기사별 서류 카드 목록 + 모달 검토 UI
+- 면허증 + 안전교육 이수증 모두 승인 시 is_certified = true
+- 마이페이지 관리자 바로가기 + 대기 건수 뱃지
+
+**미인증 기사 지원 차단 — 2026-05-27**
+- POST /api/applications: is_certified 검사, 미인증 시 403 반환
+- JobApplyButton: 미인증 기사에게 경고 UI + 마이페이지 링크
+
+**소장 지원자 관리 (`/manager/jobs`, `/manager/jobs/[id]/applicants`)**
+- 소장 내 일감 목록 (상태 필터: 전체/모집중/진행중/완료)
+- 지원자 목록 (기사 프로필 카드 + 상태 뱃지)
+- 지원자 상세 (기사 정보 확인 + 수락/거절/검토중 액션)
+- PATCH /api/applications/[id]/status 로 상태 변경
+
+**기사 내 지원 목록 (`/mypage/applications`)**
+- 지원한 일감 목록 (상태별 표시: 검토중/수락/거절)
+- 일감 상세 링크 포함
+
+**API 구현 현황 (완료)**
+- /api/reviews — 평가 작성 (POST)
+- /api/ledger/expenses — 지출 CRUD
+- /api/ledger/monthly — 월별 수입/지출 집계 (GET)
+- /api/notifications — 알림 목록/읽음 처리
+- /api/equipments — 장비 등록 (PUT)
+
+**Vercel 배포 — 2026-05-28**
+- 배포 URL: https://diggo-zr4b.vercel.app
+- 환경변수 5개 등록 (Supabase, Kakao)
+- 카카오맵 JavaScript SDK 도메인 등록 완료
 
 ### v2 (MVP 이후)
 

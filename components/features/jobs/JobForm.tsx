@@ -363,8 +363,9 @@ export function JobForm({
               {form.location || "주소를 검색해 주세요"}
             </span>
             {form.location && (
-              <span
-                role="button"
+              <button
+                type="button"
+                aria-label="주소 초기화"
                 onClick={(e) => {
                   e.stopPropagation();
                   set("location", "");
@@ -383,7 +384,7 @@ export function JobForm({
                   <line x1="18" y1="6" x2="6" y2="18" />
                   <line x1="6" y1="6" x2="18" y2="18" />
                 </svg>
-              </span>
+              </button>
             )}
           </button>
         </div>

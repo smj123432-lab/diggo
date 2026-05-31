@@ -1,10 +1,25 @@
+// 장부 페이지 — 서버 컴포넌트: 인증 확인 및 role 전달
 export const dynamic = 'force-dynamic'
 
-export default function LedgerPage() {
-  return (
-    <main className="min-h-screen px-4 py-6 max-w-lg mx-auto">
-      <h1 className="text-xl font-bold mb-4">장부</h1>
-      <p className="text-gray-500">구현 예정</p>
-    </main>
-  )
+import { redirect } from 'next/navigation'
+import { createClient } from '@/lib/supabase/server'
+import { LedgerClientPage } from './LedgerClientPage'
+
+export default async function LedgerPage() {
+  const supabase = await createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+
+  if (!user) redirect('/login')
+
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('role')
+    .eq('id', user.id)
+    .single()
+
+  const role = profile?.role ?? 'driver'
+
+  return <LedgerClientPage role={role} />
 }

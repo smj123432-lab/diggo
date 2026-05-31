@@ -2,6 +2,10 @@
 import Link from 'next/link'
 import type { JobWithManager, JobType, JobStatus, EquipmentCode } from '@/types'
 import { EQUIPMENT_LABELS, JOB_TYPE_LABELS, PAY_DUE_LABELS, WORK_DURATION_LABELS } from '@/types'
+import { Avatar } from '@/components/ui/Avatar'
+import { CertBadge } from '@/components/ui/CertBadge'
+import { EquipmentBadge } from '@/components/ui/EquipmentBadge'
+import { RatingDisplay } from '@/components/ui/RatingDisplay'
 
 interface JobCardProps {
   job: JobWithManager
@@ -52,9 +56,7 @@ export function JobCard({ job, isPreferred }: JobCardProps) {
         <div className="flex items-center gap-1.5 flex-wrap mb-3">
           {/* 장비 코드 — 파란 솔리드 (복수 표시) */}
           {(job.equipment_codes as EquipmentCode[]).map((code) => (
-            <span key={code} className="bg-blue-500 text-white text-xs font-bold px-2.5 py-1 rounded-lg">
-              {EQUIPMENT_LABELS[code]}
-            </span>
+            <EquipmentBadge key={code} code={code} />
           ))}
           {/* 일 종류 — 토목: 초록 / 철거: 주황 */}
           <span className={`text-xs font-medium px-2.5 py-1 rounded-lg ${JOB_TYPE_BADGE[job.job_type]}`}>
@@ -109,21 +111,13 @@ export function JobCard({ job, isPreferred }: JobCardProps) {
         {/* 소장 정보 + 가격 */}
         <div className="flex items-center justify-between mt-auto">
           <div className="flex items-center gap-1.5">
+            <Avatar src={job.profiles.avatar_url} name={job.profiles.name} size="sm" />
             <span className="text-xs font-medium text-gray-700">
               {job.profiles.name} 소장
             </span>
-            {job.profiles.is_certified && (
-              <span className="inline-flex items-center justify-center bg-blue-500 text-white w-4 h-4 rounded-full leading-none shrink-0">
-                <svg className="w-2.5 h-2.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={3}>
-                  <path d="M20 6L9 17l-5-5" strokeLinecap="round" strokeLinejoin="round" />
-                </svg>
-              </span>
-            )}
+            {job.profiles.is_certified && <CertBadge />}
             <span className="text-gray-300 text-xs mx-0.5">|</span>
-            <span className="text-xs text-gray-400 flex items-center gap-0.5">
-              <span className="text-yellow-400">★</span>
-              {job.profiles.rating_avg.toFixed(1)}
-            </span>
+            <RatingDisplay value={job.profiles.rating_avg} className="text-xs text-gray-400" />
           </div>
           <div className="flex flex-col items-end gap-0.5 shrink-0">
             {(job.equipment_codes as EquipmentCode[]).map(code => (
