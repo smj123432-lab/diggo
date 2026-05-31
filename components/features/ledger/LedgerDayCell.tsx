@@ -65,11 +65,23 @@ export function LedgerDayCell({ day, dateStr, dayData, isToday, isSelected, role
 
       {/* 배지 영역 */}
       <div className="flex flex-col gap-0.5 mt-0.5 w-full px-0.5">
-        {/* 소장: 현장 위치 */}
-        {role === 'manager' && hasJob && firstJobLocation && (
-          <span className="block w-full text-center text-[9px] font-bold text-emerald-600 bg-emerald-50 rounded-sm truncate px-0.5">
-            {extractDistrict(firstJobLocation)}
-          </span>
+        {/* 소장: 현장 위치 + 일당 */}
+        {role === 'manager' && hasJob && (
+          <>
+            {firstJobLocation && (
+              <span className="block w-full text-center text-[9px] font-bold text-emerald-600 bg-emerald-50 rounded-sm truncate px-0.5">
+                {extractDistrict(firstJobLocation)}
+              </span>
+            )}
+            {(() => {
+              const totalPay = dayData!.jobs.reduce((s, j) => s + j.totalPayAmount, 0)
+              return totalPay > 0 ? (
+                <span className="block w-full text-center text-[10px] font-bold text-emerald-700 bg-emerald-50 rounded-sm truncate px-0.5">
+                  -{(totalPay / 10000).toFixed(0)}만
+                </span>
+              ) : null
+            })()}
+          </>
         )}
 
         {/* 기사: 현장 위치 (수입 내역 기준) */}

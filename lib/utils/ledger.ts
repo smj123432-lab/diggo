@@ -96,6 +96,7 @@ export function buildJobEntries(
     work_date: string
     location: string
     equipment_codes: EquipmentCode[]
+    pay_amounts: Record<string, number>
   }>
 ): LedgerJobEntry[] {
   return rawJobs.map((job) => ({
@@ -105,6 +106,7 @@ export function buildJobEntries(
     title: job.title,
     location: job.location,
     equipmentCodes: job.equipment_codes,
+    totalPayAmount: Object.values(job.pay_amounts ?? {}).reduce((s, v) => s + v, 0),
   }))
 }
 

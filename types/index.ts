@@ -143,6 +143,7 @@ export interface LedgerJobEntry {
   title: string
   location: string
   equipmentCodes: EquipmentCode[]
+  totalPayAmount: number  // pay_amounts 합산 (기사에게 지급할 총 일당)
 }
 
 export type LedgerEntry = LedgerIncomeEntry | LedgerExpenseEntry | LedgerJobEntry

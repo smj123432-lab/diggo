@@ -104,8 +104,13 @@ export function LedgerDayItem({ entry, onDelete }: Props) {
           📍 {entry.location} · {entry.equipmentCodes.map(c => EQUIPMENT_LABELS[c]).join(' · ')}
         </p>
       </div>
-      {/* 금액 영역 없음 — 지출/수입과 레이아웃 너비 맞춤 */}
-      <div className="w-32 shrink-0" />
+      {/* 일당 금액 */}
+      <div className="flex items-center shrink-0 ml-1">
+        <span className="w-24 text-right text-sm font-bold text-emerald-600">
+          {entry.totalPayAmount > 0 ? `-${formatKRW(entry.totalPayAmount)}` : ''}
+        </span>
+        <span className="w-8" />
+      </div>
     </div>
   )
 }
