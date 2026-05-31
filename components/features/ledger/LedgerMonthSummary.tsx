@@ -25,27 +25,33 @@ export function LedgerMonthSummary({
   role,
 }: Props) {
   if (role === 'manager') {
-    const totalManagerExpense = totalJobPayAmount + totalExpense
+    // 수입 = 일감 일당 합산, 지출 = 수동 지출, 순수익 = 차액
+    const managerNet = totalJobPayAmount - totalExpense
     return (
       <div className="bg-white border border-gray-200 rounded-2xl p-4">
         <div className="grid grid-cols-3 gap-2">
           <div className="text-center">
-            <p className="text-xs text-gray-400 mb-0.5">이달 현장</p>
-            <p className="text-lg font-black text-gray-900">{totalJobCount}건</p>
+            <p className="text-xs text-gray-400 mb-0.5">수입</p>
+            <p className="text-base font-black text-blue-600">{formatKRW(totalJobPayAmount)}</p>
           </div>
           <div className="text-center border-x border-gray-100">
-            <p className="text-xs text-gray-400 mb-0.5">일당 지출</p>
-            <p className="text-base font-black text-emerald-600">{formatKRW(totalJobPayAmount)}</p>
+            <p className="text-xs text-gray-400 mb-0.5">지출</p>
+            <p className="text-base font-black text-red-500">{formatKRW(totalExpense)}</p>
           </div>
           <div className="text-center">
-            <p className="text-xs text-gray-400 mb-0.5">총 지출</p>
-            <p className="text-base font-black text-red-500">{formatKRW(totalManagerExpense)}</p>
+            <p className="text-xs text-gray-400 mb-0.5">순수익</p>
+            <p className={`text-base font-black ${managerNet >= 0 ? 'text-gray-900' : 'text-red-600'}`}>
+              {formatKRW(managerNet)}
+            </p>
           </div>
         </div>
-        {totalExpense > 0 && (
+        {totalJobCount > 0 && (
           <div className="mt-3 pt-3 border-t border-gray-100 flex items-center justify-between">
-            <span className="text-xs text-gray-400 font-semibold">수동 지출 포함</span>
-            <span className="text-xs font-bold text-gray-500">{formatKRW(totalExpense)}</span>
+            <span className="text-xs text-gray-400 font-semibold flex items-center gap-1">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 inline-block" />
+              이달 현장
+            </span>
+            <span className="text-xs font-bold text-gray-500">{totalJobCount}건</span>
           </div>
         )}
       </div>
