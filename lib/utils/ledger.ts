@@ -6,6 +6,7 @@ import type {
   LedgerMonthData,
   EquipmentCode,
   PayDueType,
+  JobStatus,
 } from '@/types'
 
 /** 금액을 '1,234,000원' 형식으로 포맷 */
@@ -17,6 +18,15 @@ export function formatKRW(amount: number): string {
 export function parseDate(dateStr: string): { year: number; month: number; day: number } {
   const [year, month, day] = dateStr.split('-').map(Number)
   return { year, month, day }
+}
+
+/**
+ * 주소에서 구/동/읍/면/리 단위만 추출.
+ * "인천 부평동 경인로" → "부평동", "구리 인창동" → "인창동"
+ */
+export function extractDistrict(location: string): string {
+  const match = location.match(/(\S+[동읍면리구])/)
+  return match ? match[1] : location.split(' ')[0] ?? location
 }
 
 /**
@@ -48,9 +58,11 @@ export function buildIncomeEntries(
     jobs: {
       id: string
       title: string
+      location: string
       work_date: string
       pay_amounts: Record<string, number>
       pay_due_type: string
+      status: string
     } | null
   }>
 ): LedgerIncomeEntry[] {
@@ -67,9 +79,11 @@ export function buildIncomeEntries(
         date: job.work_date,
         jobId: job.id,
         title: job.title,
+        location: job.location,
         equipmentCode: eqCode,
         amount,
         payDueType: job.pay_due_type as PayDueType,
+        jobStatus: job.status as JobStatus,
       }
     })
 }

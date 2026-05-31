@@ -69,7 +69,7 @@ export async function GET(request: NextRequest) {
     const { data: rawJobs } = jobIds.length
       ? await supabase
           .from('jobs')
-          .select('id, title, work_date, pay_amounts, pay_due_type')
+          .select('id, title, location, work_date, pay_amounts, pay_due_type, status')
           .in('id', jobIds)
           .gte('work_date', startDate)
           .lte('work_date', endDate)

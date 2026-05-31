@@ -20,6 +20,8 @@ export function LedgerDayPanel({ dayData, role, onClose, onDelete, onAddExpense 
     ? [...dayData.incomes, ...dayData.jobs, ...dayData.expenses]
     : []
 
+  const net = dayData ? dayData.totalIncome - dayData.totalExpense : 0
+
   return (
     <AnimatePresence>
       {dayData && (
@@ -30,28 +32,26 @@ export function LedgerDayPanel({ dayData, role, onClose, onDelete, onAddExpense 
           transition={{ duration: 0.18 }}
           className="mt-4 bg-white border border-gray-200 rounded-2xl overflow-hidden"
         >
+          {/* 헤더: 날짜 + 순수익 */}
           <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100">
-            <div>
-              <span className="text-sm font-bold text-gray-900">
+            <div className="flex items-center gap-2 min-w-0">
+              <span className="text-sm font-bold text-gray-900 shrink-0">
                 {dayData.date.replace(/-/g, '.')}
               </span>
-              {role === 'driver' && (
-                <span className="ml-2 text-xs text-gray-400">
-                  {dayData.totalIncome > 0 && (
-                    <span className="text-blue-500 font-semibold">+{formatKRW(dayData.totalIncome)} </span>
-                  )}
-                  {dayData.totalExpense > 0 && (
-                    <span className="text-red-400 font-semibold">-{formatKRW(dayData.totalExpense)}</span>
-                  )}
+              {net !== 0 && (
+                <span
+                  className={`text-xs font-bold ${net > 0 ? 'text-blue-500' : 'text-red-500'}`}
+                >
+                  {net > 0 ? '+' : ''}{formatKRW(net)}
                 </span>
               )}
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 shrink-0">
               <button
                 onClick={onAddExpense}
                 className="text-xs font-semibold text-blue-600 bg-blue-50 px-2.5 py-1 rounded-lg"
               >
-                + 지출 추가
+                + 내역 추가
               </button>
               <button onClick={onClose} className="text-gray-400 hover:text-gray-600 text-lg leading-none">
                 ×
@@ -59,6 +59,7 @@ export function LedgerDayPanel({ dayData, role, onClose, onDelete, onAddExpense 
             </div>
           </div>
 
+          {/* 내역 리스트 */}
           <div className="px-4 max-h-60 overflow-y-auto">
             {allEntries.length === 0 ? (
               <p className="py-6 text-center text-sm text-gray-400">내역이 없습니다.</p>

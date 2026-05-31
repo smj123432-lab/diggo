@@ -118,9 +118,11 @@ export interface LedgerIncomeEntry {
   date: string            // YYYY-MM-DD
   jobId: string
   title: string
+  location: string
   equipmentCode: EquipmentCode | null
   amount: number
   payDueType: PayDueType
+  jobStatus: JobStatus
 }
 
 // 장부 지출 항목 (ledger_expenses)

@@ -54,7 +54,7 @@ export async function GET(
     // 기사
     const { data: rawApps } = await supabase
       .from('applications')
-      .select('job_id, equipment_id, equipments(model_code), jobs(id, title, work_date, pay_amounts, pay_due_type)')
+      .select('job_id, equipment_id, equipments(model_code), jobs(id, title, location, work_date, pay_amounts, pay_due_type, status)')
       .eq('driver_id', user.id)
       .eq('status', 'accepted')
       .eq('jobs.work_date', date)
