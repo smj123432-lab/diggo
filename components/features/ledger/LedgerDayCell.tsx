@@ -3,7 +3,7 @@
 'use client'
 
 import type { LedgerDayData, UserRole, LedgerFilterTab } from '@/types'
-import { extractDistrict, computeDayNet } from '@/lib/utils/ledger'
+import { extractDistrict, computeDayNet, formatCellBadge } from '@/lib/utils/ledger'
 
 interface Props {
   day: number
@@ -44,14 +44,13 @@ export function LedgerDayCell({ day, dateStr, dayData, isToday, isSelected, role
   let badgeLabel = ''
   if (net !== null) {
     const isPositive = net > 0
-    const absVal = `${(Math.abs(net) / 10000).toFixed(0)}만`
-    badgeLabel = isPositive ? `+${absVal}` : `-${absVal}`
+    badgeLabel = formatCellBadge(net)
     badgeClass = isPositive ? 'text-blue-600 bg-blue-50' : 'text-red-500 bg-red-50'
 
-    // 정산대기가 포함된 경우 앰버 톤으로 표시
+    // 정산대기가 포함된 경우 앰버 톤
     if (net > 0 && role === 'driver' && dayData?.incomes.some(i => i.jobStatus === 'completed') && filterTab === 'all') {
       badgeClass = 'text-amber-600 bg-amber-50'
-      badgeLabel = `대기 +${absVal}`
+      badgeLabel = `대기 ${formatCellBadge(net)}`
     }
   }
 

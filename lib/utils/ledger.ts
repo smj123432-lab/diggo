@@ -15,6 +15,27 @@ export function formatKRW(amount: number): string {
   return amount.toLocaleString('ko-KR') + '원'
 }
 
+/**
+ * 대시보드 카드·달력 셀용 컴팩트 포맷
+ * 1억 이상 → "1.0억", 1만 이상 → "123만", 미만 → 전체
+ */
+export function formatKRWCompact(amount: number): string {
+  const abs = Math.abs(amount)
+  const sign = amount < 0 ? '-' : ''
+  if (abs >= 100_000_000) return `${sign}${(abs / 100_000_000).toFixed(1)}억원`
+  if (abs >= 10_000) return `${sign}${Math.round(abs / 10_000)}만원`
+  return `${sign}${abs.toLocaleString()}원`
+}
+
+/** 달력 셀 배지용 초단축 (부호 포함, "원" 없음) */
+export function formatCellBadge(amount: number): string {
+  const abs = Math.abs(amount)
+  const sign = amount >= 0 ? '+' : '-'
+  if (abs >= 100_000_000) return `${sign}${(abs / 100_000_000).toFixed(1)}억`
+  if (abs >= 10_000) return `${sign}${Math.round(abs / 10_000)}만`
+  return `${sign}${abs.toLocaleString()}`
+}
+
 /** 'YYYY-MM-DD' 문자열 파싱 */
 export function parseDate(dateStr: string): { year: number; month: number; day: number } {
   const [year, month, day] = dateStr.split('-').map(Number)

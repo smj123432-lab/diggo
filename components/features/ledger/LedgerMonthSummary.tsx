@@ -1,6 +1,6 @@
 // components/features/ledger/LedgerMonthSummary.tsx
 // 월 요약 카드 — 수익 / 지출 / 총 수익 (필터탭 연동 값을 받아 표시)
-import { formatKRW } from '@/lib/utils/ledger'
+import { formatKRWCompact } from '@/lib/utils/ledger'
 
 interface Props {
   income: number
@@ -15,18 +15,18 @@ export function LedgerMonthSummary({ income, expense, net, jobCount, pendingNote
   return (
     <div className="bg-white border border-gray-200 rounded-2xl p-4">
       <div className="grid grid-cols-3 gap-2">
-        <div className="text-center min-w-0">
+        <div className="text-center min-w-0 overflow-hidden">
           <p className="text-xs text-gray-400 mb-0.5">수익</p>
-          <p className="text-sm font-black text-blue-600 whitespace-nowrap">{formatKRW(income)}</p>
+          <p className="text-sm font-black text-blue-600 whitespace-nowrap truncate">{formatKRWCompact(income)}</p>
         </div>
-        <div className="text-center border-x border-gray-100 min-w-0">
+        <div className="text-center border-x border-gray-100 min-w-0 overflow-hidden">
           <p className="text-xs text-gray-400 mb-0.5">지출</p>
-          <p className="text-sm font-black text-red-500 whitespace-nowrap">{formatKRW(expense)}</p>
+          <p className="text-sm font-black text-red-500 whitespace-nowrap truncate">{formatKRWCompact(expense)}</p>
         </div>
-        <div className="text-center min-w-0">
+        <div className="text-center min-w-0 overflow-hidden">
           <p className="text-xs text-gray-400 mb-0.5">총 수익</p>
-          <p className={`text-sm font-black whitespace-nowrap ${net >= 0 ? 'text-gray-900' : 'text-red-600'}`}>
-            {formatKRW(net)}
+          <p className={`text-sm font-black whitespace-nowrap truncate ${net >= 0 ? 'text-gray-900' : 'text-red-600'}`}>
+            {formatKRWCompact(net)}
           </p>
         </div>
       </div>
@@ -49,7 +49,7 @@ export function LedgerMonthSummary({ income, expense, net, jobCount, pendingNote
             <span className="w-1.5 h-1.5 rounded-full bg-amber-400 inline-block" />
             정산대기
           </span>
-          <span className="text-xs font-bold text-amber-500">{formatKRW(pendingNote)}</span>
+          <span className="text-xs font-bold text-amber-500">{formatKRWCompact(pendingNote)}</span>
         </div>
       )}
 
@@ -60,7 +60,7 @@ export function LedgerMonthSummary({ income, expense, net, jobCount, pendingNote
             <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 inline-block" />
             정산완료
           </span>
-          <span className="text-xs font-bold text-emerald-600">{formatKRW(settledNote)}</span>
+          <span className="text-xs font-bold text-emerald-600">{formatKRWCompact(settledNote)}</span>
         </div>
       )}
     </div>

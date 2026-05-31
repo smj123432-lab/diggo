@@ -151,17 +151,6 @@ export function LedgerClientPage({ role }: Props) {
       <div className="pt-16">
         <div className="max-w-5xl mx-auto px-4 py-5">
 
-          {/* 페이지 타이틀 + 내역 추가 버튼 */}
-          <div className="flex items-center justify-between mb-5">
-            <h1 className="text-xl font-black text-gray-900">내 장부</h1>
-            <button
-              onClick={() => setShowAddModal(true)}
-              className="text-sm font-semibold text-white bg-blue-500 hover:bg-blue-600 px-4 py-2 rounded-xl transition-colors"
-            >
-              + 내역 추가
-            </button>
-          </div>
-
           {/* 데스크탑: 2열 그리드 / 모바일: 단일 컬럼 */}
           <div className="lg:grid lg:grid-cols-[1fr_300px] lg:gap-6 lg:items-start">
 
@@ -176,16 +165,17 @@ export function LedgerClientPage({ role }: Props) {
                 }
               </div>
 
-              {/* 월 이동 (좌) + 필터탭 (우) */}
-              <div className="flex items-center justify-between mb-3">
-                <div className="flex items-center gap-2">
+              {/* 월 이동 (좌) + 필터탭 + 내역 추가 (우) */}
+              <div className="flex items-center justify-between mb-3 gap-2">
+                {/* 월 이동 */}
+                <div className="flex items-center gap-2 shrink-0">
                   <button
                     onClick={handlePrevMonth}
                     className="w-8 h-8 flex items-center justify-center rounded-lg bg-white border border-gray-200 text-gray-600 hover:bg-gray-50"
                   >
                     ‹
                   </button>
-                  <span className="text-base font-black text-gray-900">
+                  <span className="text-base font-black text-gray-900 whitespace-nowrap">
                     {year}년 {MONTH_NAMES[month - 1]}
                   </span>
                   <button
@@ -196,21 +186,29 @@ export function LedgerClientPage({ role }: Props) {
                   </button>
                 </div>
 
-                {/* 필터 탭 */}
-                <div className="flex gap-0.5 p-1 bg-gray-100 rounded-xl">
-                  {FILTER_TABS.map(({ key, label }) => (
-                    <button
-                      key={key}
-                      onClick={() => handleFilterChange(key)}
-                      className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-colors ${
-                        filterTab === key
-                          ? 'bg-white text-blue-600 shadow-sm'
-                          : 'text-gray-400 hover:text-gray-600'
-                      }`}
-                    >
-                      {label}
-                    </button>
-                  ))}
+                {/* 필터 탭 + 내역 추가 */}
+                <div className="flex items-center gap-2">
+                  <div className="flex gap-0.5 p-1 bg-gray-100 rounded-xl">
+                    {FILTER_TABS.map(({ key, label }) => (
+                      <button
+                        key={key}
+                        onClick={() => handleFilterChange(key)}
+                        className={`px-2.5 py-1.5 text-xs font-semibold rounded-lg transition-colors whitespace-nowrap ${
+                          filterTab === key
+                            ? 'bg-white text-blue-600 shadow-sm'
+                            : 'text-gray-400 hover:text-gray-600'
+                        }`}
+                      >
+                        {label}
+                      </button>
+                    ))}
+                  </div>
+                  <button
+                    onClick={() => setShowAddModal(true)}
+                    className="text-xs font-semibold text-white bg-blue-500 hover:bg-blue-600 px-3 py-2 rounded-xl transition-colors whitespace-nowrap shrink-0"
+                  >
+                    + 내역 추가
+                  </button>
                 </div>
               </div>
 
