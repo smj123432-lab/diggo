@@ -98,7 +98,7 @@ export default function ChatList({ rooms, currentUserId }: Props) {
             const timeStr   = last ? timeAgo(last.created_at) : timeAgo(room.created_at)
 
             return (
-              <li key={room.id} className="border-b border-gray-100 last:border-0">
+              <li key={room.id} className="border-b border-gray-200 last:border-0">
                 <Link
                   href={`/chats/${room.id}`}
                   className="flex items-center gap-3.5 px-4 py-3.5 active:bg-gray-50 transition-colors"
