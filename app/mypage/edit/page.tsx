@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
 import { ExcavatorIcon } from '@/components/ui/ExcavatorIcon'
 import { ProfileEditForm } from '@/components/features/mypage/ProfileEditForm'
+import { NavButtons } from '@/components/features/home/NavButtons'
 
 export default async function ProfileEditPage() {
   const supabase = await createClient()
@@ -35,7 +36,8 @@ export default async function ProfileEditPage() {
               Diggo<span className="text-blue-400">.</span>
             </span>
           </Link>
-          <h1 className="text-sm font-semibold text-slate-300 ml-1">프로필 수정</h1>
+          <h1 className="flex-1 text-sm font-semibold text-slate-300 ml-1">프로필 수정</h1>
+          <NavButtons />
         </div>
       </nav>
 

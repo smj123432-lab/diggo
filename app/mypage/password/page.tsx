@@ -3,6 +3,7 @@ import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
 import { ExcavatorIcon } from '@/components/ui/ExcavatorIcon'
 import { PasswordChangeForm } from '@/components/features/mypage/PasswordChangeForm'
+import { NavButtons } from '@/components/features/home/NavButtons'
 
 export default async function PasswordPage() {
   const supabase = await createClient()
@@ -27,7 +28,8 @@ export default async function PasswordPage() {
               Diggo<span className="text-blue-400">.</span>
             </span>
           </Link>
-          <h1 className="text-sm font-semibold text-slate-300 ml-1">비밀번호 변경</h1>
+          <h1 className="flex-1 text-sm font-semibold text-slate-300 ml-1">비밀번호 변경</h1>
+          <NavButtons />
         </div>
       </nav>
 
