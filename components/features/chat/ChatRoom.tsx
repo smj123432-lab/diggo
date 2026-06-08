@@ -53,24 +53,33 @@ export default function ChatRoom({ room, initialMessages, currentUserId }: Props
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages])
 
-  // Realtime 구독
+  // Realtime 구독 — .on() 등록 완료 후 .subscribe() 호출 (Supabase 정석 순서)
   useEffect(() => {
     const supabase = createClient()
     const channel = supabase
       .channel(`room:${room.id}`)
       .on(
         'postgres_changes',
-        { event: 'INSERT', schema: 'public', table: 'chat_messages', filter: `room_id=eq.${room.id}` },
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'chat_messages',
+          filter: `room_id=eq.${room.id}`,
+        },
         (payload) => {
-          const newMsg = payload.new as ChatMessage
-          // 낙관적 업데이트로 이미 추가된 내 메시지는 skip
-          if (newMsg.sender_id === currentUserId) return
-          setMessages((prev) => [...prev, newMsg])
+          setMessages((prev) => {
+            // 이미 존재하는 메시지(실제 ID 중복) 방지
+            if (prev.some((msg) => msg.id === payload.new.id)) return prev
+            return [...prev, payload.new as ChatMessage]
+          })
         }
       )
       .subscribe()
-    return () => { supabase.removeChannel(channel) }
-  }, [room.id, currentUserId])
+
+    return () => {
+      supabase.removeChannel(channel)
+    }
+  }, [room.id])
 
   const handleSend = useCallback(async () => {
     const text = input.trim()
