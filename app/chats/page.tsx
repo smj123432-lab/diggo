@@ -18,7 +18,7 @@ export default async function ChatsPage() {
 
   if (!rooms || rooms.length === 0) {
     return (
-      <main className="min-h-screen bg-white max-w-2xl mx-auto">
+      <main className="max-w-2xl mx-auto">
         <ChatList rooms={[]} currentUserId={user.id} />
       </main>
     )
@@ -65,7 +65,7 @@ export default async function ChatsPage() {
   )
 
   return (
-    <main className="min-h-screen bg-white max-w-2xl mx-auto">
+    <main className="max-w-2xl mx-auto">
       <ChatList rooms={enriched} currentUserId={user.id} />
     </main>
   )
