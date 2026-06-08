@@ -200,7 +200,19 @@ export default function ChatRoom({ room, initialMessages, currentUserId }: Props
               const isTemp = msg.id.startsWith('temp-')
               return (
                 <div key={msg.id} className={`flex items-end gap-2 ${isMine ? 'flex-row-reverse' : 'flex-row'}`}>
-                  <div className={`max-w-[72%] px-3.5 py-2.5 rounded-2xl text-sm leading-relaxed break-words ${
+                  {/* 상대방 아바타 — 내 메시지엔 같은 너비의 빈 공간으로 정렬 유지 */}
+                  {!isMine ? (
+                    <div className="shrink-0 w-7 h-7 rounded-full overflow-hidden ring-1 ring-gray-200 self-end mb-0.5">
+                      {opponent?.avatar_url ? (
+                        <img src={opponent.avatar_url} alt={opponent.name ?? ''} className="w-full h-full object-cover" />
+                      ) : (
+                        <DefaultAvatar size={28} />
+                      )}
+                    </div>
+                  ) : (
+                    <div className="shrink-0 w-7" />
+                  )}
+                  <div className={`max-w-[68%] px-3.5 py-2.5 rounded-2xl text-sm leading-relaxed break-words ${
                     isMine
                       ? 'bg-blue-500 text-white rounded-br-sm'
                       : 'bg-gray-100 text-slate-800 rounded-bl-sm'
