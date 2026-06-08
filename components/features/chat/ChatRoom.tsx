@@ -1,11 +1,13 @@
 'use client'
 
-// 실시간 채팅방 — Supabase Realtime 구독 + 낙관적 업데이트
+// 실시간 채팅방 — Supabase Realtime 구독 + 낙관적 업데이트 + 이미지 전송
 import { useEffect, useRef, useState, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 import { createClient } from '@/lib/supabase/client'
 import type { ChatMessage, ChatRoomWithDetails } from '@/types'
+
+const IMG_PREFIX = '[img]'
 
 interface Props {
   room: ChatRoomWithDetails
@@ -39,8 +41,10 @@ export default function ChatRoom({ room, initialMessages, currentUserId }: Props
   const [messages, setMessages] = useState<ChatMessage[]>(initialMessages)
   const [input, setInput] = useState('')
   const [isSending, setIsSending] = useState(false)
+  const [isUploading, setIsUploading] = useState(false)
   const bottomRef = useRef<HTMLDivElement>(null)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
   const opponent = currentUserId === room.manager_id ? room.driver : room.manager
   const jobInfo = room.jobs
@@ -48,7 +52,6 @@ export default function ChatRoom({ room, initialMessages, currentUserId }: Props
     ? new Date(jobInfo.work_date).toLocaleDateString('ko-KR', { month: 'long', day: 'numeric' })
     : ''
 
-  // 스크롤 최하단 이동
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages])
@@ -56,7 +59,6 @@ export default function ChatRoom({ room, initialMessages, currentUserId }: Props
   // Realtime 구독 — 채널 이름에 고유값 추가로 React Strict Mode 이중 실행 시 충돌 방지
   useEffect(() => {
     const supabase = createClient()
-    // 같은 room.id로 채널이 재생성될 때 Supabase 내부 캐시 충돌을 막기 위해 고유 suffix 사용
     const channel = supabase
       .channel(`room:${room.id}:${Date.now()}`)
       .on(
@@ -69,7 +71,6 @@ export default function ChatRoom({ room, initialMessages, currentUserId }: Props
         },
         (payload) => {
           setMessages((prev) => {
-            // 이미 존재하는 메시지(실제 ID 중복) 방지
             if (prev.some((msg) => msg.id === payload.new.id)) return prev
             return [...prev, payload.new as ChatMessage]
           })
@@ -82,6 +83,19 @@ export default function ChatRoom({ room, initialMessages, currentUserId }: Props
     }
   }, [room.id])
 
+  // 메시지 API 전송 공용 헬퍼
+  const postMessage = useCallback(async (message: string): Promise<ChatMessage> => {
+    const res = await fetch(`/api/chats/${room.id}/messages`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ message }),
+    })
+    const json = await res.json() as { data?: ChatMessage; error?: string }
+    if (!res.ok) throw new Error(json.error ?? '전송 실패')
+    return json.data!
+  }, [room.id])
+
+  // 텍스트 전송 (낙관적 업데이트)
   const handleSend = useCallback(async () => {
     const text = input.trim()
     if (!text || isSending) return
@@ -97,14 +111,8 @@ export default function ChatRoom({ room, initialMessages, currentUserId }: Props
     setMessages((prev) => [...prev, tempMsg])
 
     try {
-      const res = await fetch(`/api/chats/${room.id}/messages`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: text }),
-      })
-      const json = await res.json() as { data?: ChatMessage; error?: string }
-      if (!res.ok) throw new Error(json.error ?? '전송 실패')
-      setMessages((prev) => prev.map((m) => (m.id === tempId ? json.data! : m)))
+      const saved = await postMessage(text)
+      setMessages((prev) => prev.map((m) => (m.id === tempId ? saved : m)))
     } catch {
       setMessages((prev) => prev.filter((m) => m.id !== tempId))
       toast.error('메시지 전송에 실패했습니다.')
@@ -113,10 +121,55 @@ export default function ChatRoom({ room, initialMessages, currentUserId }: Props
       setIsSending(false)
       textareaRef.current?.focus()
     }
-  }, [input, isSending, room.id, currentUserId])
+  }, [input, isSending, room.id, currentUserId, postMessage])
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend() }
+  }
+
+  // 이미지 선택 → Storage 업로드 → 메시지 전송
+  const handleImageSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    e.target.value = ''
+    if (!file) return
+
+    if (!file.type.startsWith('image/')) {
+      toast.error('이미지 파일만 전송할 수 있습니다.')
+      return
+    }
+    if (file.size > 10 * 1024 * 1024) {
+      toast.error('10MB 이하의 이미지만 전송할 수 있습니다.')
+      return
+    }
+
+    setIsUploading(true)
+    const supabase = createClient()
+    const ext = file.name.split('.').pop() ?? 'jpg'
+    const path = `${room.id}/${Date.now()}.${ext}`
+
+    try {
+      const { data: uploadData, error: uploadError } = await supabase.storage
+        .from('chat-images')
+        .upload(path, file)
+
+      if (uploadError) throw uploadError
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('chat-images')
+        .getPublicUrl(uploadData.path)
+
+      const saved = await postMessage(`${IMG_PREFIX}${publicUrl}`)
+      // Realtime dedup이 처리하지만, 응답 즉시 추가해 빠른 UX 보장
+      setMessages((prev) => {
+        if (prev.some((m) => m.id === saved.id)) return prev
+        return [...prev, saved]
+      })
+    } catch {
+      toast.error('이미지 전송에 실패했습니다.')
+    } finally {
+      setIsUploading(false)
+      textareaRef.current?.focus()
+    }
   }
 
   return (
@@ -160,20 +213,17 @@ export default function ChatRoom({ room, initialMessages, currentUserId }: Props
 
           {/* 액션 아이콘 — 데스크톱 전용 */}
           <div className="hidden md:flex items-center gap-0.5 shrink-0">
-            {/* 전화 */}
             <button className="p-2 rounded-xl hover:bg-gray-100 transition-colors" aria-label="전화">
               <svg className="w-5 h-5 text-slate-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8}>
                 <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.62 3.4 2 2 0 0 1 3.6 1.21h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.79a16 16 0 0 0 6.29 6.29l.96-.96a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
             </button>
-            {/* 영상통화 */}
             <button className="p-2 rounded-xl hover:bg-gray-100 transition-colors" aria-label="영상통화">
               <svg className="w-5 h-5 text-slate-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8}>
                 <polygon points="23 7 16 12 23 17 23 7" />
                 <rect x="1" y="5" width="15" height="14" rx="2" ry="2" />
               </svg>
             </button>
-            {/* 상세정보 */}
             <button className="p-2 rounded-xl hover:bg-gray-100 transition-colors" aria-label="상세정보">
               <svg className="w-5 h-5 text-slate-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8}>
                 <circle cx="12" cy="12" r="10" />
@@ -185,7 +235,7 @@ export default function ChatRoom({ room, initialMessages, currentUserId }: Props
         </div>
       </header>
 
-      {/* ── 메시지 영역 — 스크롤 격리 ── */}
+      {/* ── 메시지 영역 ── */}
       <main className="flex-1 overflow-y-auto no-scrollbar px-4 py-4">
         <div className="max-w-2xl mx-auto w-full">
           {messages.length === 0 && (
@@ -198,9 +248,11 @@ export default function ChatRoom({ room, initialMessages, currentUserId }: Props
             {messages.map((msg) => {
               const isMine = msg.sender_id === currentUserId
               const isTemp = msg.id.startsWith('temp-')
+              const isImg = msg.message.startsWith(IMG_PREFIX)
+
               return (
                 <div key={msg.id} className={`flex items-end gap-2 ${isMine ? 'flex-row-reverse' : 'flex-row'}`}>
-                  {/* 상대방 아바타 — 내 메시지엔 같은 너비의 빈 공간으로 정렬 유지 */}
+                  {/* 상대방 아바타 */}
                   {!isMine ? (
                     <div className="shrink-0 w-7 h-7 rounded-full overflow-hidden ring-1 ring-gray-200 self-end mb-0.5">
                       {opponent?.avatar_url ? (
@@ -212,13 +264,29 @@ export default function ChatRoom({ room, initialMessages, currentUserId }: Props
                   ) : (
                     <div className="shrink-0 w-7" />
                   )}
-                  <div className={`max-w-[68%] px-3.5 py-2.5 rounded-2xl text-sm leading-relaxed break-words ${
-                    isMine
-                      ? 'bg-blue-500 text-white rounded-br-sm'
-                      : 'bg-gray-100 text-slate-800 rounded-bl-sm'
-                  } ${isTemp ? 'opacity-60' : ''}`}>
-                    {msg.message}
+
+                  {/* 말풍선 or 이미지 */}
+                  <div className={`max-w-[68%] ${isTemp ? 'opacity-60' : ''} ${
+                    isImg
+                      ? 'rounded-2xl overflow-hidden'
+                      : `px-3.5 py-2.5 rounded-2xl text-sm leading-relaxed break-words ${
+                          isMine
+                            ? 'bg-blue-500 text-white rounded-br-sm'
+                            : 'bg-gray-100 text-slate-800 rounded-bl-sm'
+                        }`
+                  }`}>
+                    {isImg ? (
+                      <img
+                        src={msg.message.slice(IMG_PREFIX.length)}
+                        alt="이미지"
+                        className="max-w-full max-h-56 object-cover block"
+                        loading="lazy"
+                      />
+                    ) : (
+                      msg.message
+                    )}
                   </div>
+
                   <span className="text-[10px] text-gray-400 shrink-0 pb-0.5">
                     {isTemp ? '전송중' : formatTime(msg.created_at)}
                   </span>
@@ -230,22 +298,9 @@ export default function ChatRoom({ room, initialMessages, currentUserId }: Props
         </div>
       </main>
 
-      {/* ── 하단 입력창 — 인스타 DM 알약 스타일 ── */}
+      {/* ── 하단 입력창 ── */}
       <footer className="bg-white border-t border-gray-100 shrink-0">
         <div className="max-w-2xl mx-auto px-3 py-2.5 flex items-center gap-2">
-
-          {/* 이모지 아이콘 */}
-          <button
-            className="shrink-0 text-gray-400 hover:text-gray-600 transition-colors p-1"
-            aria-label="이모지"
-          >
-            <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5}>
-              <circle cx="12" cy="12" r="10" />
-              <path d="M8 13s1.5 2 4 2 4-2 4-2" strokeLinecap="round" />
-              <line x1="9" y1="9" x2="9.01" y2="9" strokeLinecap="round" strokeWidth={2.5} />
-              <line x1="15" y1="9" x2="15.01" y2="9" strokeLinecap="round" strokeWidth={2.5} />
-            </svg>
-          </button>
 
           {/* 알약 입력 컨테이너 */}
           <div className="flex-1 flex items-center border border-gray-200 rounded-full px-4 py-2 bg-white focus-within:border-gray-400 transition-colors min-h-[40px]">
@@ -261,7 +316,7 @@ export default function ChatRoom({ room, initialMessages, currentUserId }: Props
             />
           </div>
 
-          {/* 우측 아이콘: 텍스트 없으면 이미지+마이크, 있으면 전송 */}
+          {/* 우측: 텍스트 있으면 전송, 없으면 이미지 버튼 */}
           {input.trim() ? (
             <button
               onClick={handleSend}
@@ -271,28 +326,37 @@ export default function ChatRoom({ room, initialMessages, currentUserId }: Props
               전송
             </button>
           ) : (
-            <div className="flex items-center gap-0.5 shrink-0">
-              {/* 이미지 첨부 */}
-              <button className="p-1.5 text-gray-400 hover:text-gray-600 transition-colors" aria-label="이미지 첨부">
+            <button
+              onClick={() => fileInputRef.current?.click()}
+              disabled={isUploading}
+              className="shrink-0 p-1.5 text-gray-400 hover:text-gray-600 disabled:opacity-40 transition-colors"
+              aria-label="이미지 첨부"
+            >
+              {isUploading ? (
+                <svg className="w-6 h-6 animate-spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5}>
+                  <circle cx="12" cy="12" r="10" strokeOpacity={0.25} />
+                  <path d="M12 2a10 10 0 0 1 10 10" strokeLinecap="round" />
+                </svg>
+              ) : (
                 <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5}>
                   <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
                   <circle cx="8.5" cy="8.5" r="1.5" />
                   <polyline points="21 15 16 10 5 21" />
                 </svg>
-              </button>
-              {/* 마이크 */}
-              <button className="p-1.5 text-gray-400 hover:text-gray-600 transition-colors" aria-label="음성 메시지">
-                <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5}>
-                  <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z" strokeLinecap="round" strokeLinejoin="round" />
-                  <path d="M19 10v2a7 7 0 0 1-14 0v-2" strokeLinecap="round" />
-                  <line x1="12" y1="19" x2="12" y2="23" strokeLinecap="round" />
-                  <line x1="8" y1="23" x2="16" y2="23" strokeLinecap="round" />
-                </svg>
-              </button>
-            </div>
+              )}
+            </button>
           )}
         </div>
       </footer>
+
+      {/* 숨겨진 파일 입력 */}
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept="image/*"
+        className="hidden"
+        onChange={handleImageSelect}
+      />
     </div>
   )
 }
