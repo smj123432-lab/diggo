@@ -1,7 +1,7 @@
 'use client'
 
 // 데스크톱: 인스타그램 DM 스타일 좌우 분할 뷰 / 모바일: 단일 뷰
-import { usePathname } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import type { ChatRoomWithDetails } from '@/types'
 import ChatList from './ChatList'
@@ -127,6 +127,7 @@ function DesktopRoomList({ rooms, currentUserId, activeRoomId }: DesktopRoomList
 }
 
 export default function ChatSplitLayout({ rooms, currentUserId, currentUserName, children }: Props) {
+  const router = useRouter()
   const pathname = usePathname()
   const isRootPage = pathname === '/chats'
   const activeRoomId = !isRootPage && pathname.startsWith('/chats/')
@@ -140,9 +141,20 @@ export default function ChatSplitLayout({ rooms, currentUserId, currentUserName,
 
         {/* 좌측 목록 패널 */}
         <div className="w-[360px] shrink-0 flex flex-col h-full border-r border-gray-200 bg-white">
-          {/* 헤더: 내 계정명 + 연필 아이콘 */}
-          <div className="flex items-center justify-between px-5 pt-5 pb-3 border-b border-gray-100">
-            <span className="text-[17px] font-black text-slate-900 tracking-tight">{currentUserName}</span>
+          {/* 헤더: 뒤로가기 + 내 계정명 + 연필 아이콘 */}
+          <div className="flex items-center justify-between px-3 pt-5 pb-3 border-b border-gray-100">
+            <div className="flex items-center gap-1">
+              <button
+                onClick={() => router.back()}
+                className="p-1.5 rounded-lg hover:bg-gray-100 transition-colors text-gray-500 hover:text-gray-800"
+                aria-label="뒤로가기"
+              >
+                <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+                  <path d="M19 12H5M12 5l-7 7 7 7" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+              </button>
+              <span className="text-[17px] font-black text-slate-900 tracking-tight">{currentUserName}</span>
+            </div>
             <button
               className="p-2 rounded-xl hover:bg-gray-100 transition-colors"
               aria-label="새 메시지 작성"
