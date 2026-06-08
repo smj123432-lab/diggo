@@ -8,22 +8,27 @@ export async function GET() {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return NextResponse.json({ error: '로그인이 필요합니다.' }, { status: 401 })
 
-    const { data, error } = await supabase
+    const { data: rooms } = await supabase
       .from('chat_rooms')
-      .select(`
-        id, job_id, manager_id, driver_id, created_at,
-        jobs:job_id ( id, title, work_date, equipment_codes ),
-        manager:manager_id ( id, name, avatar_url ),
-        driver:driver_id ( id, name, avatar_url )
-      `)
+      .select('id, job_id, manager_id, driver_id, created_at')
       .or(`manager_id.eq.${user.id},driver_id.eq.${user.id}`)
       .order('created_at', { ascending: false })
 
-    if (error) throw error
+    if (!rooms || rooms.length === 0) return NextResponse.json({ data: [] })
 
-    // 각 방의 마지막 메시지 + 미읽음 수 병렬 조회
+    const jobIds = [...new Set(rooms.map((r) => r.job_id))]
+    const profileIds = [...new Set(rooms.flatMap((r) => [r.manager_id, r.driver_id]))]
+
+    const [{ data: jobs }, { data: profiles }] = await Promise.all([
+      supabase.from('jobs').select('id, title, work_date, equipment_codes').in('id', jobIds),
+      supabase.from('profiles').select('id, name, avatar_url').in('id', profileIds),
+    ])
+
+    const jobMap = new Map((jobs ?? []).map((j) => [j.id, j]))
+    const profileMap = new Map((profiles ?? []).map((p) => [p.id, p]))
+
     const enriched = await Promise.all(
-      (data ?? []).map(async (room) => {
+      rooms.map(async (room) => {
         const [{ data: lastMsgs }, { count: unread }] = await Promise.all([
           supabase
             .from('chat_messages')
@@ -38,7 +43,14 @@ export async function GET() {
             .eq('is_read', false)
             .neq('sender_id', user.id),
         ])
-        return { ...room, last_message: lastMsgs?.[0] ?? null, unread_count: unread ?? 0 }
+        return {
+          ...room,
+          jobs: jobMap.get(room.job_id) ?? null,
+          manager: profileMap.get(room.manager_id) ?? null,
+          driver: profileMap.get(room.driver_id) ?? null,
+          last_message: lastMsgs?.[0] ?? null,
+          unread_count: unread ?? 0,
+        }
       })
     )
 
@@ -61,7 +73,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'job_id, driver_id가 필요합니다.' }, { status: 400 })
     }
 
-    // 기존 방 조회 (UNIQUE(job_id, driver_id))
+    // 기존 방 조회
     const { data: existing } = await supabase
       .from('chat_rooms')
       .select('*')
@@ -71,7 +83,7 @@ export async function POST(request: NextRequest) {
 
     if (existing) return NextResponse.json({ data: existing }, { status: 200 })
 
-    // jobs에서 manager_id 조회 (기사가 요청하는 경우 대비)
+    // jobs에서 manager_id 조회
     const { data: job, error: jobErr } = await supabase
       .from('jobs')
       .select('manager_id')

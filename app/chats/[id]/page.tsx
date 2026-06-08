@@ -2,7 +2,7 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import ChatRoomComponent from '@/components/features/chat/ChatRoom'
-import type { ChatRoom, ChatRoomWithDetails, ChatMessage } from '@/types'
+import type { ChatRoomWithDetails, ChatMessage } from '@/types'
 
 interface Props {
   params: Promise<{ id: string }>
@@ -14,15 +14,10 @@ export default async function ChatRoomPage({ params }: Props) {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
-  // 채팅방 정보 조회
+  // 채팅방 기본 정보 조회 (profile join 없이 — FK가 auth.users 참조라 auto-join 불가)
   const { data: room } = await supabase
     .from('chat_rooms')
-    .select(`
-      id, job_id, manager_id, driver_id, created_at,
-      jobs:job_id ( id, title, work_date, equipment_codes ),
-      manager:manager_id ( id, name, avatar_url ),
-      driver:driver_id ( id, name, avatar_url )
-    `)
+    .select('id, job_id, manager_id, driver_id, created_at')
     .eq('id', id)
     .maybeSingle()
 
@@ -31,28 +26,45 @@ export default async function ChatRoomPage({ params }: Props) {
     redirect('/chats')
   }
 
-  // 초기 메시지 50개 조회
-  const { data: messages } = await supabase
-    .from('chat_messages')
-    .select('*')
-    .eq('room_id', id)
-    .order('created_at', { ascending: true })
-    .limit(50)
+  // jobs, 프로필, 메시지 병렬 조회
+  const [
+    { data: job },
+    { data: profiles },
+    { data: messages },
+  ] = await Promise.all([
+    supabase
+      .from('jobs')
+      .select('id, title, work_date, equipment_codes')
+      .eq('id', room.job_id)
+      .maybeSingle(),
+    supabase
+      .from('profiles')
+      .select('id, name, avatar_url')
+      .in('id', [room.manager_id, room.driver_id]),
+    supabase
+      .from('chat_messages')
+      .select('*')
+      .eq('room_id', id)
+      .order('created_at', { ascending: true })
+      .limit(50),
+  ])
 
-  // 상대방 메시지 읽음 처리
-  await supabase
+  // 상대방 메시지 읽음 처리 (비동기, 결과 기다리지 않음)
+  supabase
     .from('chat_messages')
     .update({ is_read: true })
     .eq('room_id', id)
     .eq('is_read', false)
     .neq('sender_id', user.id)
+    .then(() => {})
 
-  // Supabase JOIN 반환값 정규화 (배열 → 단일 객체)
+  const profileMap = new Map((profiles ?? []).map((p) => [p.id, p]))
+
   const normalizedRoom: ChatRoomWithDetails = {
-    ...(room as unknown as ChatRoom),
-    jobs: (Array.isArray(room.jobs) ? room.jobs[0] : room.jobs) as ChatRoomWithDetails['jobs'],
-    manager: (Array.isArray(room.manager) ? room.manager[0] : room.manager) as ChatRoomWithDetails['manager'],
-    driver: (Array.isArray(room.driver) ? room.driver[0] : room.driver) as ChatRoomWithDetails['driver'],
+    ...room,
+    jobs: job as ChatRoomWithDetails['jobs'],
+    manager: profileMap.get(room.manager_id) as ChatRoomWithDetails['manager'],
+    driver: profileMap.get(room.driver_id) as ChatRoomWithDetails['driver'],
   }
 
   return (

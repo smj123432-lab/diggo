@@ -9,20 +9,43 @@ export default async function ChatsPage() {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
+  // 내 채팅방 목록 (profile join 없이)
   const { data: rooms } = await supabase
     .from('chat_rooms')
-    .select(`
-      id, job_id, manager_id, driver_id, created_at,
-      jobs:job_id ( id, title, work_date, equipment_codes ),
-      manager:manager_id ( id, name, avatar_url ),
-      driver:driver_id ( id, name, avatar_url )
-    `)
+    .select('id, job_id, manager_id, driver_id, created_at')
     .or(`manager_id.eq.${user.id},driver_id.eq.${user.id}`)
     .order('created_at', { ascending: false })
 
-  // 마지막 메시지 + 미읽음 수 병렬 조회
+  if (!rooms || rooms.length === 0) {
+    return (
+      <main className="min-h-screen bg-gray-50">
+        <div className="bg-white border-b border-gray-100 sticky top-0 z-10">
+          <div className="max-w-2xl mx-auto px-4 py-3">
+            <h1 className="text-base font-bold text-slate-900">채팅</h1>
+          </div>
+        </div>
+        <div className="max-w-2xl mx-auto bg-white min-h-screen">
+          <ChatList rooms={[]} currentUserId={user.id} />
+        </div>
+      </main>
+    )
+  }
+
+  // 관련 job_id, profile id 수집 → 병렬 조회
+  const jobIds = [...new Set(rooms.map((r) => r.job_id))]
+  const profileIds = [...new Set(rooms.flatMap((r) => [r.manager_id, r.driver_id]))]
+
+  const [{ data: jobs }, { data: profiles }] = await Promise.all([
+    supabase.from('jobs').select('id, title, work_date, equipment_codes').in('id', jobIds),
+    supabase.from('profiles').select('id, name, avatar_url').in('id', profileIds),
+  ])
+
+  const jobMap = new Map((jobs ?? []).map((j) => [j.id, j]))
+  const profileMap = new Map((profiles ?? []).map((p) => [p.id, p]))
+
+  // 각 방의 마지막 메시지 + 미읽음 수 병렬 조회
   const enriched: ChatRoomWithDetails[] = await Promise.all(
-    (rooms ?? []).map(async (room) => {
+    rooms.map(async (room) => {
       const [{ data: lastMsgs }, { count: unread }] = await Promise.all([
         supabase
           .from('chat_messages')
@@ -39,9 +62,9 @@ export default async function ChatsPage() {
       ])
       return {
         ...room,
-        jobs: (Array.isArray(room.jobs) ? room.jobs[0] : room.jobs) as ChatRoomWithDetails['jobs'],
-        manager: (Array.isArray(room.manager) ? room.manager[0] : room.manager) as ChatRoomWithDetails['manager'],
-        driver: (Array.isArray(room.driver) ? room.driver[0] : room.driver) as ChatRoomWithDetails['driver'],
+        jobs: jobMap.get(room.job_id) as ChatRoomWithDetails['jobs'],
+        manager: profileMap.get(room.manager_id) as ChatRoomWithDetails['manager'],
+        driver: profileMap.get(room.driver_id) as ChatRoomWithDetails['driver'],
         last_message: (lastMsgs?.[0] as ChatRoomWithDetails['last_message']) ?? null,
         unread_count: unread ?? 0,
       }
@@ -50,13 +73,11 @@ export default async function ChatsPage() {
 
   return (
     <main className="min-h-screen bg-gray-50">
-      {/* 헤더 */}
       <div className="bg-white border-b border-gray-100 sticky top-0 z-10">
         <div className="max-w-2xl mx-auto px-4 py-3">
           <h1 className="text-base font-bold text-slate-900">채팅</h1>
         </div>
       </div>
-
       <div className="max-w-2xl mx-auto bg-white min-h-screen">
         <ChatList rooms={enriched} currentUserId={user.id} />
       </div>
