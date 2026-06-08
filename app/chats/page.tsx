@@ -2,7 +2,6 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import ChatList from '@/components/features/chat/ChatList'
-import ChatListHeader from '@/components/features/chat/ChatListHeader'
 import type { ChatRoomWithDetails } from '@/types'
 
 export default async function ChatsPage() {
@@ -19,11 +18,8 @@ export default async function ChatsPage() {
 
   if (!rooms || rooms.length === 0) {
     return (
-      <main className="min-h-screen bg-gray-50">
-        <ChatListHeader />
-        <div className="max-w-2xl mx-auto bg-white min-h-screen">
-          <ChatList rooms={[]} currentUserId={user.id} />
-        </div>
+      <main className="min-h-screen bg-white max-w-2xl mx-auto">
+        <ChatList rooms={[]} currentUserId={user.id} />
       </main>
     )
   }
@@ -69,15 +65,8 @@ export default async function ChatsPage() {
   )
 
   return (
-    <main className="min-h-screen bg-gray-50">
-      <div className="bg-white border-b border-gray-100 sticky top-0 z-10">
-        <div className="max-w-2xl mx-auto px-4 py-3">
-          <h1 className="text-base font-bold text-slate-900">채팅</h1>
-        </div>
-      </div>
-      <div className="max-w-2xl mx-auto bg-white min-h-screen">
-        <ChatList rooms={enriched} currentUserId={user.id} />
-      </div>
+    <main className="min-h-screen bg-white max-w-2xl mx-auto">
+      <ChatList rooms={enriched} currentUserId={user.id} />
     </main>
   )
 }
