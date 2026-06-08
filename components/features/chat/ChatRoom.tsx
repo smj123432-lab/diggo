@@ -56,30 +56,41 @@ export default function ChatRoom({ room, initialMessages, currentUserId }: Props
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages])
 
-  // Realtime 구독 — 채널 이름에 고유값 추가로 React Strict Mode 이중 실행 시 충돌 방지
+  // Realtime 구독
+  // setTimeout(0)으로 채널 생성을 다음 태스크로 미룸:
+  // React Strict Mode의 첫 번째 실행은 cleanup에서 타이머만 취소 → 채널 자체를 만들지 않음
+  // 두 번째 실행에서만 실제 구독 → "after subscribe()" 에러 원천 차단
   useEffect(() => {
     const supabase = createClient()
-    const channel = supabase
-      .channel(`room:${room.id}:${Date.now()}`)
-      .on(
-        'postgres_changes',
-        {
-          event: 'INSERT',
-          schema: 'public',
-          table: 'chat_messages',
-          filter: `room_id=eq.${room.id}`,
-        },
-        (payload) => {
-          setMessages((prev) => {
-            if (prev.some((msg) => msg.id === payload.new.id)) return prev
-            return [...prev, payload.new as ChatMessage]
-          })
-        }
-      )
-      .subscribe()
+    let channel: ReturnType<typeof supabase.channel> | null = null
+    let cancelled = false
+
+    const timer = setTimeout(() => {
+      if (cancelled) return
+      channel = supabase
+        .channel(`room:${room.id}`)
+        .on(
+          'postgres_changes',
+          {
+            event: 'INSERT',
+            schema: 'public',
+            table: 'chat_messages',
+            filter: `room_id=eq.${room.id}`,
+          },
+          (payload) => {
+            setMessages((prev) => {
+              if (prev.some((msg) => msg.id === payload.new.id)) return prev
+              return [...prev, payload.new as ChatMessage]
+            })
+          }
+        )
+        .subscribe()
+    }, 0)
 
     return () => {
-      supabase.removeChannel(channel)
+      cancelled = true
+      clearTimeout(timer)
+      if (channel) supabase.removeChannel(channel)
     }
   }, [room.id])
 
