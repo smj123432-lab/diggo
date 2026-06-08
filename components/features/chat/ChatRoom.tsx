@@ -53,11 +53,12 @@ export default function ChatRoom({ room, initialMessages, currentUserId }: Props
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages])
 
-  // Realtime 구독 — .on() 등록 완료 후 .subscribe() 호출 (Supabase 정석 순서)
+  // Realtime 구독 — 채널 이름에 고유값 추가로 React Strict Mode 이중 실행 시 충돌 방지
   useEffect(() => {
     const supabase = createClient()
+    // 같은 room.id로 채널이 재생성될 때 Supabase 내부 캐시 충돌을 막기 위해 고유 suffix 사용
     const channel = supabase
-      .channel(`room:${room.id}`)
+      .channel(`room:${room.id}:${Date.now()}`)
       .on(
         'postgres_changes',
         {
