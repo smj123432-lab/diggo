@@ -7,7 +7,7 @@ import type { ApplicationStatus, JobStatus, EquipmentCode } from '@/types'
 import { EQUIPMENT_LABELS, JOB_STATUS_LABELS } from '@/types'
 
 interface Props {
-  params: { id: string }
+  params: Promise<{ id: string }>
 }
 
 const JOB_STATUS_STYLE: Record<JobStatus, string> = {
@@ -19,6 +19,7 @@ const JOB_STATUS_STYLE: Record<JobStatus, string> = {
 }
 
 export default async function ApplicantsPage({ params }: Props) {
+  const { id } = await params
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
@@ -27,7 +28,7 @@ export default async function ApplicantsPage({ params }: Props) {
   const { data: job, error: jobError } = await supabase
     .from('jobs')
     .select('id, title, work_date, status, equipment_codes, location')
-    .eq('id', params.id)
+    .eq('id', id)
     .eq('manager_id', user.id)
     .single()
 
@@ -36,7 +37,7 @@ export default async function ApplicantsPage({ params }: Props) {
   const { data: rawApps } = await supabase
     .from('applications')
     .select('id, status, applied_at, driver_id, equipment_id')
-    .eq('job_id', params.id)
+    .eq('job_id', id)
     .order('applied_at', { ascending: false })
 
   const driverIds = (rawApps ?? []).map((a) => a.driver_id).filter(Boolean)
@@ -120,7 +121,7 @@ export default async function ApplicantsPage({ params }: Props) {
             {(applications ?? []).map((app) => (
               <ApplicantCard
                 key={app.id}
-                jobId={params.id}
+                jobId={id}
                 application={app as unknown as {
                   id: string
                   status: ApplicationStatus
