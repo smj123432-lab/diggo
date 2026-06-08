@@ -44,6 +44,15 @@ export function NavButtons() {
       {/* ── 데스크톱 ── */}
       {user ? (
         <div className="hidden md:flex items-center gap-3">
+          <Link
+            href="/chats"
+            className="p-2 rounded-lg text-slate-300 hover:text-white hover:bg-white/10 transition-colors"
+            title="채팅"
+          >
+            <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          </Link>
           <Link href="/mypage" className="text-sm text-slate-300 hover:text-white transition-colors">
             마이페이지
           </Link>
@@ -122,6 +131,16 @@ export function NavButtons() {
                 내 지원
               </Link>
             )}
+            <Link
+              href="/chats"
+              onClick={close}
+              className="flex items-center gap-3 px-4 py-3.5 text-sm text-slate-200 hover:bg-white/10 transition-colors border-t border-white/5"
+            >
+              <svg className="w-4 h-4 text-slate-400 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+              채팅
+            </Link>
             <Link
               href="/mypage/ledger"
               onClick={close}

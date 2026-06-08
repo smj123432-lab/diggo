@@ -2,7 +2,7 @@
 
 // 실시간 채팅방 — Supabase Realtime 구독 + 낙관적 업데이트
 import { useEffect, useRef, useState, useCallback } from 'react'
-import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 import { createClient } from '@/lib/supabase/client'
 import type { ChatMessage, ChatRoomWithDetails } from '@/types'
@@ -22,6 +22,7 @@ function formatTime(iso: string) {
 }
 
 export default function ChatRoom({ room, initialMessages, currentUserId }: Props) {
+  const router = useRouter()
   const [messages, setMessages] = useState<ChatMessage[]>(initialMessages)
   const [input, setInput] = useState('')
   const [isSending, setIsSending] = useState(false)
@@ -124,14 +125,15 @@ export default function ChatRoom({ room, initialMessages, currentUserId }: Props
       {/* 상단 헤더 */}
       <header className="bg-white border-b border-gray-100 sticky top-0 z-10">
         <div className="max-w-2xl mx-auto px-4 py-3 flex items-center gap-3">
-          <Link
-            href="/chats"
+          <button
+            onClick={() => router.back()}
             className="p-1.5 -ml-1.5 rounded-lg hover:bg-gray-100 transition-colors shrink-0"
+            aria-label="뒤로가기"
           >
             <svg className="w-5 h-5 text-gray-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
               <path d="M19 12H5M12 5l-7 7 7 7" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
-          </Link>
+          </button>
           <div className="flex-1 min-w-0">
             <p className="text-sm font-semibold text-slate-900 truncate">
               {opponent?.name ?? '상대방'}
