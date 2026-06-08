@@ -203,23 +203,27 @@ export interface Certification {
   created_at: string
 }
 
-export interface Chat {
+export interface ChatRoom {
   id: string
   job_id: string
-  application_id: string
+  manager_id: string
+  driver_id: string
   created_at: string
 }
 
-export interface ChatWithDetails extends Chat {
-  jobs: Pick<Job, 'id' | 'title'>
-  applications: Pick<Application, 'id' | 'driver_id' | 'status'>
+export interface ChatRoomWithDetails extends ChatRoom {
+  jobs: Pick<Job, 'id' | 'title' | 'work_date' | 'equipment_codes'>
+  manager: Pick<Profile, 'id' | 'name' | 'avatar_url'>
+  driver: Pick<Profile, 'id' | 'name' | 'avatar_url'>
+  last_message?: ChatMessage | null
+  unread_count?: number
 }
 
-export interface Message {
+export interface ChatMessage {
   id: string
-  chat_id: string
+  room_id: string
   sender_id: string
-  content: string
+  message: string
   is_read: boolean
   created_at: string
 }

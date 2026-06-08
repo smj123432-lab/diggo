@@ -3,11 +3,12 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { ApplicantActions } from "@/components/features/manager/ApplicantActions";
+import ChatEntryButton from "@/components/features/chat/ChatEntryButton";
 import type { ApplicationStatus, EquipmentCode } from "@/types";
 import { EQUIPMENT_LABELS, APPLICATION_STATUS_LABELS } from "@/types";
 
 interface Props {
-  params: { id: string; applicationId: string };
+  params: Promise<{ id: string; applicationId: string }>;
 }
 
 const STATUS_STYLE: Record<ApplicationStatus, string> = {
@@ -18,6 +19,7 @@ const STATUS_STYLE: Record<ApplicationStatus, string> = {
 };
 
 export default async function ApplicantDetailPage({ params }: Props) {
+  const { id, applicationId } = await params;
   const supabase = await createClient();
   const {
     data: { user },
@@ -28,7 +30,7 @@ export default async function ApplicantDetailPage({ params }: Props) {
   const { data: application, error } = await supabase
     .from("applications")
     .select("id, status, applied_at, driver_id, equipment_id, job_id")
-    .eq("id", params.applicationId)
+    .eq("id", applicationId)
     .single();
 
   if (error || !application) notFound();
@@ -90,7 +92,7 @@ export default async function ApplicantDetailPage({ params }: Props) {
       <div className="bg-white border-b border-gray-100 sticky top-0 z-10">
         <div className="max-w-3xl mx-auto px-4 py-3 flex items-center gap-3">
           <Link
-            href={`/manager/jobs/${params.id}/applicants`}
+            href={`/manager/jobs/${id}/applicants`}
             className="p-1.5 -ml-1.5 rounded-lg hover:bg-gray-100 transition-colors"
           >
             <svg
@@ -220,10 +222,15 @@ export default async function ApplicantDetailPage({ params }: Props) {
         <div className="bg-white rounded-2xl border border-gray-200 p-5">
           <p className="text-xs text-gray-400 mb-3">지원 처리</p>
           <ApplicantActions
-            applicationId={params.applicationId}
+            applicationId={applicationId}
             currentStatus={application.status as ApplicationStatus}
-            jobId={params.id}
+            jobId={id}
           />
+        </div>
+
+        <div className="bg-white rounded-2xl border border-gray-200 p-5">
+          <p className="text-xs text-gray-400 mb-3">채팅</p>
+          <ChatEntryButton jobId={application.job_id} driverId={application.driver_id} />
         </div>
       </div>
     </main>
