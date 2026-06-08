@@ -101,7 +101,7 @@ export default function ChatList({ rooms, currentUserId }: Props) {
               <li key={room.id} className="border-b border-gray-200 last:border-0">
                 <Link
                   href={`/chats/${room.id}`}
-                  className="flex items-center gap-3.5 px-4 py-3.5 active:bg-gray-50 transition-colors"
+                  className="flex items-center gap-3.5 px-4 py-3.5 hover:bg-gray-50 active:bg-gray-100 transition-colors"
                 >
                   {/* 아바타 */}
                   <div className="shrink-0 w-12 h-12 rounded-full overflow-hidden ring-1 ring-gray-100">
