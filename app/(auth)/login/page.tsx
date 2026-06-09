@@ -126,9 +126,9 @@ function LoginForm() {
 
       <p className="text-center text-sm text-gray-500">
         아직 계정이 없으신가요?{' '}
-        <Link href="/signup" className="text-blue-600 font-medium hover:underline">
+        <a href="/signup" className="text-blue-600 font-medium hover:underline">
           회원가입
-        </Link>
+        </a>
       </p>
     </form>
   )

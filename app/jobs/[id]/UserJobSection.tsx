@@ -1,18 +1,19 @@
 'use client'
 
-// 일감 상세 — 사용자별 영역 (지원 버튼, 소장 액션, 상태 배지 드롭다운)
-// useAuthStore로 세션 확인, existingApplication은 useQuery로 fetch
+// 일감 상세 — 사용자별 영역 (지원 버튼, 소장 액션, 장비별 배차 현황)
 import { useAuthStore } from '@/store/auth'
 import { useQuery } from '@tanstack/react-query'
 import { JobApplyButton } from '@/components/features/jobs/JobApplyButton'
 import { JobOwnerActions } from '@/components/features/jobs/JobOwnerActions'
 import { JobStatusBadge } from '@/components/features/jobs/JobStatusBadge'
-import type { JobStatus, ApplicationStatus } from '@/types'
+import { EquipmentDispatchBadges } from '@/components/features/jobs/EquipmentDispatchBadges'
+import type { JobStatus, ApplicationStatus, EquipmentCode } from '@/types'
 
 interface JobSnapshot {
   id: string
   manager_id: string
   status: string
+  equipment_codes: EquipmentCode[]
 }
 
 interface Props {
@@ -33,6 +34,17 @@ export function UserJobSection({ job, effectiveStatus, payDueDate }: Props) {
     enabled: !!user && profile?.role === 'driver',
   })
 
+  // 장비별 배차 현황 — 모집중이고 다중 장비일 때만 fetch
+  const { data: dispatchedCodes } = useQuery<Record<string, boolean>>({
+    queryKey: ['equipment-status', job.id],
+    queryFn: () =>
+      fetch(`/api/jobs/${job.id}/equipment-status`)
+        .then((r) => r.json())
+        .then((r) => r.data ?? {}),
+    enabled: !!user && effectiveStatus === 'open' && job.equipment_codes.length > 1,
+    staleTime: 30_000,
+  })
+
   if (isLoading) {
     return <div className="h-12 bg-gray-100 rounded-xl animate-pulse" />
   }
@@ -42,6 +54,16 @@ export function UserJobSection({ job, effectiveStatus, payDueDate }: Props) {
 
   return (
     <>
+      {/* 장비별 배차 현황 (모집중 + 다중 장비일 때 표시) */}
+      {effectiveStatus === 'open' && job.equipment_codes.length > 1 && dispatchedCodes && (
+        <div className="mb-3">
+          <EquipmentDispatchBadges
+            equipmentCodes={job.equipment_codes}
+            dispatchedCodes={dispatchedCodes}
+          />
+        </div>
+      )}
+
       {/* 소장 본인: 상태 드롭다운 배지 + 관리 버튼 */}
       {isOwnJob && (
         <>
@@ -65,6 +87,8 @@ export function UserJobSection({ job, effectiveStatus, payDueDate }: Props) {
             userRole={profile?.role ?? null}
             isCertified={profile?.is_certified ?? false}
             existingApplication={existingApplication ?? null}
+            equipmentCodes={job.equipment_codes}
+            dispatchedCodes={dispatchedCodes}
           />
           <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur border-t border-gray-200 px-4 py-4 z-20">
             <div className="max-w-lg mx-auto">
@@ -74,6 +98,8 @@ export function UserJobSection({ job, effectiveStatus, payDueDate }: Props) {
                 userRole={profile?.role ?? null}
                 isCertified={profile?.is_certified ?? false}
                 existingApplication={existingApplication ?? null}
+                equipmentCodes={job.equipment_codes}
+                dispatchedCodes={dispatchedCodes}
               />
             </div>
           </div>

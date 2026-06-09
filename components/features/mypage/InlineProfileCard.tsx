@@ -169,7 +169,10 @@ export function InlineProfileCard({ profile, jobCount = 0 }: Props) {
             setName(updates.name)
             setPhone(updates.phone ?? '')
             setBio(updates.bio ?? '')
-            if (updates.garage_address !== undefined) setGarage(updates.garage_address ?? '')
+            if (updates.garage_address !== undefined) {
+              setGarage(updates.garage_address ?? '')
+              window.dispatchEvent(new CustomEvent('garage-address-updated', { detail: updates.garage_address ?? null }))
+            }
             setModalOpen(false)
           }}
         />

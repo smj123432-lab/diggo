@@ -11,7 +11,7 @@ import { EquipmentBadge } from '@/components/ui/EquipmentBadge'
 import { ReviewModal } from '@/components/features/mypage/ReviewModal'
 
 interface ManagerJobCardProps {
-  job: Job & { applicant_count: number; pending_count: number; accepted_driver_id?: string | null }
+  job: Job & { applicant_count: number; pending_count: number; reviewing_count: number; accepted_driver_id?: string | null }
   hasReview?: boolean
 }
 
@@ -106,8 +106,12 @@ export function ManagerJobCard({ job, hasReview = false }: ManagerJobCardProps) 
         {/* 좌측: 뱃지·제목·위치 */}
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-1.5 flex-wrap mb-2">
-            <span className={`text-xs font-semibold px-2 py-0.5 rounded-md ${STATUS_BADGE[effectiveStatus]}`}>
-              {JOB_STATUS_LABELS[effectiveStatus]}
+            <span className={`text-xs font-semibold px-2 py-0.5 rounded-md ${
+              effectiveStatus === 'open' && job.reviewing_count > 0
+                ? 'text-blue-700 bg-blue-50'
+                : STATUS_BADGE[effectiveStatus]
+            }`}>
+              {effectiveStatus === 'open' && job.reviewing_count > 0 ? '검토중' : JOB_STATUS_LABELS[effectiveStatus]}
             </span>
             {(job.equipment_codes as EquipmentCode[]).map((code) => (
               <EquipmentBadge key={code} code={code} size="sm" />

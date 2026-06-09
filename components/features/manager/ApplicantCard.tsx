@@ -28,6 +28,7 @@ interface ApplicantCardProps {
       license_number: string | null
     } | null
     driverEquipments: EquipmentCode[]
+    applied_equipment_code?: string | null
   }
 }
 
@@ -39,7 +40,7 @@ const STATUS_STYLE: Record<ApplicationStatus, string> = {
 }
 
 export function ApplicantCard({ jobId, application }: ApplicantCardProps) {
-  const { profiles: driver, driverEquipments } = application
+  const { profiles: driver, driverEquipments, applied_equipment_code } = application
   const appliedAt = new Date(application.applied_at).toLocaleDateString('ko-KR', {
     month: 'numeric', day: 'numeric',
   })
@@ -58,6 +59,14 @@ export function ApplicantCard({ jobId, application }: ApplicantCardProps) {
                 <span className="text-sm font-bold text-gray-900">{driver.name}</span>
                 {driver.is_certified && <CertBadge />}
               </div>
+
+              {/* 지원 장비 코드 강조 표시 */}
+              {applied_equipment_code && (
+                <div className="flex items-center gap-1.5 mb-1.5">
+                  <span className="text-xs text-gray-400">지원 장비:</span>
+                  <EquipmentBadge code={applied_equipment_code as EquipmentCode} size="sm" />
+                </div>
+              )}
 
               {/* 평점 · 경력 · 보유 장비 */}
               <div className="flex items-center flex-wrap gap-1.5 text-xs text-gray-400 mb-1.5">

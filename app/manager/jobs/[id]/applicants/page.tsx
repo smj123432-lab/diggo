@@ -36,7 +36,7 @@ export default async function ApplicantsPage({ params }: Props) {
 
   const { data: rawApps } = await supabase
     .from('applications')
-    .select('id, status, applied_at, driver_id, equipment_id')
+    .select('id, status, applied_at, driver_id, equipment_id, applied_equipment_code')
     .eq('job_id', id)
     .order('applied_at', { ascending: false })
 
@@ -69,6 +69,7 @@ export default async function ApplicantsPage({ params }: Props) {
     profiles: profileMap.get(app.driver_id) ?? null,
     equipments: app.equipment_id ? (equipmentMap.get(app.equipment_id) ?? null) : null,
     driverEquipments: driverEquipmentMap.get(app.driver_id) ?? [],
+    applied_equipment_code: (app.applied_equipment_code as string | null) ?? null,
   }))
 
   const workDate = new Date(job.work_date).toLocaleDateString('ko-KR', {

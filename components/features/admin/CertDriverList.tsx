@@ -16,6 +16,7 @@ export interface DriverEntry {
   name: string
   email: string
   phone: string
+  avatarUrl: string | null
   certs: Cert[]
 }
 
@@ -49,9 +50,17 @@ export function CertDriverList({ drivers }: Props) {
               className="bg-white rounded-2xl border border-gray-100 px-5 py-4 flex items-center gap-4"
             >
               {/* 아바타 */}
-              <div className="w-11 h-11 rounded-full bg-slate-100 flex items-center justify-center text-sm font-bold text-slate-600 shrink-0">
-                {displayName.slice(0, 1).toUpperCase()}
-              </div>
+              {driver.avatarUrl ? (
+                <img
+                  src={driver.avatarUrl}
+                  alt={displayName}
+                  className="w-11 h-11 rounded-full object-cover shrink-0"
+                />
+              ) : (
+                <div className="w-11 h-11 rounded-full bg-slate-100 flex items-center justify-center text-sm font-bold text-slate-600 shrink-0">
+                  {displayName.slice(0, 1).toUpperCase()}
+                </div>
+              )}
 
               {/* 기사 정보 */}
               <div className="flex-1 min-w-0">
