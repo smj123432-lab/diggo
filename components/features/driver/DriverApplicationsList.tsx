@@ -15,6 +15,7 @@ export interface DriverApplication {
   status: string
   applied_at: string
   hasReview: boolean
+  applied_equipment_code: string | null
   job: {
     id: string
     title: string
@@ -28,11 +29,12 @@ export interface DriverApplication {
   equipment: { id: string; model_code: EquipmentCode } | null
 }
 
-type StageFilter = 'all' | 'applying' | 'confirmed' | 'pending_settlement' | 'settled'
+type StageFilter = 'all' | 'applying' | 'waiting' | 'confirmed' | 'pending_settlement' | 'settled'
 
 const STAGE_TABS: { value: StageFilter; label: string; desc: string }[] = [
   { value: 'all',                label: '전체',    desc: '' },
-  { value: 'applying',           label: '지원중',  desc: '소장님 선택 대기' },
+  { value: 'applying',           label: '지원중',  desc: '소장님 검토 대기' },
+  { value: 'waiting',            label: '배차대기', desc: '소장님 검토중' },
   { value: 'confirmed',          label: '배차완료', desc: '출근 확정' },
   { value: 'pending_settlement', label: '정산대기', desc: '입금 대기' },
   { value: 'settled',            label: '정산완료', desc: '입금 완료' },
@@ -41,6 +43,7 @@ const STAGE_TABS: { value: StageFilter; label: string; desc: string }[] = [
 const STAGE_BAR: Record<StageFilter, string> = {
   all:                '',
   applying:           'bg-blue-400',
+  waiting:            'bg-violet-400',
   confirmed:          'bg-emerald-400',
   pending_settlement: 'bg-amber-400',
   settled:            'bg-emerald-400',
@@ -49,13 +52,15 @@ const STAGE_BAR: Record<StageFilter, string> = {
 const STAGE_BADGE: Record<StageFilter, string> = {
   all:                '',
   applying:           'bg-blue-50 text-blue-700',
+  waiting:            'bg-violet-50 text-violet-700',
   confirmed:          'bg-emerald-50 text-emerald-700',
   pending_settlement: 'bg-amber-50 text-amber-700',
   settled:            'bg-emerald-50 text-emerald-700',
 }
 
 function getStage(appStatus: string, jobStatus: JobStatus): StageFilter {
-  if (appStatus === 'pending' || appStatus === 'reviewing') return 'applying'
+  if (appStatus === 'pending') return 'applying'
+  if (appStatus === 'reviewing') return 'waiting'
   if (appStatus === 'accepted') {
     if (jobStatus === 'settled') return 'settled'
     if (jobStatus === 'completed') return 'pending_settlement'
@@ -124,6 +129,7 @@ export function DriverApplicationsList({ applications }: Props) {
   const counts: Record<StageFilter, number> = {
     all:                applications.filter((a) => a.status !== 'rejected').length,
     applying:           withStage.filter((a) => a.stage === 'applying').length,
+    waiting:            withStage.filter((a) => a.stage === 'waiting').length,
     confirmed:          withStage.filter((a) => a.stage === 'confirmed').length,
     pending_settlement: withStage.filter((a) => a.stage === 'pending_settlement').length,
     settled:            withStage.filter((a) => a.stage === 'settled').length,
@@ -222,7 +228,8 @@ export function DriverApplicationsList({ applications }: Props) {
       ) : (
         <div className="flex flex-col gap-4">
           {filtered.map((app) => {
-            const { job, equipment, stage } = app
+            const { job, equipment, stage, applied_equipment_code } = app
+            const displayCode = (applied_equipment_code ?? equipment?.model_code ?? job.equipment_codes?.[0] ?? null) as EquipmentCode | null
             const effectiveStage = stage ?? 'applying'
             const isSettled = effectiveStage === 'settled'
             const isRejected = app.status === 'rejected'
@@ -265,7 +272,7 @@ export function DriverApplicationsList({ applications }: Props) {
                           {stageLabel?.label}
                         </span>
                       )}
-                      {equipment && <EquipmentBadge code={equipment.model_code} size="sm" />}
+                      {displayCode && <EquipmentBadge code={displayCode} size="sm" />}
                     </div>
                     <h3 className="text-sm font-bold text-gray-900 mb-1 line-clamp-1">{job.title}</h3>
                     <p className="text-xs text-gray-400 flex items-center gap-1">
@@ -299,8 +306,8 @@ export function DriverApplicationsList({ applications }: Props) {
                         <span className="text-xs text-gray-400">{stageLabel.desc}</span>
                       )
                     )}
-                    {/* accepted 상태 카드에 채팅 아이콘 */}
-                    {app.status === 'accepted' && !isRejected && (
+                    {/* reviewing(배차대기) · accepted 상태 카드에 채팅 아이콘 */}
+                    {(app.status === 'reviewing' || app.status === 'accepted') && !isRejected && (
                       <button
                         onClick={(e) => { e.preventDefault(); handleOpenChat(job.id) }}
                         disabled={chattingJobId === job.id}

@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { getCachedJobDetail } from '@/lib/utils/jobs-cache'
 import { UserJobSection } from './UserJobSection'
 import { KakaoMap } from '@/components/features/jobs/KakaoMap'
+import { JobDetailBackButton } from '@/components/features/jobs/JobDetailBackButton'
 import { CopyButton } from '@/components/ui/CopyButton'
 import {
   EQUIPMENT_LABELS,
@@ -57,11 +58,7 @@ export default async function JobDetailPage({ params }: Props) {
       {/* 헤더 */}
       <div className="bg-white border-b border-gray-100 sticky top-0 z-10">
         <div className="max-w-6xl mx-auto px-4 lg:px-8 py-3 flex items-center gap-3">
-          <Link href="/jobs" className="p-1.5 -ml-1.5 rounded-lg hover:bg-gray-100 transition-colors">
-            <svg className="w-5 h-5 text-gray-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
-              <path d="M19 12H5M12 5l-7 7 7 7" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
-          </Link>
+          <JobDetailBackButton />
           <span className="flex-1 text-sm font-semibold text-gray-700">일감 상세</span>
           <Link href="/chats" className="p-1.5 rounded-lg hover:bg-gray-100 transition-colors text-gray-500 hover:text-blue-500" title="채팅">
             <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
@@ -182,7 +179,7 @@ export default async function JobDetailPage({ params }: Props) {
 
             {/* 모바일: 소장 일감 관리 — UserJobSection이 렌더 */}
             <div className="lg:hidden">
-              <UserJobSection job={job} effectiveStatus={effectiveStatus} payDueDate={payDueDate} />
+              <UserJobSection job={{ ...job, equipment_codes: job.equipment_codes as EquipmentCode[] }} effectiveStatus={effectiveStatus} payDueDate={payDueDate} />
             </div>
 
           </div>
@@ -278,7 +275,7 @@ export default async function JobDetailPage({ params }: Props) {
                 </div>
 
                 {/* 데스크탑: 사용자별 액션 (지원 버튼 / 소장 관리) */}
-                <UserJobSection job={job} effectiveStatus={effectiveStatus} payDueDate={payDueDate} />
+                <UserJobSection job={{ ...job, equipment_codes: job.equipment_codes as EquipmentCode[] }} effectiveStatus={effectiveStatus} payDueDate={payDueDate} />
 
               </div>
             </div>

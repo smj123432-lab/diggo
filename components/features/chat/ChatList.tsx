@@ -1,17 +1,10 @@
 'use client'
 
-// 당근마켓 스타일 채팅 목록 — 헤더 + 필터 칩 + 카드
+// 채팅 목록 — 헤더(뒤로가기+이름) + 검색 인풋 + 카드
 import { useState } from 'react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import type { ChatRoomWithDetails } from '@/types'
-
-type Filter = 'all' | 'read' | 'unread'
-
-const FILTER_TABS: { value: Filter; label: string }[] = [
-  { value: 'all',    label: '전체' },
-  { value: 'read',   label: '읽음' },
-  { value: 'unread', label: '안읽음' },
-]
 
 function timeAgo(iso: string) {
   const diff = Date.now() - new Date(iso).getTime()
@@ -38,40 +31,72 @@ function DefaultAvatar() {
 interface Props {
   rooms: ChatRoomWithDetails[]
   currentUserId: string
+  currentUserName?: string
 }
 
-export default function ChatList({ rooms, currentUserId }: Props) {
-  const [filter, setFilter] = useState<Filter>('all')
+export default function ChatList({ rooms, currentUserId, currentUserName }: Props) {
+  const router = useRouter()
+  const [searchQuery, setSearchQuery] = useState('')
 
-  const filtered = rooms.filter((room) => {
-    const unread = room.unread_count ?? 0
-    if (filter === 'read')   return unread === 0
-    if (filter === 'unread') return unread > 0
-    return true
-  })
+  // 상대방 이름·마지막 메시지·일감 제목으로 실시간 필터링
+  const filtered = searchQuery.trim()
+    ? rooms.filter((room) => {
+        const isManager = currentUserId === room.manager_id
+        const opponent = isManager ? room.driver : room.manager
+        const q = searchQuery.toLowerCase()
+        return (
+          opponent?.name?.toLowerCase().includes(q) ||
+          room.last_message?.message?.toLowerCase().includes(q) ||
+          room.jobs?.title?.toLowerCase().includes(q)
+        )
+      })
+    : rooms
 
   return (
     <div className="min-h-screen bg-gray-50">
       {/* ── 상단 고정 헤더 ── */}
       <div className="sticky top-0 z-10 bg-white border-b border-gray-200/80 shadow-sm">
-        <div className="px-4 pt-5 pb-2">
-          <h1 className="text-xl font-black text-slate-900">채팅</h1>
+        {/* 뒤로가기 + 이름 */}
+        <div className="flex items-center gap-1 px-3 pt-5 pb-2">
+          <button
+            onClick={() => router.back()}
+            className="p-1.5 rounded-lg hover:bg-gray-100 transition-colors text-gray-500 hover:text-gray-800"
+            aria-label="뒤로가기"
+          >
+            <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+              <path d="M19 12H5M12 5l-7 7 7 7" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          </button>
+          <span className="text-[17px] font-black text-slate-900 tracking-tight">
+            {currentUserName ?? '채팅'}
+          </span>
         </div>
-        {/* 필터 칩 */}
-        <div className="flex gap-2 px-4 pb-3 overflow-x-auto no-scrollbar">
-          {FILTER_TABS.map((tab) => (
-            <button
-              key={tab.value}
-              onClick={() => setFilter(tab.value)}
-              className={`shrink-0 text-sm font-semibold px-4 py-1.5 rounded-full transition-colors ${
-                filter === tab.value
-                  ? 'bg-slate-900 text-white'
-                  : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
-              }`}
-            >
-              {tab.label}
-            </button>
-          ))}
+        {/* 검색 인풋 */}
+        <div className="px-4 pb-3">
+          <div className="flex items-center gap-2 bg-gray-100 rounded-full px-3.5 py-2">
+            <svg className="w-3.5 h-3.5 text-gray-400 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+              <circle cx="11" cy="11" r="8" />
+              <path d="m21 21-4.35-4.35" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="검색"
+              className="flex-1 bg-transparent text-sm text-slate-800 placeholder-gray-400 outline-none"
+            />
+            {searchQuery && (
+              <button
+                onClick={() => setSearchQuery('')}
+                className="text-gray-400 hover:text-gray-600 transition-colors"
+                aria-label="검색 초기화"
+              >
+                <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+                  <path d="M18 6 6 18M6 6l12 12" strokeLinecap="round" />
+                </svg>
+              </button>
+            )}
+          </div>
         </div>
       </div>
 
@@ -80,9 +105,9 @@ export default function ChatList({ rooms, currentUserId }: Props) {
         <div className="flex flex-col items-center justify-center py-24 gap-3 text-center">
           <p className="text-4xl">💬</p>
           <p className="text-sm text-gray-400">
-            {filter === 'all' ? '아직 채팅방이 없습니다.' : '해당 조건의 채팅방이 없습니다.'}
+            {searchQuery ? '검색 결과가 없습니다.' : '아직 채팅방이 없습니다.'}
           </p>
-          {filter === 'all' && (
+          {!searchQuery && (
             <p className="text-xs text-gray-300">
               일감 상세 또는 지원자 페이지에서 채팅을 시작하세요.
             </p>

@@ -50,6 +50,7 @@ export async function GET() {
         ...job,
         applicant_count: applications.length,
         pending_count: applications.filter((a) => a.status === 'pending').length,
+        reviewing_count: applications.filter((a) => a.status === 'reviewing').length,
         accepted_driver_id: acceptedApp?.driver_id ?? null,
       }
     })

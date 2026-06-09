@@ -232,15 +232,15 @@
 | 일감 목록 | `/jobs` | ✅ |
 | 일감 등록 | `/jobs/new` | ✅ |
 | 일감 상세 | `/jobs/[id]` | ✅ |
-| 내 일감 목록 (소장) | `/manager/jobs` | ⬜ |
-| 지원자 목록 (소장) | `/manager/jobs/[id]/applicants` | ⬜ |
-| 지원자 상세 (소장) | `/manager/jobs/[id]/applicants/[id]` | ⬜ |
-| 마이페이지 | `/mypage` | ⬜ |
-| 프로필 수정 | `/mypage/edit` | ⬜ |
+| 내 일감 목록 (소장) | `/manager/jobs` | ✅ |
+| 지원자 목록 (소장) | `/manager/jobs/[id]/applicants` | ✅ |
+| 지원자 상세 (소장) | `/manager/jobs/[id]/applicants/[id]` | ✅ |
+| 마이페이지 | `/mypage` | ✅ |
+| 프로필 수정 | `/mypage/edit` | ✅ |
 | 장부 | `/mypage/ledger` | ✅ |
-| 내 지원 목록 (기사) | `/mypage/applications` | ⬜ |
-| 받은 평가 (기사) | `/mypage/reviews` | ⬜ |
-| 관리자 대시보드 | `/admin` | ⬜ |
+| 내 지원 목록 (기사) | `/mypage/applications` | ✅ |
+| 받은 평가 (기사) | `/mypage/reviews` | ✅ |
+| 관리자 대시보드 | `/admin` | ✅ |
 
 **MVP 이후 (v2)**
 
@@ -542,7 +542,7 @@ return (
 | 9    | 내 지원 목록 (기사)                   | ✅ 완료 |
 | 10   | 관리자 대시보드 (인증 승인)           | ✅ 완료 |
 | 11   | Vercel 배포 + 버그 수정               | ✅ 완료 |
-| 12   | 받은 평가 UI                          | ⬜ 미완료 |
+| 12   | 받은 평가 UI                          | ✅ 완료 |
 | 13   | 장부 UI (달력 + 지출 입력)            | ✅ 완료 |
 | 14   | 채팅 (Supabase Realtime)              | ⬜ 미완료 |
 | 15   | 알림                                  | ⬜ 미완료 |

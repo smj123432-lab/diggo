@@ -3,6 +3,7 @@
 // 실시간 채팅방 — Supabase Realtime 구독 + 낙관적 업데이트 + 이미지 전송
 import { useEffect, useRef, useState, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 import { toast } from 'sonner'
 import { createClient } from '@/lib/supabase/client'
 import type { ChatMessage, ChatRoomWithDetails } from '@/types'
@@ -42,55 +43,86 @@ export default function ChatRoom({ room, initialMessages, currentUserId }: Props
   const [input, setInput] = useState('')
   const [isSending, setIsSending] = useState(false)
   const [isUploading, setIsUploading] = useState(false)
+  const [menuOpen, setMenuOpen] = useState(false)
+  const [isDispatching, setIsDispatching] = useState(false)
   const bottomRef = useRef<HTMLDivElement>(null)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const menuRef = useRef<HTMLDivElement>(null)
+  const menuBtnRef = useRef<HTMLButtonElement>(null)
 
-  const opponent = currentUserId === room.manager_id ? room.driver : room.manager
+  const isManager = currentUserId === room.manager_id
+  const opponent = isManager ? room.driver : room.manager
   const jobInfo = room.jobs
   const dateStr = jobInfo?.work_date
     ? new Date(jobInfo.work_date).toLocaleDateString('ko-KR', { month: 'long', day: 'numeric' })
     : ''
+
+  // 메뉴 바깥 클릭 시 닫기
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      const t = e.target as Node
+      if (!menuBtnRef.current?.contains(t) && !menuRef.current?.contains(t)) {
+        setMenuOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', handler)
+    return () => document.removeEventListener('mousedown', handler)
+  }, [])
+
+  // 소장: 배치 수락/거절 처리
+  const handleDispatch = async (action: 'accept' | 'reject') => {
+    setMenuOpen(false)
+    setIsDispatching(true)
+    try {
+      const res = await fetch(`/api/chats/${room.id}/dispatch`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action }),
+      })
+      const json = await res.json() as { error?: string }
+      if (!res.ok) throw new Error(json.error ?? '처리 실패')
+      toast.success(action === 'accept' ? '배치를 수락했습니다.' : '배치를 거절했습니다.')
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : '처리에 실패했습니다.')
+    } finally {
+      setIsDispatching(false)
+    }
+  }
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages])
 
   // Realtime 구독
-  // setTimeout(0)으로 채널 생성을 다음 태스크로 미룸:
-  // React Strict Mode의 첫 번째 실행은 cleanup에서 타이머만 취소 → 채널 자체를 만들지 않음
-  // 두 번째 실행에서만 실제 구독 → "after subscribe()" 에러 원천 차단
+  // Supabase 싱글톤 클라이언트는 같은 topic 이름의 채널을 내부 캐시에서 재사용한다.
+  // Math.random() suffix로 매 마운트마다 완전히 새로운 채널 이름을 만들어
+  // 이미 subscribed된 캐시 인스턴스를 반환하는 문제를 원천 차단한다.
   useEffect(() => {
     const supabase = createClient()
-    let channel: ReturnType<typeof supabase.channel> | null = null
-    let cancelled = false
+    const channelName = `room:${room.id}:${Math.random().toString(36).slice(2, 9)}`
 
-    const timer = setTimeout(() => {
-      if (cancelled) return
-      channel = supabase
-        .channel(`room:${room.id}`)
-        .on(
-          'postgres_changes',
-          {
-            event: 'INSERT',
-            schema: 'public',
-            table: 'chat_messages',
-            filter: `room_id=eq.${room.id}`,
-          },
-          (payload) => {
-            setMessages((prev) => {
-              if (prev.some((msg) => msg.id === payload.new.id)) return prev
-              return [...prev, payload.new as ChatMessage]
-            })
-          }
-        )
-        .subscribe()
-    }, 0)
+    const channel = supabase
+      .channel(channelName)
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'chat_messages',
+          filter: `room_id=eq.${room.id}`,
+        },
+        (payload) => {
+          setMessages((prev) => {
+            if (prev.some((msg) => msg.id === payload.new.id)) return prev
+            return [...prev, payload.new as ChatMessage]
+          })
+        }
+      )
+      .subscribe()
 
     return () => {
-      cancelled = true
-      clearTimeout(timer)
-      if (channel) supabase.removeChannel(channel)
+      supabase.removeChannel(channel)
     }
   }, [room.id])
 
@@ -222,26 +254,77 @@ export default function ChatRoom({ room, initialMessages, currentUserId }: Props
             )}
           </div>
 
-          {/* 액션 아이콘 — 데스크톱 전용 */}
-          <div className="hidden md:flex items-center gap-0.5 shrink-0">
-            <button className="p-2 rounded-xl hover:bg-gray-100 transition-colors" aria-label="전화">
-              <svg className="w-5 h-5 text-slate-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8}>
-                <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.62 3.4 2 2 0 0 1 3.6 1.21h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.79a16 16 0 0 0 6.29 6.29l.96-.96a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z" strokeLinecap="round" strokeLinejoin="round" />
+          {/* 메뉴 버튼 + 드롭다운 */}
+          <div className="relative shrink-0">
+            <button
+              ref={menuBtnRef}
+              onClick={() => setMenuOpen((v) => !v)}
+              className="p-2 rounded-xl hover:bg-gray-100 transition-colors"
+              aria-label="메뉴"
+              disabled={isDispatching}
+            >
+              <svg className="w-5 h-5 text-slate-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+                <circle cx="12" cy="5" r="1" fill="currentColor" stroke="none" />
+                <circle cx="12" cy="12" r="1" fill="currentColor" stroke="none" />
+                <circle cx="12" cy="19" r="1" fill="currentColor" stroke="none" />
               </svg>
             </button>
-            <button className="p-2 rounded-xl hover:bg-gray-100 transition-colors" aria-label="영상통화">
-              <svg className="w-5 h-5 text-slate-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8}>
-                <polygon points="23 7 16 12 23 17 23 7" />
-                <rect x="1" y="5" width="15" height="14" rx="2" ry="2" />
-              </svg>
-            </button>
-            <button className="p-2 rounded-xl hover:bg-gray-100 transition-colors" aria-label="상세정보">
-              <svg className="w-5 h-5 text-slate-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8}>
-                <circle cx="12" cy="12" r="10" />
-                <line x1="12" y1="8" x2="12" y2="12" strokeLinecap="round" />
-                <line x1="12" y1="16" x2="12.01" y2="16" strokeLinecap="round" strokeWidth={2.5} />
-              </svg>
-            </button>
+
+            {/* 드롭다운 */}
+            {menuOpen && (
+              <div
+                ref={menuRef}
+                className="absolute right-0 top-full mt-1 w-44 bg-white border border-gray-200 rounded-xl shadow-lg overflow-hidden z-50"
+              >
+                {isManager ? (
+                  <>
+                    <button
+                      onClick={() => handleDispatch('accept')}
+                      className="w-full flex items-center gap-2.5 px-4 py-3 text-sm text-emerald-600 font-semibold hover:bg-emerald-50 transition-colors"
+                    >
+                      <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5}>
+                        <path d="M20 6 9 17l-5-5" strokeLinecap="round" strokeLinejoin="round" />
+                      </svg>
+                      배치 수락
+                    </button>
+                    <button
+                      onClick={() => handleDispatch('reject')}
+                      className="w-full flex items-center gap-2.5 px-4 py-3 text-sm text-red-500 font-semibold hover:bg-red-50 transition-colors border-t border-gray-100"
+                    >
+                      <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5}>
+                        <path d="M18 6 6 18M6 6l12 12" strokeLinecap="round" />
+                      </svg>
+                      배치 거절
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <Link
+                      href={`/jobs/${room.job_id}`}
+                      onClick={() => setMenuOpen(false)}
+                      className="flex items-center gap-2.5 px-4 py-3 text-sm text-slate-700 hover:bg-gray-50 transition-colors"
+                    >
+                      <svg className="w-4 h-4 shrink-0 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+                        <rect x="3" y="3" width="18" height="18" rx="2" />
+                        <path d="M9 9h6M9 13h6M9 17h4" strokeLinecap="round" />
+                      </svg>
+                      게시물 확인
+                    </Link>
+                    <Link
+                      href={`/jobs/${room.job_id}`}
+                      onClick={() => setMenuOpen(false)}
+                      className="flex items-center gap-2.5 px-4 py-3 text-sm text-slate-700 hover:bg-gray-50 transition-colors border-t border-gray-100"
+                    >
+                      <svg className="w-4 h-4 shrink-0 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                        <circle cx="12" cy="7" r="4" />
+                      </svg>
+                      소장 프로필
+                    </Link>
+                  </>
+                )}
+              </div>
+            )}
           </div>
         </div>
       </header>

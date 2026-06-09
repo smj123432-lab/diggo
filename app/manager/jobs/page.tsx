@@ -11,17 +11,19 @@ import { NavRoleLink } from '@/components/features/home/NavRoleLink'
 import { ManagerJobCard } from '@/components/features/manager/ManagerJobCard'
 import type { Job, JobStatus } from '@/types'
 
-type FilterValue = 'all' | JobStatus
+type FilterValue = 'all' | JobStatus | 'reviewing'
 
 interface JobWithCount extends Job {
   applicant_count: number
   pending_count: number
+  reviewing_count: number
   accepted_driver_id?: string | null
 }
 
 const TABS: { value: FilterValue; label: string }[] = [
   { value: 'all',         label: '전체' },
   { value: 'open',        label: '모집중' },
+  { value: 'reviewing',   label: '검토중' },
   { value: 'closed',      label: '모집마감' },
   { value: 'in_progress', label: '작업중' },
   { value: 'completed',   label: '정산대기' },
@@ -87,13 +89,19 @@ function ManagerJobsContent() {
     return new Date(b.work_date).getTime() - new Date(a.work_date).getTime()
   })
 
-  const filtered = sorted.filter((job) =>
-    filter === 'all' || effectiveStatus(job) === filter
-  )
+  const isReviewing = (job: JobWithCount) => (job.reviewing_count ?? 0) > 0
+
+  const filtered = sorted.filter((job) => {
+    if (filter === 'all') return true
+    if (filter === 'reviewing') return isReviewing(job)
+    if (filter === 'open') return effectiveStatus(job) === 'open' && !isReviewing(job)
+    return effectiveStatus(job) === filter
+  })
 
   const counts: Record<FilterValue, number> = {
     all:         jobs.length,
-    open:        jobs.filter((j) => effectiveStatus(j) === 'open').length,
+    open:        jobs.filter((j) => effectiveStatus(j) === 'open' && !isReviewing(j)).length,
+    reviewing:   jobs.filter((j) => isReviewing(j)).length,
     closed:      jobs.filter((j) => effectiveStatus(j) === 'closed').length,
     in_progress: jobs.filter((j) => effectiveStatus(j) === 'in_progress').length,
     completed:   jobs.filter((j) => effectiveStatus(j) === 'completed').length,

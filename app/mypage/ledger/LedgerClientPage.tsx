@@ -21,10 +21,10 @@ interface Props {
 
 const MONTH_NAMES = ['1월', '2월', '3월', '4월', '5월', '6월', '7월', '8월', '9월', '10월', '11월', '12월']
 
-const FILTER_TABS: { key: LedgerFilterTab; label: string }[] = [
-  { key: 'all', label: '전체' },
-  { key: 'pending', label: '지급 대기' },
-  { key: 'settled', label: '지급 완료' },
+const FILTER_TABS: { key: LedgerFilterTab; label: string; shortLabel: string }[] = [
+  { key: 'all',     label: '전체',    shortLabel: '전체' },
+  { key: 'pending', label: '지급 대기', shortLabel: '대기' },
+  { key: 'settled', label: '지급 완료', shortLabel: '완료' },
 ]
 
 const EMPTY_MONTH_DATA: LedgerMonthData = {
@@ -63,11 +63,11 @@ export function LedgerClientPage({ role }: Props) {
   // 필터탭 기반 요약 수치 계산
   const summaryValues = useMemo(() => {
     if (role === 'manager') {
-      // 소장: 수익=0, 지출=일당+수동지출
+      // 소장: 수익=수동수입, 지출=일당+수동지출
       return {
-        income: 0,
+        income: displayData.totalIncome,
         expense: displayData.totalManagerExpense,
-        net: -displayData.totalManagerExpense,
+        net: displayData.totalIncome - displayData.totalManagerExpense,
         jobCount: displayData.totalJobCount,
         pendingNote: undefined,
         settledNote: undefined,
@@ -130,7 +130,7 @@ export function LedgerClientPage({ role }: Props) {
   const selectedDayData = selectedDate ? (displayData.days[selectedDate] ?? null) : null
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 overflow-x-hidden">
       {/* 상단 네비게이션 바 */}
       <nav className="fixed top-0 inset-x-0 z-50 border-b border-white/10 bg-slate-900/90 backdrop-blur-md">
         <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
@@ -202,17 +202,18 @@ export function LedgerClientPage({ role }: Props) {
                 {/* 필터 탭 + 내역 추가 */}
                 <div className="flex items-center gap-2">
                   <div className="flex gap-0.5 p-1 bg-gray-100 rounded-xl">
-                    {FILTER_TABS.map(({ key, label }) => (
+                    {FILTER_TABS.map(({ key, label, shortLabel }) => (
                       <button
                         key={key}
                         onClick={() => handleFilterChange(key)}
-                        className={`px-2.5 py-1.5 text-xs font-semibold rounded-lg transition-colors whitespace-nowrap ${
+                        className={`px-2 md:px-2.5 py-1.5 text-xs font-semibold rounded-lg transition-colors whitespace-nowrap ${
                           filterTab === key
                             ? 'bg-white text-blue-600 shadow-sm'
                             : 'text-gray-400 hover:text-gray-600'
                         }`}
                       >
-                        {label}
+                        <span className="hidden md:inline">{label}</span>
+                        <span className="md:hidden">{shortLabel}</span>
                       </button>
                     ))}
                   </div>

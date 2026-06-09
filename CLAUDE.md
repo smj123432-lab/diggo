@@ -166,17 +166,30 @@ diggo/
 
 ## 작업 완료 후 자동 문서 업데이트 규칙
 
-**사용자가 별도로 요청하지 않아도** 커밋 완료 시 반드시 아래 세 곳을 자동 업데이트한다.
+**사용자가 별도로 요청하지 않아도** 커밋 완료 시 반드시 아래 네 곳을 자동 업데이트한다.
 
-1. **Notion** (Page ID: `368da2371b5b8075b4cdc8a162ecc7c2`)
+### Notion 링크
+
+| 페이지 | Page ID | 용도 |
+|--------|---------|------|
+| Diggo 개발 로그 | `368da2371b5b8075b4cdc8a162ecc7c2` | 기술 기록, 트러블슈팅, 개발 일지 |
+| 올인원 생산성 관리 시스템 | `40eda2371b5b839fa78f0163aea75a3e` | 프로젝트 관리, 작업 추가, 저널 |
+
+1. **Notion — Diggo 개발 로그** (`368da2371b5b8075b4cdc8a162ecc7c2`)
    - ✅ 완료 섹션에 작업 내용 추가
    - 📅 개발 일지에 날짜 + 작업 내용 추가
    - 🐛 트러블슈팅 발생 시 기록
    - 📌 예정 항목에서 완료된 것 제거
 
-2. **CLAUDE.md** — 새 트러블슈팅 패턴, 코딩 규칙 변경사항 추가
+2. **Notion — 올인원 생산성 관리 시스템** (`40eda2371b5b839fa78f0163aea75a3e`)
+   - 작업 관리 시스템 DB에 완료된 작업 추가 (완료=true, 마감일, 프로젝트 연결)
+   - 저널 "Diggo 개발 일지"에 당일 세션 일지 항목 추가
+   - 예정 작업은 완료=false, Not started로 추가
+   - 단순 마감일 있는 작업은 일일/주간 플래너에 자동 반영됨 (별도 작업 불필요)
 
-3. **PLAN.md** — 기술스택 변경, 작업 체크리스트 ⬜→✅, 아키텍처 변경 반영
+3. **CLAUDE.md** — 새 트러블슈팅 패턴, 코딩 규칙 변경사항 추가
+
+4. **PLAN.md** — 기술스택 변경, 작업 체크리스트 ⬜→✅, 아키텍처 변경 반영
 
 ## 작업 시작 전 체크리스트
 
@@ -535,3 +548,75 @@ export async function GET(_: NextRequest, { params }: { params: Promise<{ id: st
 ```
 
 > 서버 SSR 프리페치와 클라이언트 TanStack Query의 `queryKey`, `정렬 기준`, `필터 조건`이 완전히 일치해야 한다. 불일치 시 staleTime 만료 후 리스트가 교체되는 UX 버그 발생.
+
+### 장부 API endDate KST 오프-바이-원 버그 — 월말 일감 미표시
+
+**증상**: 6월 달력에서 6월 29~30일 일감이 달력 리본에 미표시
+
+**원인**: `new Date(year, month, 0).toISOString().split('T')[0]`는 UTC 기준으로 ISO 문자열을 생성하는데, KST(UTC+9)에서 자정(00:00 KST = 전날 15:00 UTC)에 실행하면 하루 일찍 반환됨. 예를 들어 6월 마지막 날 계산 시 `2026-06-29`가 반환되어 30일 일감이 범위에서 제외됨.
+
+**해결**: `toISOString()` 대신 `getDate()` + 직접 문자열 조합.
+
+```typescript
+// 변경 전 (KST에서 하루 밀릴 수 있음)
+const endDate = new Date(year, month, 0).toISOString().split('T')[0]
+
+// 변경 후 (항상 정확한 마지막 날)
+const lastDay = new Date(year, month, 0).getDate()
+const endDate = `${year}-${String(month).padStart(2, '0')}-${String(lastDay).padStart(2, '0')}`
+```
+
+> `new Date(...).toISOString()`은 UTC 변환이 포함되므로 KST 환경에서 날짜 경계 계산에 절대 사용하지 말 것. 날짜 문자열이 필요할 때는 항상 `getFullYear/getMonth/getDate` + 직접 문자열 조합을 사용한다.
+
+### 채팅 배차 기사의 applied_equipment_code null — 달력/목록 장비 표시 누락
+
+**증상**: 채팅으로 배차된 기사의 일감이 달력 리본에 미표시되거나, DriverApplicationsList에서 장비 뱃지가 미표시됨
+
+**원인**: 소장이 채팅 ⋮ 메뉴의 "배치 수락"으로 배차하면 `applications.applied_equipment_code`와 `equipment_id`가 모두 null. 일반 지원 흐름(기사가 장비 선택 후 지원)에서만 이 필드가 채워짐.
+
+**해결**: `applied_equipment_code → equipment.model_code → job.equipment_codes[0]` 순서로 fallback 체인 적용.
+
+```typescript
+// buildIncomeEntries (lib/utils/ledger.ts)
+const eqCode = (a.applied_equipment_code as EquipmentCode | null)
+  ?? a.equipments?.model_code
+  ?? (job.equipment_codes?.[0] as EquipmentCode | undefined)
+  ?? null
+
+// DriverApplicationsList
+const displayCode = (applied_equipment_code ?? equipment?.model_code ?? job.equipment_codes?.[0] ?? null) as EquipmentCode | null
+```
+
+> 채팅 배차와 일반 지원 배차는 `applied_equipment_code` 존재 여부가 다르다. 장비 코드를 사용하는 모든 곳에 fallback 체인을 반드시 적용해야 한다.
+
+### 수동 수입(category='수입') 지출 집계 버그 — 세 곳 동시 수정 필요
+
+**증상**: 수동 수입 내역 추가 시 월 요약 카드에서 수익이 아닌 지출로 표시됨 (또는 일부 위젯만 올바르게 표시됨)
+
+**원인**: `ledger_expenses` 테이블에 `category='수입'`으로 수동 수입을 저장하는 구조. 집계 로직이 세 곳에 분산되어 있어 한 곳만 수정하면 다른 곳에서 불일치가 발생함:
+1. `lib/utils/ledger.ts` `buildMonthData` — 월 전체 집계
+2. `components/features/ledger/LedgerDayPanel.tsx` `computePanelNet` — 특정 날짜 순수익
+3. `app/mypage/ledger/LedgerClientPage.tsx` `summaryValues` — 요약 카드 표시값
+
+**해결**: 세 곳 모두에서 `category === '수입'` 여부를 체크해 분기.
+
+```typescript
+// buildMonthData — '수입' 카테고리는 totalExpense 대신 totalIncome에 가산
+if (entry.category === '수입') {
+  day.totalIncome += Number(entry.amount) || 0
+} else {
+  day.totalExpense += Number(entry.amount) || 0
+}
+
+// computePanelNet (소장) — manualInc(수동 수입) 별도 집계 후 포함
+const raw = role === 'manager'
+  ? manualInc - jobPay - actualExp
+  : jobIncome + manualInc - actualExp
+return raw || 0  // -0 방지
+
+// summaryValues (소장)
+income: displayData.totalIncome,  // 수동 수입 포함된 값 사용
+net: displayData.totalIncome - displayData.totalManagerExpense,
+```
+
+> `ledger_expenses`에 수입/지출을 함께 저장하는 구조는 집계 로직 3곳을 반드시 함께 수정해야 한다. 한 곳만 고치면 화면에 따라 수치가 달라지는 혼란이 발생한다.
