@@ -8,6 +8,7 @@ import Link from 'next/link'
 import { toast } from 'sonner'
 import type { JobStatus } from '@/types'
 import { DeleteJobModal } from './DeleteJobModal'
+import { ReviewWriteModal } from './ReviewWriteModal'
 
 interface Props {
   jobId: string
@@ -20,6 +21,7 @@ export function JobOwnerActions({ jobId, effectiveStatus, payDueDate }: Props) {
   const current = effectiveStatus
   const [isLoading, setIsLoading] = useState(false)
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
+  const [isReviewModalOpen, setIsReviewModalOpen] = useState(false)
 
   const canEdit = current === 'open' || current === 'closed'
   const canDelete = current === 'open' || current === 'closed'
@@ -89,12 +91,12 @@ export function JobOwnerActions({ jobId, effectiveStatus, payDueDate }: Props) {
           </button>
         </>
       ) : current === 'settled' ? (
-        <Link
-          href={`/jobs/${jobId}/review`}
-          className="block w-full text-center bg-slate-700 text-white font-bold py-3.5 rounded-2xl hover:bg-slate-800 transition-colors text-sm"
+        <button
+          onClick={() => setIsReviewModalOpen(true)}
+          className="w-full bg-slate-700 text-white font-bold py-3.5 rounded-2xl hover:bg-slate-800 transition-colors text-sm"
         >
           기사님 리뷰 작성하기
-        </Link>
+        </button>
       ) : null}
 
       {/* 삭제 — open/closed 상태만 */}
@@ -113,6 +115,13 @@ export function JobOwnerActions({ jobId, effectiveStatus, payDueDate }: Props) {
           onConfirm={handleDelete}
           onClose={() => setIsDeleteModalOpen(false)}
           isLoading={isLoading}
+        />
+      )}
+
+      {isReviewModalOpen && (
+        <ReviewWriteModal
+          jobId={jobId}
+          onClose={() => setIsReviewModalOpen(false)}
         />
       )}
 

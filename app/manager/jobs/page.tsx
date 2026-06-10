@@ -13,11 +13,16 @@ import type { Job, JobStatus } from '@/types'
 
 type FilterValue = 'all' | JobStatus | 'reviewing'
 
+interface AcceptedDriver {
+  driver_id: string
+  applied_equipment_code: string | null
+}
+
 interface JobWithCount extends Job {
   applicant_count: number
   pending_count: number
   reviewing_count: number
-  accepted_driver_id?: string | null
+  accepted_drivers?: AcceptedDriver[]
 }
 
 const TABS: { value: FilterValue; label: string }[] = [
@@ -40,7 +45,8 @@ function ManagerJobsContent() {
     const s = searchParams.get('status')
     return TABS.some((t) => t.value === s) ? (s as FilterValue) : 'all'
   })
-  const [reviewedJobIds, setReviewedJobIds] = useState<Set<string>>(new Set())
+  // "jobId:driverId" 형태로 저장 — 기사별 리뷰 완료 판단
+  const [reviewedPairs, setReviewedPairs] = useState<Set<string>>(new Set())
   const [tabScroll, setTabScroll] = useState({ canLeft: false, canRight: true })
   const tabScrollRef = useRef<HTMLDivElement>(null)
 
@@ -73,7 +79,12 @@ function ManagerJobsContent() {
     ])
       .then(([jobsJson, reviewsJson]) => {
         setJobs(jobsJson.data ?? [])
-        setReviewedJobIds(new Set<string>((reviewsJson.data ?? []) as string[]))
+        const pairs = new Set<string>(
+          (reviewsJson.data ?? [] as { job_id: string; reviewee_id: string }[]).map(
+            (r: { job_id: string; reviewee_id: string }) => `${r.job_id}:${r.reviewee_id}`
+          )
+        )
+        setReviewedPairs(pairs)
       })
       .finally(() => setIsLoading(false))
   }, [user, role])
@@ -230,7 +241,7 @@ function ManagerJobsContent() {
                 <ManagerJobCard
                   key={job.id}
                   job={job}
-                  hasReview={reviewedJobIds.has(job.id)}
+                  reviewedPairs={reviewedPairs}
                 />
               ))}
             </div>

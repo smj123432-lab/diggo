@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { revalidateTag } from 'next/cache'
 import { createClient } from '@/lib/supabase/server'
 import { checkAndTransitionJobStatus } from '@/lib/utils/dispatch'
 
@@ -53,6 +54,9 @@ export async function PATCH(
     if (action === 'accept') {
       await checkAndTransitionJobStatus(supabase, room.job_id)
     }
+
+    // 일감 상태 변경 시 캐시 무효화 (모집중 → 작업중 즉시 반영)
+    revalidateTag('jobs', 'max')
 
     return NextResponse.json({ data })
   } catch (error) {

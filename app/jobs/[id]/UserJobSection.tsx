@@ -42,7 +42,7 @@ export function UserJobSection({ job, effectiveStatus, payDueDate }: Props) {
         .then((r) => r.json())
         .then((r) => r.data ?? {}),
     enabled: !!user && effectiveStatus === 'open' && job.equipment_codes.length > 1,
-    staleTime: 30_000,
+    staleTime: 0,
   })
 
   if (isLoading) {

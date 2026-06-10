@@ -14,11 +14,12 @@ export async function GET(request: NextRequest) {
     const type = searchParams.get('type') ?? 'received'
 
     if (type === 'given') {
+      // { job_id, reviewee_id }[] — 기사별 리뷰 완료 여부 판단용
       const { data } = await supabase
         .from('reviews')
-        .select('job_id')
+        .select('job_id, reviewee_id')
         .eq('reviewer_id', user.id)
-      return NextResponse.json({ data: (data ?? []).map((r) => r.job_id) })
+      return NextResponse.json({ data: data ?? [] })
     }
 
     // received
@@ -98,7 +99,7 @@ export async function POST(request: NextRequest) {
 
     if (error) {
       if (error.code === '23505') {
-        return NextResponse.json({ error: '이미 평가를 작성했습니다.' }, { status: 409 })
+        return NextResponse.json({ error: '이 기사님에게 이미 평가를 작성했습니다.' }, { status: 409 })
       }
       console.error('[POST /api/reviews] insert error:', JSON.stringify(error))
       return NextResponse.json({ error: `DB 오류: ${error.code} — ${error.message}` }, { status: 500 })

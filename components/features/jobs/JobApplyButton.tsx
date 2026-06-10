@@ -112,11 +112,8 @@ export function JobApplyButton({
       toast.error('모든 장비가 이미 배차 완료됐습니다.')
       return
     }
-    if (availableCodes.length === 1) {
-      handleApply(availableCodes[0])
-    } else {
-      setShowPicker(true)
-    }
+    // 1개든 여러 개든 항상 피커로 보여줌 (자동 지원 방지)
+    setShowPicker(true)
   }
 
   // 장비 선택 UI (다중 장비 모집 시)

@@ -62,11 +62,29 @@ export async function getJobEquipmentDispatchStatus(
     .eq('job_id', jobId)
     .eq('status', 'accepted')
 
+  const acceptedList = acceptedApps ?? []
+
+  // applied_equipment_code가 있는 배차
   const dispatchedCodes = new Set(
-    (acceptedApps ?? [])
+    acceptedList
       .map((a) => a.applied_equipment_code as string | null)
-      .filter(Boolean)
+      .filter(Boolean) as string[]
   )
+
+  // applied_equipment_code가 null인 채팅 배차 수 (어느 슬롯인지 불명확)
+  const chatDispatchCount = acceptedList.filter((a) => !a.applied_equipment_code).length
+
+  // 아직 배차되지 않은 슬롯 중 채팅 배차 수만큼 순서대로 채움
+  if (chatDispatchCount > 0) {
+    let remaining = chatDispatchCount
+    for (const code of equipmentCodes) {
+      if (remaining <= 0) break
+      if (!dispatchedCodes.has(code)) {
+        dispatchedCodes.add(code)
+        remaining--
+      }
+    }
+  }
 
   return Object.fromEntries(
     equipmentCodes.map((code) => [code, dispatchedCodes.has(code)])
