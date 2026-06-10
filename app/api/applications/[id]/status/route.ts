@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { revalidateTag } from 'next/cache'
 import { createClient } from '@/lib/supabase/server'
+import { checkAndTransitionJobStatus } from '@/lib/utils/dispatch'
 
 // PATCH /api/applications/[id]/status — 지원 상태 변경 (소장: 검토중/수락/거절)
 export async function PATCH(
@@ -54,13 +56,13 @@ export async function PATCH(
       })
     }
 
-    // 수락 시 일감 상태 → in_progress
+    // 수락 시 — 모든 장비 슬롯이 배차됐을 때만 in_progress로 전환
     if (status === 'accepted') {
-      await supabase
-        .from('jobs')
-        .update({ status: 'in_progress' })
-        .eq('id', application.job_id)
+      await checkAndTransitionJobStatus(supabase, application.job_id)
     }
+
+    // 일감 상태 변경 시 캐시 무효화 (모집중 → 작업중 즉시 반영)
+    revalidateTag('jobs', 'max')
 
     return NextResponse.json({ data })
   } catch (error) {

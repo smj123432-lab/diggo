@@ -340,10 +340,12 @@ export function JobForm({
         {/* ── 작업 주소 ── */}
         <div>
           <Label required>작업 주소</Label>
-          <button
-            type="button"
+          <div
+            role="button"
+            tabIndex={0}
             onClick={() => setShowAddressSearch(true)}
-            className={`w-full flex items-center gap-3 px-4 py-3.5 rounded-xl border text-sm text-left transition-all ${
+            onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') setShowAddressSearch(true) }}
+            className={`w-full flex items-center gap-3 px-4 py-3.5 rounded-xl border text-sm text-left transition-all cursor-pointer ${
               form.location
                 ? "border-blue-500 bg-blue-50 text-gray-900 font-medium"
                 : "border-gray-200 text-gray-400 hover:border-gray-300"
@@ -386,7 +388,7 @@ export function JobForm({
                 </svg>
               </button>
             )}
-          </button>
+          </div>
         </div>
 
         <Divider />

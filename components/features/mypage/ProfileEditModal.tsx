@@ -1,6 +1,6 @@
 'use client'
 
-// 프로필 수정 모달 — 이름·전화번호·한 줄 소개 (소장: 차고지 포함)
+// 프로필 수정 모달 — 이름·전화번호·한 줄 소개 (기사: 차고지 포함)
 import { useState } from 'react'
 import { toast } from 'sonner'
 import type { Profile } from '@/types'
@@ -40,7 +40,7 @@ export function ProfileEditModal({ profile, onClose, onSaved }: Props) {
         phone: phone.trim() || null,
         bio: bio.trim() || null,
       }
-      if (profile.role === 'manager') {
+      if (profile.role === 'driver') {
         body.garage_address = garage || null
         body.latitude = lat
         body.longitude = lng
@@ -56,7 +56,7 @@ export function ProfileEditModal({ profile, onClose, onSaved }: Props) {
         name: name.trim(),
         phone: phone.trim() || null,
         bio: bio.trim() || null,
-        ...(profile.role === 'manager' && {
+        ...(profile.role === 'driver' && {
           garage_address: garage || null,
           latitude: lat,
           longitude: lng,
@@ -126,7 +126,7 @@ export function ProfileEditModal({ profile, onClose, onSaved }: Props) {
             <p className="text-right text-xs text-gray-300 mt-1">{bio.length}/80</p>
           </div>
 
-          {profile.role === 'manager' && (
+          {profile.role === 'driver' && (
             <div>
               <label className="block text-xs font-semibold text-gray-500 mb-1.5">차고지 주소</label>
               <div className="flex gap-2">

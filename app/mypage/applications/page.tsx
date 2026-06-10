@@ -27,7 +27,7 @@ export default async function DriverApplicationsPage() {
   // 지원 목록 (별도 쿼리로 embedded select RLS 우회)
   const { data: rawApps } = await supabase
     .from('applications')
-    .select('id, status, applied_at, job_id, equipment_id')
+    .select('id, status, applied_at, job_id, equipment_id, applied_equipment_code')
     .eq('driver_id', user.id)
     .order('applied_at', { ascending: false })
 
@@ -66,6 +66,7 @@ export default async function DriverApplicationsPage() {
         status: app.status,
         applied_at: app.applied_at,
         hasReview: reviewedJobIds.has(app.job_id),
+        applied_equipment_code: (app.applied_equipment_code as string | null) ?? null,
         job: job as DriverApplication['job'],
         equipment: app.equipment_id
           ? (equipmentMap.get(app.equipment_id) as { id: string; model_code: EquipmentCode } | null) ?? null

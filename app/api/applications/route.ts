@@ -54,10 +54,14 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: '면허증과 안전교육 이수증 인증을 완료해야 지원할 수 있습니다.' }, { status: 403 })
     }
 
-    const { job_id, equipment_id } = await request.json()
+    const { job_id, equipment_id, applied_equipment_code } = await request.json()
 
     if (!job_id) {
       return NextResponse.json({ error: '일감 정보가 없습니다.' }, { status: 400 })
+    }
+
+    if (!applied_equipment_code) {
+      return NextResponse.json({ error: '지원할 장비 코드를 선택해 주세요.' }, { status: 400 })
     }
 
     const { data, error } = await supabase
@@ -66,6 +70,7 @@ export async function POST(request: NextRequest) {
         job_id,
         driver_id: user.id,
         equipment_id: equipment_id ?? null,
+        applied_equipment_code,
         status: 'pending',
       })
       .select()

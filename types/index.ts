@@ -123,6 +123,8 @@ export interface LedgerIncomeEntry {
   amount: number
   payDueType: PayDueType
   jobStatus: JobStatus
+  dayIndex: number        // 1-based (1 = 작업 첫째 날)
+  totalWorkDays: number   // 해당 장비 총 작업 일수
 }
 
 // 장부 지출 항목 (ledger_expenses)
@@ -138,16 +140,18 @@ export interface LedgerExpenseEntry {
 // 장부 필터 탭
 export type LedgerFilterTab = 'all' | 'pending' | 'settled'
 
-// 소장 현장 항목 (job.work_date 기준)
+// 소장 현장 항목 (장비별 × 날짜별 — work_date + n일)
 export interface LedgerJobEntry {
   type: 'job'
-  date: string            // YYYY-MM-DD
+  date: string            // YYYY-MM-DD (실제 작업 날짜)
   jobId: string
   title: string
   location: string
-  equipmentCodes: EquipmentCode[]
-  totalPayAmount: number  // pay_amounts 합산 (기사에게 지급할 총 일당)
+  equipmentCode: EquipmentCode    // 해당 날짜의 장비 코드
+  dailyAmount: number             // 해당 장비의 일당
   jobStatus: JobStatus
+  dayIndex: number        // 1-based (1 = 작업 첫째 날)
+  totalWorkDays: number   // 해당 장비 총 작업 일수
 }
 
 export type LedgerEntry = LedgerIncomeEntry | LedgerExpenseEntry | LedgerJobEntry
@@ -203,23 +207,27 @@ export interface Certification {
   created_at: string
 }
 
-export interface Chat {
+export interface ChatRoom {
   id: string
   job_id: string
-  application_id: string
+  manager_id: string
+  driver_id: string
   created_at: string
 }
 
-export interface ChatWithDetails extends Chat {
-  jobs: Pick<Job, 'id' | 'title'>
-  applications: Pick<Application, 'id' | 'driver_id' | 'status'>
+export interface ChatRoomWithDetails extends ChatRoom {
+  jobs: Pick<Job, 'id' | 'title' | 'work_date' | 'equipment_codes'>
+  manager: Pick<Profile, 'id' | 'name' | 'avatar_url'>
+  driver: Pick<Profile, 'id' | 'name' | 'avatar_url'>
+  last_message?: ChatMessage | null
+  unread_count?: number
 }
 
-export interface Message {
+export interface ChatMessage {
   id: string
-  chat_id: string
+  room_id: string
   sender_id: string
-  content: string
+  message: string
   is_read: boolean
   created_at: string
 }

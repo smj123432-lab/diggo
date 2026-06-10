@@ -13,8 +13,6 @@ interface AddExpenseModalProps {
   onSaved: () => void
 }
 
-const today = new Date().toISOString().split('T')[0]
-
 type EntryType = 'income' | 'expense'
 
 export function AddExpenseModal({
@@ -23,7 +21,7 @@ export function AddExpenseModal({
   onSaved,
 }: AddExpenseModalProps) {
   const [entryType, setEntryType] = useState<EntryType>('expense')
-  const [date, setDate] = useState(defaultDate ?? today)
+  const [date, setDate] = useState(defaultDate ?? new Date().toISOString().split('T')[0])
   const [category, setCategory] = useState('')
   const [amountDisplay, setAmountDisplay] = useState('') // 화면에 표시되는 콤마 포맷 문자열
   const [memo, setMemo] = useState('')
@@ -99,11 +97,11 @@ export function AddExpenseModal({
 
   return createPortal(
     <div
-      className="fixed inset-0 z-50 flex items-end justify-center bg-black/40 sm:items-center"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/40"
       onClick={onClose}
     >
       <div
-        className="w-full max-w-sm bg-white rounded-t-2xl sm:rounded-2xl p-6 space-y-4"
+        className="w-full max-w-sm mx-4 bg-white rounded-2xl p-6 space-y-4"
         onClick={(e) => e.stopPropagation()}
       >
         <h2 className="text-base font-bold text-gray-900">내역 추가</h2>
@@ -141,7 +139,6 @@ export function AddExpenseModal({
             <input
               type="date"
               value={date}
-              max={today}
               onChange={(e) => setDate(e.target.value)}
               required
               className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"

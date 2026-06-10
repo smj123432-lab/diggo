@@ -36,6 +36,13 @@ export function formatCellBadge(amount: number): string {
   return `${sign}${abs.toLocaleString()}`
 }
 
+/** 'YYYY-MM-DD'에 days를 더해 새 날짜 문자열 반환 (UTC 기준) */
+function addDays(dateStr: string, days: number): string {
+  const d = new Date(dateStr + 'T00:00:00Z')
+  d.setUTCDate(d.getUTCDate() + days)
+  return d.toISOString().split('T')[0]
+}
+
 /** 'YYYY-MM-DD' 문자열 파싱 */
 export function parseDate(dateStr: string): { year: number; month: number; day: number } {
   const [year, month, day] = dateStr.split('-').map(Number)
@@ -72,10 +79,11 @@ export function getCalendarWeeks(year: number, month: number): Array<Array<numbe
   return weeks
 }
 
-/** applications+jobs raw 데이터 → LedgerIncomeEntry[] */
+/** applications+jobs raw 데이터 → LedgerIncomeEntry[] (장비별 × 날짜별 확장) */
 export function buildIncomeEntries(
   rawApplications: Array<{
     equipment_id: string | null
+    applied_equipment_code?: string | null
     equipments: { model_code: EquipmentCode } | null
     jobs: {
       id: string
@@ -83,34 +91,46 @@ export function buildIncomeEntries(
       location: string
       work_date: string
       pay_amounts: Record<string, number>
+      work_days?: Record<string, number>
       pay_due_type: string
       status: string
+      equipment_codes?: string[]
     } | null
   }>
 ): LedgerIncomeEntry[] {
-  return rawApplications
-    .filter((a) => a.jobs !== null)
-    .map((a) => {
-      const job = a.jobs!
-      const eqCode = a.equipments?.model_code ?? null
-      const amount = eqCode
-        ? (job.pay_amounts[eqCode] ?? Object.values(job.pay_amounts)[0] ?? 0)
-        : (Object.values(job.pay_amounts)[0] ?? 0)
-      return {
+  const entries: LedgerIncomeEntry[] = []
+  for (const a of rawApplications) {
+    if (!a.jobs) continue
+    const job = a.jobs
+    // applied_equipment_code → equipment model_code → job의 첫 번째 장비코드 순으로 fallback
+    const eqCode = (a.applied_equipment_code as EquipmentCode | null)
+      ?? a.equipments?.model_code
+      ?? (job.equipment_codes?.[0] as EquipmentCode | undefined)
+      ?? null
+    const amount = eqCode
+      ? (job.pay_amounts[eqCode] ?? Object.values(job.pay_amounts)[0] ?? 0)
+      : (Object.values(job.pay_amounts)[0] ?? 0)
+    const days = eqCode ? (job.work_days?.[eqCode] ?? 1) : 1
+    for (let d = 0; d < days; d++) {
+      entries.push({
         type: 'income' as const,
-        date: job.work_date,
+        date: addDays(job.work_date, d),
         jobId: job.id,
         title: job.title,
         location: job.location,
         equipmentCode: eqCode,
-        amount,
+        amount: Number(amount) || 0,
         payDueType: job.pay_due_type as PayDueType,
         jobStatus: job.status as JobStatus,
-      }
-    })
+        dayIndex: d + 1,
+        totalWorkDays: days,
+      })
+    }
+  }
+  return entries
 }
 
-/** jobs raw 데이터 → LedgerJobEntry[] (소장용) */
+/** jobs raw 데이터 → LedgerJobEntry[] (소장용, 장비별 × 날짜별 확장) */
 export function buildJobEntries(
   rawJobs: Array<{
     id: string
@@ -119,19 +139,33 @@ export function buildJobEntries(
     location: string
     equipment_codes: EquipmentCode[]
     pay_amounts: Record<string, number>
+    work_days: Record<string, number>
     status: string
   }>
 ): LedgerJobEntry[] {
-  return rawJobs.map((job) => ({
-    type: 'job' as const,
-    date: job.work_date,
-    jobId: job.id,
-    title: job.title,
-    location: job.location,
-    equipmentCodes: job.equipment_codes,
-    totalPayAmount: Object.values(job.pay_amounts ?? {}).reduce((s, v) => s + v, 0),
-    jobStatus: job.status as JobStatus,
-  }))
+  const entries: LedgerJobEntry[] = []
+  for (const job of rawJobs) {
+    const codes = job.equipment_codes ?? []
+    for (const code of codes) {
+      const dailyAmount = (job.pay_amounts ?? {})[code] ?? 0
+      const days = (job.work_days ?? {})[code] ?? 1
+      for (let d = 0; d < days; d++) {
+        entries.push({
+          type: 'job' as const,
+          date: addDays(job.work_date, d),
+          jobId: job.id,
+          title: job.title,
+          location: job.location,
+          equipmentCode: code,
+          dailyAmount: Number(dailyAmount) || 0,
+          jobStatus: job.status as JobStatus,
+          dayIndex: d + 1,
+          totalWorkDays: days,
+        })
+      }
+    }
+  }
+  return entries
 }
 
 /**
@@ -143,7 +177,7 @@ export function computeDayNet(
     totalIncome: number
     totalExpense: number
     incomes: Array<{ amount: number; jobStatus: JobStatus }>
-    jobs: Array<{ totalPayAmount: number; jobStatus: JobStatus }>
+    jobs: Array<{ dailyAmount: number; jobStatus: JobStatus }>
   },
   role: 'driver' | 'manager' | 'admin',
   filterTab: LedgerFilterTab
@@ -153,7 +187,7 @@ export function computeDayNet(
       ? dayData.jobs
       : dayData.jobs.filter(j => filterTab === 'pending' ? j.jobStatus === 'completed' : j.jobStatus === 'settled')
     if (matchJobs.length === 0 && filterTab !== 'all') return null
-    const jobPay = matchJobs.reduce((s, j) => s + j.totalPayAmount, 0)
+    const jobPay = matchJobs.reduce((s, j) => s + j.dailyAmount, 0)
     const total = jobPay + (filterTab === 'all' ? dayData.totalExpense : 0)
     return total > 0 ? -total : null
   }
@@ -219,25 +253,37 @@ export function buildMonthData(params: {
   for (const entry of incomes) {
     const day = getOrCreate(entry.date)
     day.incomes.push(entry)
-    day.totalIncome += entry.amount
+    day.totalIncome += Number(entry.amount) || 0
   }
   for (const entry of expenses) {
     const day = getOrCreate(entry.date)
     day.expenses.push(entry)
-    day.totalExpense += entry.amount
+    // '수입' 카테고리는 지출이 아니라 수동 수입 → totalIncome에 가산
+    if (entry.category === '수입') {
+      day.totalIncome += Number(entry.amount) || 0
+    } else {
+      day.totalExpense += Number(entry.amount) || 0
+    }
   }
   for (const entry of jobs) {
     getOrCreate(entry.date).jobs.push(entry)
   }
 
-  const totalIncome = incomes.reduce((s, e) => s + e.amount, 0)
-  const totalExpense = expenses.reduce((s, e) => s + e.amount, 0)
-  // 정산대기: job.status === 'completed', 정산완료: 나머지(settled 등)
+  // 수동 수입(category='수입') 분리 집계
+  const manualIncome = expenses
+    .filter(e => e.category === '수입')
+    .reduce((s, e) => s + e.amount, 0)
+  const totalIncome = incomes.reduce((s, e) => s + e.amount, 0) + manualIncome
+  // 실제 지출만 (수동 수입 제외)
+  const totalExpense = expenses
+    .filter(e => e.category !== '수입')
+    .reduce((s, e) => s + e.amount, 0)
+
   const pendingIncome = incomes
     .filter((e) => e.jobStatus === 'completed')
     .reduce((s, e) => s + e.amount, 0)
 
-  const totalJobPayAmount = jobs.reduce((s, j) => s + j.totalPayAmount, 0)
+  const totalJobPayAmount = jobs.reduce((s, j) => s + j.dailyAmount, 0)
   const totalManagerExpense = totalJobPayAmount + totalExpense
 
   return {

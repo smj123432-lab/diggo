@@ -42,7 +42,7 @@ export default async function AdminCertificationsPage({
   // 드라이버별 프로필 조회
   const driverIds = Array.from(new Set((certs ?? []).map(c => c.driver_id)))
   const { data: profilesData } = driverIds.length > 0
-    ? await admin.from('profiles').select('id, name, phone').in('id', driverIds)
+    ? await admin.from('profiles').select('id, name, phone, avatar_url').in('id', driverIds)
     : { data: [] }
   const profileMap = Object.fromEntries((profilesData ?? []).map(p => [p.id, p]))
 
@@ -67,12 +67,13 @@ export default async function AdminCertificationsPage({
   })
 
   const drivers: DriverEntry[] = filteredDriverIds.map(driverId => {
-    const p = profileMap[driverId] as { name: string; phone: string } | undefined
+    const p = profileMap[driverId] as { name: string; phone: string; avatar_url: string | null } | undefined
     return {
       driverId,
       name: p?.name ?? '',
       email: emailMap[driverId] ?? '',
       phone: p?.phone ?? '',
+      avatarUrl: p?.avatar_url ?? null,
       certs: (driverCertMap[driverId] ?? []).map(c => ({
         id: c.id,
         cert_type: c.cert_type,

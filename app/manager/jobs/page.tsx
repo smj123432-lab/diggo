@@ -11,17 +11,24 @@ import { NavRoleLink } from '@/components/features/home/NavRoleLink'
 import { ManagerJobCard } from '@/components/features/manager/ManagerJobCard'
 import type { Job, JobStatus } from '@/types'
 
-type FilterValue = 'all' | JobStatus
+type FilterValue = 'all' | JobStatus | 'reviewing'
+
+interface AcceptedDriver {
+  driver_id: string
+  applied_equipment_code: string | null
+}
 
 interface JobWithCount extends Job {
   applicant_count: number
   pending_count: number
-  accepted_driver_id?: string | null
+  reviewing_count: number
+  accepted_drivers?: AcceptedDriver[]
 }
 
 const TABS: { value: FilterValue; label: string }[] = [
   { value: 'all',         label: '전체' },
   { value: 'open',        label: '모집중' },
+  { value: 'reviewing',   label: '검토중' },
   { value: 'closed',      label: '모집마감' },
   { value: 'in_progress', label: '작업중' },
   { value: 'completed',   label: '정산대기' },
@@ -38,7 +45,8 @@ function ManagerJobsContent() {
     const s = searchParams.get('status')
     return TABS.some((t) => t.value === s) ? (s as FilterValue) : 'all'
   })
-  const [reviewedJobIds, setReviewedJobIds] = useState<Set<string>>(new Set())
+  // "jobId:driverId" 형태로 저장 — 기사별 리뷰 완료 판단
+  const [reviewedPairs, setReviewedPairs] = useState<Set<string>>(new Set())
   const [tabScroll, setTabScroll] = useState({ canLeft: false, canRight: true })
   const tabScrollRef = useRef<HTMLDivElement>(null)
 
@@ -71,7 +79,12 @@ function ManagerJobsContent() {
     ])
       .then(([jobsJson, reviewsJson]) => {
         setJobs(jobsJson.data ?? [])
-        setReviewedJobIds(new Set<string>((reviewsJson.data ?? []) as string[]))
+        const pairs = new Set<string>(
+          (reviewsJson.data ?? [] as { job_id: string; reviewee_id: string }[]).map(
+            (r: { job_id: string; reviewee_id: string }) => `${r.job_id}:${r.reviewee_id}`
+          )
+        )
+        setReviewedPairs(pairs)
       })
       .finally(() => setIsLoading(false))
   }, [user, role])
@@ -87,13 +100,19 @@ function ManagerJobsContent() {
     return new Date(b.work_date).getTime() - new Date(a.work_date).getTime()
   })
 
-  const filtered = sorted.filter((job) =>
-    filter === 'all' || effectiveStatus(job) === filter
-  )
+  const isReviewing = (job: JobWithCount) => (job.reviewing_count ?? 0) > 0
+
+  const filtered = sorted.filter((job) => {
+    if (filter === 'all') return true
+    if (filter === 'reviewing') return isReviewing(job)
+    if (filter === 'open') return effectiveStatus(job) === 'open' && !isReviewing(job)
+    return effectiveStatus(job) === filter
+  })
 
   const counts: Record<FilterValue, number> = {
     all:         jobs.length,
-    open:        jobs.filter((j) => effectiveStatus(j) === 'open').length,
+    open:        jobs.filter((j) => effectiveStatus(j) === 'open' && !isReviewing(j)).length,
+    reviewing:   jobs.filter((j) => isReviewing(j)).length,
     closed:      jobs.filter((j) => effectiveStatus(j) === 'closed').length,
     in_progress: jobs.filter((j) => effectiveStatus(j) === 'in_progress').length,
     completed:   jobs.filter((j) => effectiveStatus(j) === 'completed').length,
@@ -222,7 +241,7 @@ function ManagerJobsContent() {
                 <ManagerJobCard
                   key={job.id}
                   job={job}
-                  hasReview={reviewedJobIds.has(job.id)}
+                  reviewedPairs={reviewedPairs}
                 />
               ))}
             </div>

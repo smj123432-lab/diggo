@@ -22,12 +22,12 @@ export async function GET() {
 
     const jobIds = (data ?? []).map((j) => j.id)
 
-    // 2단계: 지원자 수 + 배차된 기사 ID 별도 조회
-    let appData: { id: string; job_id: string; status: string; driver_id: string }[] = []
+    // 2단계: 지원자 수 + 배차된 기사 목록 별도 조회
+    let appData: { id: string; job_id: string; status: string; driver_id: string; applied_equipment_code: string | null }[] = []
     if (jobIds.length > 0) {
       const { data: apps, error: appError } = await supabase
         .from('applications')
-        .select('id, job_id, status, driver_id')
+        .select('id, job_id, status, driver_id, applied_equipment_code')
         .in('job_id', jobIds)
       if (appError) {
         console.error('[GET /api/jobs/mine] applications error:', JSON.stringify(appError))
@@ -36,7 +36,7 @@ export async function GET() {
       }
     }
 
-    const appMap = new Map<string, { id: string; status: string; driver_id: string }[]>()
+    const appMap = new Map<string, { id: string; status: string; driver_id: string; applied_equipment_code: string | null }[]>()
     for (const app of appData) {
       const list = appMap.get(app.job_id) ?? []
       list.push(app)
@@ -45,12 +45,20 @@ export async function GET() {
 
     const jobs = (data ?? []).map((job) => {
       const applications = appMap.get(job.id) ?? []
-      const acceptedApp = applications.find((a) => a.status === 'accepted')
+      const acceptedApps = applications.filter((a) => a.status === 'accepted')
+
+      // 동일 기사 중복 제거
+      const seen = new Set<string>()
+      const accepted_drivers = acceptedApps
+        .filter((a) => { if (seen.has(a.driver_id)) return false; seen.add(a.driver_id); return true })
+        .map((a) => ({ driver_id: a.driver_id, applied_equipment_code: a.applied_equipment_code ?? null }))
+
       return {
         ...job,
         applicant_count: applications.length,
         pending_count: applications.filter((a) => a.status === 'pending').length,
-        accepted_driver_id: acceptedApp?.driver_id ?? null,
+        reviewing_count: applications.filter((a) => a.status === 'reviewing').length,
+        accepted_drivers,
       }
     })
 

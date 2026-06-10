@@ -7,7 +7,7 @@ import type { ApplicationStatus, JobStatus, EquipmentCode } from '@/types'
 import { EQUIPMENT_LABELS, JOB_STATUS_LABELS } from '@/types'
 
 interface Props {
-  params: { id: string }
+  params: Promise<{ id: string }>
 }
 
 const JOB_STATUS_STYLE: Record<JobStatus, string> = {
@@ -19,6 +19,7 @@ const JOB_STATUS_STYLE: Record<JobStatus, string> = {
 }
 
 export default async function ApplicantsPage({ params }: Props) {
+  const { id } = await params
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
@@ -27,7 +28,7 @@ export default async function ApplicantsPage({ params }: Props) {
   const { data: job, error: jobError } = await supabase
     .from('jobs')
     .select('id, title, work_date, status, equipment_codes, location')
-    .eq('id', params.id)
+    .eq('id', id)
     .eq('manager_id', user.id)
     .single()
 
@@ -35,8 +36,8 @@ export default async function ApplicantsPage({ params }: Props) {
 
   const { data: rawApps } = await supabase
     .from('applications')
-    .select('id, status, applied_at, driver_id, equipment_id')
-    .eq('job_id', params.id)
+    .select('id, status, applied_at, driver_id, equipment_id, applied_equipment_code')
+    .eq('job_id', id)
     .order('applied_at', { ascending: false })
 
   const driverIds = (rawApps ?? []).map((a) => a.driver_id).filter(Boolean)
@@ -68,6 +69,7 @@ export default async function ApplicantsPage({ params }: Props) {
     profiles: profileMap.get(app.driver_id) ?? null,
     equipments: app.equipment_id ? (equipmentMap.get(app.equipment_id) ?? null) : null,
     driverEquipments: driverEquipmentMap.get(app.driver_id) ?? [],
+    applied_equipment_code: (app.applied_equipment_code as string | null) ?? null,
   }))
 
   const workDate = new Date(job.work_date).toLocaleDateString('ko-KR', {
@@ -87,7 +89,12 @@ export default async function ApplicantsPage({ params }: Props) {
               <path d="M19 12H5M12 5l-7 7 7 7" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
           </Link>
-          <span className="text-sm font-semibold text-gray-700">지원자 목록</span>
+          <span className="flex-1 text-sm font-semibold text-gray-700">지원자 목록</span>
+          <Link href="/chats" className="p-1.5 rounded-lg hover:bg-gray-100 transition-colors text-gray-500 hover:text-blue-500" title="채팅">
+            <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          </Link>
         </div>
       </div>
 
@@ -120,7 +127,7 @@ export default async function ApplicantsPage({ params }: Props) {
             {(applications ?? []).map((app) => (
               <ApplicantCard
                 key={app.id}
-                jobId={params.id}
+                jobId={id}
                 application={app as unknown as {
                   id: string
                   status: ApplicationStatus
