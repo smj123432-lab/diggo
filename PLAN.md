@@ -545,7 +545,8 @@ return (
 | 12   | 받은 평가 UI                          | ✅ 완료 |
 | 13   | 장부 UI (달력 + 지출 입력)            | ✅ 완료 |
 | 14   | 채팅 (Supabase Realtime)              | ✅ 완료 |
-| 15   | 알림                                  | ⬜ 미완료 |
+| 15   | 공개 프로필 페이지 + 평가 자동화      | ✅ 완료 |
+| 16   | 알림                                  | ⬜ 미완료 |
 
 ### 완료 상세 내역 (2026-05-28 기준)
 
@@ -627,6 +628,17 @@ return (
 - 연속 메시지 그룹화: 동일 발신자 + 동일 분 기준 border-radius 동적 변경, 타임스탬프 마지막만 표시
 - 카카오톡 스타일 말풍선: isMine justify-end, 상대방 avatar + left-align
 - 데스크톱: 좌우 분할 레이아웃 (ChatSplitLayout), 모바일: 단일 뷰
+
+**공개 프로필 페이지 + 평가 자동화 (`/profiles/[id]`) — 2026-06-12**
+- `/profiles/[id]` 서버 컴포넌트 신규 — 소장/기사 역할별 분기 UI
+- 소장: [모집중 일감] / [받은 평가] 탭 전환 (useState)
+- 기사: 받은 평가 목록 (rating 높은 순, 탭 없음)
+- 우수 베테랑 배지: `rating_avg >= 4.5 && review_count >= 5` (amber→orange 그라디언트)
+- 평가 등록 후 reviewee의 `rating_avg`, `review_count` 자동 재집계 → `profiles` 업데이트
+- reviews 중복 제약: `(reviewer_id, reviewee_id)` → `(reviewer_id, reviewee_id, job_id)` — 일감별 평가 1회
+- 일감 상세 소장 이름에 `/profiles/[id]` Link 연결 (ManagerBlock + 데스크톱 사이드바)
+- 채팅방 ⋮ 메뉴: 기사→소장 프로필 보기, 소장→기사 프로필 보기 추가
+- lucide-react 설치 (Star, Award, Briefcase, MapPin, Calendar, ChevronRight)
 
 ### v2 (MVP 이후)
 
