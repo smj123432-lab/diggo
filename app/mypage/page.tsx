@@ -254,24 +254,22 @@ export default async function MypagePage({
                     </Link>
                   </div>
 
-                  {/* 인증 서류 상태 필터 — certs 탭 활성 시만, 스크롤 영역 밖 */}
-                  {adminTab === 'certs' && (
-                    <div className="flex gap-1.5 px-4 py-2.5 border-b border-gray-100 bg-white flex-wrap">
-                      {CERT_STATUS_TABS.map(t => (
-                        <Link
-                          key={t.value}
-                          href={`/mypage?tab=certs&status=${t.value}`}
-                          className={`px-3 py-1 rounded-lg text-xs font-semibold transition-colors ${
-                            certStatus === t.value
-                              ? 'bg-slate-800 text-white'
-                              : 'bg-white border border-gray-200 text-gray-500 hover:border-slate-400 hover:text-gray-700'
-                          }`}
-                        >
-                          {t.label}
-                        </Link>
-                      ))}
-                    </div>
-                  )}
+                  {/* 인증 서류 상태 필터 — 항상 공간 유지, disputes 탭일 때 숨김 처리 */}
+                  <div className={`flex gap-1.5 px-4 py-2.5 border-b border-gray-100 bg-white flex-wrap ${adminTab !== 'certs' ? 'invisible' : ''}`}>
+                    {CERT_STATUS_TABS.map(t => (
+                      <Link
+                        key={t.value}
+                        href={`/mypage?tab=certs&status=${t.value}`}
+                        className={`px-3 py-1 rounded-lg text-xs font-semibold transition-colors ${
+                          certStatus === t.value
+                            ? 'bg-slate-800 text-white'
+                            : 'bg-white border border-gray-200 text-gray-500 hover:border-slate-400 hover:text-gray-700'
+                        }`}
+                      >
+                        {t.label}
+                      </Link>
+                    ))}
+                  </div>
 
                   {/* 고정 높이 콘텐츠 영역 — 내부 독립 스크롤 */}
                   <div className="h-[400px] overflow-y-auto p-4">
