@@ -18,8 +18,8 @@ interface DisputeRow {
   rating: number
   comment: string | null
   created_at: string
-  reviewer: { id: string; name: string } | null
-  reviewee: { id: string; name: string } | null
+  reviewer: { id: string; name: string; role: string } | null
+  reviewee: { id: string; name: string; role: string } | null
   job: { id: string; title: string } | null
 }
 
@@ -30,10 +30,18 @@ const CERT_STATUS_TABS = [
   { label: '거절', value: 'rejected' },
 ]
 
+const DISPUTE_ROLE_TABS = [
+  { label: '전체', value: 'all' },
+  { label: '소장이 쓴 리뷰', value: 'manager' },
+  { label: '기사가 쓴 리뷰', value: 'driver' },
+]
+
+const ROLE_LABEL: Record<string, string> = { manager: '소장', driver: '기사', admin: '관리자' }
+
 export default async function MypagePage({
   searchParams,
 }: {
-  searchParams: Promise<{ tab?: string; status?: string }>
+  searchParams: Promise<{ tab?: string; status?: string; drole?: string }>
 }) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
@@ -46,9 +54,10 @@ export default async function MypagePage({
     .single()
   if (!profile) redirect('/login')
 
-  const { tab: rawTab, status: rawStatus } = await searchParams
+  const { tab: rawTab, status: rawStatus, drole: rawDRole } = await searchParams
   const adminTab = rawTab === 'disputes' ? 'disputes' : 'certs'
   const certStatus = rawStatus ?? 'pending'
+  const disputeRole = rawDRole ?? 'all'
 
   // 역할별 데이터
   let jobCount = 0
@@ -60,6 +69,7 @@ export default async function MypagePage({
   let drivers: DriverEntry[] = []
   let pendingCertCount = 0
   let disputes: DisputeRow[] = []
+  let totalDisputeCount = 0
 
   if (profile.role === 'manager') {
     const { count } = await supabase
@@ -103,16 +113,24 @@ export default async function MypagePage({
         .from('reviews')
         .select(`
           id, rating, comment, created_at,
-          reviewer:reviewer_id(id, name),
-          reviewee:reviewee_id(id, name),
-          job:job_id(id, title)
+          reviewer:profiles!reviewer_id(id, name, role),
+          reviewee:profiles!reviewee_id(id, name, role),
+          job:jobs!job_id(id, title)
         `)
-        .in('rating', [1, 2])
+        .lte('rating', 2)
         .order('created_at', { ascending: false }),
     ])
 
     const allCertData = certResult.data ?? []
-    disputes = (disputeResult.data ?? []) as unknown as DisputeRow[]
+    const allDisputes = (disputeResult.data ?? []) as unknown as DisputeRow[]
+
+    // 역할 필터 적용 (JS 단위)
+    disputes = disputeRole === 'manager'
+      ? allDisputes.filter(d => d.reviewer?.role === 'manager')
+      : disputeRole === 'driver'
+      ? allDisputes.filter(d => d.reviewer?.role === 'driver')
+      : allDisputes
+    totalDisputeCount = allDisputes.length
 
     // 탭 뱃지용 — 전체 데이터에서 pending 건수 산출
     pendingCertCount = allCertData.filter(c => c.status === 'pending').length
@@ -246,29 +264,44 @@ export default async function MypagePage({
                       <span>분쟁 평판 모니터링</span>
                       <span className={`text-xs font-bold px-1.5 py-0.5 rounded-full shrink-0 ${
                         adminTab === 'disputes'
-                          ? disputes.length > 0 ? 'bg-white/20 text-white' : 'bg-white/10 text-white/50'
-                          : disputes.length > 0 ? 'bg-red-100 text-red-600' : 'bg-gray-200 text-gray-400'
+                          ? totalDisputeCount > 0 ? 'bg-white/20 text-white' : 'bg-white/10 text-white/50'
+                          : totalDisputeCount > 0 ? 'bg-red-100 text-red-600' : 'bg-gray-200 text-gray-400'
                       }`}>
-                        {disputes.length}
+                        {totalDisputeCount}
                       </span>
                     </Link>
                   </div>
 
-                  {/* 인증 서류 상태 필터 — 항상 공간 유지, disputes 탭일 때 숨김 처리 */}
-                  <div className={`flex gap-1.5 px-4 py-2.5 border-b border-gray-100 bg-white flex-wrap ${adminTab !== 'certs' ? 'invisible' : ''}`}>
-                    {CERT_STATUS_TABS.map(t => (
-                      <Link
-                        key={t.value}
-                        href={`/mypage?tab=certs&status=${t.value}`}
-                        className={`px-3 py-1 rounded-lg text-xs font-semibold transition-colors ${
-                          certStatus === t.value
-                            ? 'bg-slate-800 text-white'
-                            : 'bg-white border border-gray-200 text-gray-500 hover:border-slate-400 hover:text-gray-700'
-                        }`}
-                      >
-                        {t.label}
-                      </Link>
-                    ))}
+                  {/* 탭별 필터 행 — 항상 동일한 공간 유지 */}
+                  <div className="flex gap-1.5 px-4 py-2.5 border-b border-gray-100 bg-white flex-wrap">
+                    {adminTab === 'certs'
+                      ? CERT_STATUS_TABS.map(t => (
+                          <Link
+                            key={t.value}
+                            href={`/mypage?tab=certs&status=${t.value}`}
+                            className={`px-3 py-1 rounded-lg text-xs font-semibold transition-colors ${
+                              certStatus === t.value
+                                ? 'bg-slate-800 text-white'
+                                : 'bg-white border border-gray-200 text-gray-500 hover:border-slate-400 hover:text-gray-700'
+                            }`}
+                          >
+                            {t.label}
+                          </Link>
+                        ))
+                      : DISPUTE_ROLE_TABS.map(t => (
+                          <Link
+                            key={t.value}
+                            href={`/mypage?tab=disputes&drole=${t.value}`}
+                            className={`px-3 py-1 rounded-lg text-xs font-semibold transition-colors ${
+                              disputeRole === t.value
+                                ? 'bg-red-600 text-white'
+                                : 'bg-white border border-gray-200 text-gray-500 hover:border-red-400 hover:text-red-600'
+                            }`}
+                          >
+                            {t.label}
+                          </Link>
+                        ))
+                    }
                   </div>
 
                   {/* 고정 높이 콘텐츠 영역 — 내부 독립 스크롤 */}
@@ -299,9 +332,18 @@ export default async function MypagePage({
                               <div key={d.id} className="bg-white rounded-xl border border-red-100 px-4 py-3.5">
                                 <div className="flex flex-wrap items-start justify-between gap-2 mb-2">
                                   <div className="flex items-center gap-1.5 min-w-0 flex-wrap">
-                                    <span className="text-sm text-gray-400 shrink-0">
+                                    <span className="text-sm text-gray-700 font-medium shrink-0">
                                       {d.reviewer?.name ?? '(알 수 없음)'}
                                     </span>
+                                    {d.reviewer?.role && (
+                                      <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded shrink-0 ${
+                                        d.reviewer.role === 'manager'
+                                          ? 'bg-blue-50 text-blue-600'
+                                          : 'bg-orange-50 text-orange-600'
+                                      }`}>
+                                        {ROLE_LABEL[d.reviewer.role] ?? d.reviewer.role}
+                                      </span>
+                                    )}
                                     <svg className="w-3.5 h-3.5 text-gray-300 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
                                       <path d="M5 12h14M12 5l7 7-7 7" strokeLinecap="round" strokeLinejoin="round" />
                                     </svg>
@@ -314,6 +356,15 @@ export default async function MypagePage({
                                       </Link>
                                     ) : (
                                       <span className="text-sm font-bold text-slate-900 shrink-0">(알 수 없음)</span>
+                                    )}
+                                    {d.reviewee?.role && (
+                                      <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded shrink-0 ${
+                                        d.reviewee.role === 'manager'
+                                          ? 'bg-blue-50 text-blue-600'
+                                          : 'bg-orange-50 text-orange-600'
+                                      }`}>
+                                        {ROLE_LABEL[d.reviewee.role] ?? d.reviewee.role}
+                                      </span>
                                     )}
                                     {d.job && (
                                       <span className="text-xs text-gray-400 truncate">· {d.job.title}</span>
