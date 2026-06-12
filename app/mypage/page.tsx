@@ -1,4 +1,4 @@
-// 마이페이지 — 프로필 + 역할별 바로가기 / 관리자는 관제 센터 통합
+// 마이페이지 — 상단 프로필 + 2단 스플릿 그리드 (좌: 계정설정 / 우: 역할별 메인)
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
@@ -37,7 +37,6 @@ export default async function MypagePage({
 }) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
-
   if (!user) redirect('/login')
 
   const { data: profile } = await supabase
@@ -45,7 +44,6 @@ export default async function MypagePage({
     .select('*')
     .eq('id', user.id)
     .single()
-
   if (!profile) redirect('/login')
 
   // 역할별 데이터
@@ -54,7 +52,7 @@ export default async function MypagePage({
   let certApproved = false
   let certPending = false
 
-  // 관리자 전용 데이터
+  // 관리자 전용
   let drivers: DriverEntry[] = []
   let pendingCertCount = 0
   let disputes: DisputeRow[] = []
@@ -82,7 +80,6 @@ export default async function MypagePage({
       .from('certifications')
       .select('cert_type, status')
       .eq('driver_id', user.id)
-    // 면허증 + 안전교육 이수증 모두 approved여야 인증 완료
     const approvedTypes = new Set(
       (driverCerts ?? []).filter(c => c.status === 'approved').map(c => c.cert_type)
     )
@@ -96,7 +93,6 @@ export default async function MypagePage({
       process.env.SUPABASE_SERVICE_ROLE_KEY!
     )
 
-    // 인증 서류 — 항상 fetch (탭 뱃지 카운트 + certs 탭 렌더링)
     const { data: certData } = await adminClient
       .from('certifications')
       .select('id, driver_id, cert_type, image_url, status, created_at')
@@ -148,7 +144,6 @@ export default async function MypagePage({
       }
     })
 
-    // 분쟁 탭 — 해당 탭일 때만 fetch
     if (adminTab === 'disputes') {
       const { data } = await adminClient
         .from('reviews')
@@ -191,12 +186,12 @@ export default async function MypagePage({
       </nav>
 
       <div className="pt-16">
-        <div className="max-w-3xl mx-auto px-4 py-6 space-y-4">
+        <div className="max-w-5xl mx-auto px-4 py-6 space-y-6">
 
-          {/* 프로필 카드 */}
+          {/* 프로필 카드 — 전체 너비 */}
           <InlineProfileCard profile={profile} jobCount={jobCount} />
 
-          {/* 기사 정보 카드 */}
+          {/* 기사 정보 카드 — 전체 너비, 기사만 */}
           {profile.role === 'driver' && (
             <DriverInfoCard
               profile={profile}
@@ -206,246 +201,246 @@ export default async function MypagePage({
             />
           )}
 
-          {profile.role === 'admin' ? (
-            /* ── 관리자 관제 센터 ── */
-            <>
-              {/* 탭 바 */}
-              <div className="flex gap-2">
-                <Link
-                  href="/mypage?tab=certs&status=pending"
-                  className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold transition-colors ${
-                    adminTab === 'certs'
-                      ? 'bg-slate-900 text-white'
-                      : 'bg-white border border-gray-200 text-gray-600 hover:border-slate-400'
-                  }`}
-                >
-                  <FileText className="w-4 h-4" />
-                  인증 서류 관리
-                  {pendingCertCount > 0 && (
-                    <span className={`text-xs font-bold px-1.5 py-0.5 rounded-full ${
-                      adminTab === 'certs'
-                        ? 'bg-white/20 text-white'
-                        : 'bg-yellow-100 text-yellow-700'
-                    }`}>
-                      {pendingCertCount}
-                    </span>
-                  )}
-                </Link>
-                <Link
-                  href="/mypage?tab=disputes"
-                  className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold transition-colors ${
-                    adminTab === 'disputes'
-                      ? 'bg-red-600 text-white'
-                      : 'bg-white border border-gray-200 text-gray-600 hover:border-red-300'
-                  }`}
-                >
-                  <ShieldAlert className="w-4 h-4" />
-                  분쟁 평판 모니터링
-                </Link>
-              </div>
+          {/* ── 2단 스플릿 그리드 ── */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8 items-start">
 
-              {adminTab === 'certs' ? (
-                /* 인증 서류 탭 */
+            {/* 우측: 메인 콘텐츠 (모바일에서 먼저 노출) */}
+            <div className="order-1 lg:order-2 lg:col-span-2 space-y-4">
+              {profile.role === 'admin' ? (
                 <>
-                  <div className="flex gap-2 flex-wrap">
-                    {CERT_STATUS_TABS.map(t => (
-                      <Link
-                        key={t.value}
-                        href={`/mypage?tab=certs&status=${t.value}`}
-                        className={`px-4 py-2 rounded-xl text-sm font-semibold transition-colors ${
-                          certStatus === t.value
-                            ? 'bg-slate-700 text-white'
-                            : 'bg-white border border-gray-200 text-gray-600 hover:border-slate-400'
-                        }`}
-                      >
-                        {t.label}
-                      </Link>
-                    ))}
+                  {/* 메인 탭 바 */}
+                  <div className="flex gap-2">
+                    <Link
+                      href="/mypage?tab=certs&status=pending"
+                      className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold transition-colors ${
+                        adminTab === 'certs'
+                          ? 'bg-slate-900 text-white'
+                          : 'bg-white border border-gray-200 text-gray-600 hover:border-slate-400'
+                      }`}
+                    >
+                      <FileText className="w-4 h-4" />
+                      인증 서류 관리
+                      {pendingCertCount > 0 && (
+                        <span className={`text-xs font-bold px-1.5 py-0.5 rounded-full ${
+                          adminTab === 'certs'
+                            ? 'bg-white/20 text-white'
+                            : 'bg-yellow-100 text-yellow-700'
+                        }`}>
+                          {pendingCertCount}
+                        </span>
+                      )}
+                    </Link>
+                    <Link
+                      href="/mypage?tab=disputes"
+                      className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold transition-colors ${
+                        adminTab === 'disputes'
+                          ? 'bg-red-600 text-white'
+                          : 'bg-white border border-gray-200 text-gray-600 hover:border-red-300'
+                      }`}
+                    >
+                      <ShieldAlert className="w-4 h-4" />
+                      분쟁 평판 모니터링
+                    </Link>
                   </div>
-                  <CertDriverList drivers={drivers} />
+
+                  {adminTab === 'certs' ? (
+                    <>
+                      {/* 서류 상태 서브탭 */}
+                      <div className="flex gap-2 flex-wrap">
+                        {CERT_STATUS_TABS.map(t => (
+                          <Link
+                            key={t.value}
+                            href={`/mypage?tab=certs&status=${t.value}`}
+                            className={`px-4 py-2 rounded-xl text-sm font-semibold transition-colors ${
+                              certStatus === t.value
+                                ? 'bg-slate-700 text-white'
+                                : 'bg-white border border-gray-200 text-gray-600 hover:border-slate-400'
+                            }`}
+                          >
+                            {t.label}
+                          </Link>
+                        ))}
+                      </div>
+                      {/* 서류 목록 */}
+                      {drivers.length === 0 ? (
+                        <div className="bg-white rounded-2xl border border-gray-100 py-16 text-center text-sm text-gray-400">
+                          해당하는 서류가 없습니다.
+                        </div>
+                      ) : (
+                        <CertDriverList drivers={drivers} />
+                      )}
+                    </>
+                  ) : (
+                    /* 분쟁 평판 모니터링 */
+                    disputes.length === 0 ? (
+                      <div className="bg-white rounded-2xl border border-gray-100 py-16 text-center text-sm text-gray-400">
+                        저평점 리뷰가 없습니다.
+                      </div>
+                    ) : (
+                      <div className="space-y-3">
+                        {disputes.map(d => {
+                          const date = new Date(d.created_at).toLocaleDateString('ko-KR', {
+                            year: 'numeric', month: 'long', day: 'numeric',
+                          })
+                          return (
+                            <div key={d.id} className="bg-white rounded-2xl border border-red-100 px-5 py-4">
+                              <div className="flex flex-wrap items-start justify-between gap-3 mb-3">
+                                <div className="flex items-center gap-2 min-w-0 flex-wrap">
+                                  <span className="text-sm text-gray-500">
+                                    {d.reviewer?.name ?? '(알 수 없음)'}
+                                  </span>
+                                  <svg className="w-3.5 h-3.5 text-gray-400 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+                                    <path d="M5 12h14M12 5l7 7-7 7" strokeLinecap="round" strokeLinejoin="round" />
+                                  </svg>
+                                  {d.reviewee ? (
+                                    <Link
+                                      href={`/profiles/${d.reviewee.id}`}
+                                      className="text-sm font-bold text-slate-900 hover:text-blue-600 transition-colors underline underline-offset-2"
+                                    >
+                                      {d.reviewee.name}
+                                    </Link>
+                                  ) : (
+                                    <span className="text-sm font-bold text-slate-900">(알 수 없음)</span>
+                                  )}
+                                  {d.job && (
+                                    <span className="text-xs text-gray-400 truncate">· {d.job.title}</span>
+                                  )}
+                                </div>
+                                <div className="flex items-center gap-3 shrink-0">
+                                  <div className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-red-50 border border-red-200">
+                                    <Star className="w-3.5 h-3.5 fill-red-500 text-red-500" />
+                                    <span className="text-sm font-bold text-red-600">{d.rating}</span>
+                                  </div>
+                                  <span className="text-xs text-gray-400">{date}</span>
+                                </div>
+                              </div>
+                              {d.comment ? (
+                                <p className="text-sm text-gray-600 leading-relaxed bg-gray-50 rounded-lg px-3 py-2">
+                                  {d.comment}
+                                </p>
+                              ) : (
+                                <p className="text-xs text-gray-400 italic">내용 없음</p>
+                              )}
+                            </div>
+                          )
+                        })}
+                      </div>
+                    )
+                  )}
                 </>
               ) : (
-                /* 분쟁 평판 모니터링 탭 */
-                disputes.length === 0 ? (
-                  <div className="text-center text-gray-400 py-16 bg-white rounded-2xl border border-gray-100">
-                    저평점 리뷰가 없습니다.
-                  </div>
-                ) : (
-                  <div className="space-y-3">
-                    {disputes.map(d => {
-                      const date = new Date(d.created_at).toLocaleDateString('ko-KR', {
-                        year: 'numeric', month: 'long', day: 'numeric',
-                      })
-                      return (
-                        <div key={d.id} className="bg-white rounded-2xl border border-red-100 px-5 py-4">
-                          <div className="flex flex-wrap items-start justify-between gap-3 mb-3">
-                            {/* 리뷰어 → 피리뷰어 + 일감명 */}
-                            <div className="flex items-center gap-2 min-w-0 flex-wrap">
-                              <span className="text-sm text-gray-500">
-                                {d.reviewer?.name ?? '(알 수 없음)'}
-                              </span>
-                              <svg className="w-3.5 h-3.5 text-gray-400 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
-                                <path d="M5 12h14M12 5l7 7-7 7" strokeLinecap="round" strokeLinejoin="round" />
-                              </svg>
-                              {d.reviewee ? (
-                                <Link
-                                  href={`/profiles/${d.reviewee.id}`}
-                                  className="text-sm font-bold text-slate-900 hover:text-blue-600 transition-colors underline underline-offset-2"
-                                >
-                                  {d.reviewee.name}
-                                </Link>
-                              ) : (
-                                <span className="text-sm font-bold text-slate-900">(알 수 없음)</span>
-                              )}
-                              {d.job && (
-                                <span className="text-xs text-gray-400 truncate">· {d.job.title}</span>
-                              )}
-                            </div>
-                            {/* 평점 + 날짜 */}
-                            <div className="flex items-center gap-3 shrink-0">
-                              <div className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-red-50 border border-red-200">
-                                <Star className="w-3.5 h-3.5 fill-red-500 text-red-500" />
-                                <span className="text-sm font-bold text-red-600">{d.rating}</span>
-                              </div>
-                              <span className="text-xs text-gray-400">{date}</span>
-                            </div>
-                          </div>
-                          {d.comment ? (
-                            <p className="text-sm text-gray-600 leading-relaxed bg-gray-50 rounded-lg px-3 py-2">
-                              {d.comment}
-                            </p>
-                          ) : (
-                            <p className="text-xs text-gray-400 italic">내용 없음</p>
-                          )}
-                        </div>
-                      )
-                    })}
-                  </div>
-                )
+                /* 일반 유저 — 활동 카드 */
+                <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden divide-y divide-gray-100">
+                  <p className="px-5 pt-4 pb-2 text-sm font-bold text-slate-800">활동</p>
+                  {profile.role === 'manager' ? (
+                    <>
+                      <Link href="/manager/jobs" className="flex items-center gap-3 px-4 py-3.5 hover:bg-blue-50 transition-colors group">
+                        <span className="w-8 h-8 rounded-lg bg-blue-50 group-hover:bg-blue-100 flex items-center justify-center transition-colors shrink-0">
+                          <svg className="w-4 h-4 text-blue-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+                            <rect x="3" y="3" width="18" height="18" rx="2" />
+                            <path d="M9 9h6M9 13h6M9 17h4" strokeLinecap="round" />
+                          </svg>
+                        </span>
+                        <span className="text-sm font-semibold text-gray-700 group-hover:text-blue-600 transition-colors">내 일감 관리</span>
+                        <svg className="w-4 h-4 text-gray-300 ml-auto" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}><path d="M9 18l6-6-6-6" /></svg>
+                      </Link>
+                      <Link href="/mypage/ledger" className="flex items-center gap-3 px-4 py-3.5 hover:bg-blue-50 transition-colors group">
+                        <span className="w-8 h-8 rounded-lg bg-blue-50 group-hover:bg-blue-100 flex items-center justify-center transition-colors shrink-0">
+                          <svg className="w-4 h-4 text-blue-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+                            <path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2" />
+                            <rect x="9" y="3" width="6" height="4" rx="1" />
+                            <line x1="9" y1="12" x2="15" y2="12" /><line x1="9" y1="16" x2="13" y2="16" />
+                          </svg>
+                        </span>
+                        <span className="text-sm font-semibold text-gray-700 group-hover:text-blue-600 transition-colors">소장 장부</span>
+                        <svg className="w-4 h-4 text-gray-300 ml-auto" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}><path d="M9 18l6-6-6-6" /></svg>
+                      </Link>
+                      <Link href="/mypage/reviews" className="flex items-center gap-3 px-4 py-3.5 hover:bg-blue-50 transition-colors group">
+                        <span className="w-8 h-8 rounded-lg bg-blue-50 group-hover:bg-blue-100 flex items-center justify-center transition-colors shrink-0">
+                          <svg className="w-4 h-4 text-blue-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+                            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+                          </svg>
+                        </span>
+                        <span className="text-sm font-semibold text-gray-700 group-hover:text-blue-600 transition-colors">받은 평가</span>
+                        <svg className="w-4 h-4 text-gray-300 ml-auto" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}><path d="M9 18l6-6-6-6" /></svg>
+                      </Link>
+                    </>
+                  ) : (
+                    <>
+                      <Link href="/mypage/applications" className="flex items-center gap-3 px-4 py-3.5 hover:bg-blue-50 transition-colors group">
+                        <span className="w-8 h-8 rounded-lg bg-blue-50 group-hover:bg-blue-100 flex items-center justify-center transition-colors shrink-0">
+                          <svg className="w-4 h-4 text-blue-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+                            <path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2" />
+                            <rect x="9" y="3" width="6" height="4" rx="1" />
+                            <path d="M9 12l2 2 4-4" strokeLinecap="round" strokeLinejoin="round" />
+                          </svg>
+                        </span>
+                        <span className="text-sm font-semibold text-gray-700 group-hover:text-blue-600 transition-colors">지원 현황</span>
+                        <svg className="w-4 h-4 text-gray-300 ml-auto" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}><path d="M9 18l6-6-6-6" /></svg>
+                      </Link>
+                      <Link href="/mypage/ledger" className="flex items-center gap-3 px-4 py-3.5 hover:bg-blue-50 transition-colors group">
+                        <span className="w-8 h-8 rounded-lg bg-blue-50 group-hover:bg-blue-100 flex items-center justify-center transition-colors shrink-0">
+                          <svg className="w-4 h-4 text-blue-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+                            <path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2" />
+                            <rect x="9" y="3" width="6" height="4" rx="1" />
+                            <line x1="9" y1="12" x2="15" y2="12" /><line x1="9" y1="16" x2="13" y2="16" />
+                          </svg>
+                        </span>
+                        <span className="text-sm font-semibold text-gray-700 group-hover:text-blue-600 transition-colors">기사 수당 장부</span>
+                        <svg className="w-4 h-4 text-gray-300 ml-auto" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}><path d="M9 18l6-6-6-6" /></svg>
+                      </Link>
+                      <Link href="/mypage/reviews" className="flex items-center gap-3 px-4 py-3.5 hover:bg-blue-50 transition-colors group">
+                        <span className="w-8 h-8 rounded-lg bg-blue-50 group-hover:bg-blue-100 flex items-center justify-center transition-colors shrink-0">
+                          <svg className="w-4 h-4 text-blue-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+                            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+                          </svg>
+                        </span>
+                        <span className="text-sm font-semibold text-gray-700 group-hover:text-blue-600 transition-colors">받은 평가</span>
+                        <svg className="w-4 h-4 text-gray-300 ml-auto" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}><path d="M9 18l6-6-6-6" /></svg>
+                      </Link>
+                    </>
+                  )}
+                </div>
               )}
-
-              {/* 관리자 계정 설정 */}
-              <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden divide-y divide-gray-100">
-                <p className="px-5 pt-4 pb-2 text-sm font-bold text-slate-800">계정 설정</p>
-                <Link href="/mypage/password" className="flex items-center gap-3 px-4 py-3.5 hover:bg-blue-50 transition-colors group">
-                  <span className="w-8 h-8 rounded-lg bg-blue-50 group-hover:bg-blue-100 flex items-center justify-center transition-colors">
-                    <svg className="w-4 h-4 text-blue-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
-                      <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
-                      <path d="M7 11V7a5 5 0 0 1 10 0v4" />
-                    </svg>
-                  </span>
-                  <span className="text-sm font-semibold text-gray-700 group-hover:text-blue-600 transition-colors">비밀번호 변경</span>
-                  <svg className="w-4 h-4 text-gray-300 ml-auto" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}><path d="M9 18l6-6-6-6" /></svg>
-                </Link>
-                <DeleteAccountButton />
-              </div>
-            </>
-          ) : (
-            /* ── 일반 유저 바로가기 그리드 ── */
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-
-              {/* 활동 */}
-              <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden divide-y divide-gray-100">
-                <p className="px-5 pt-4 pb-2 text-sm font-bold text-slate-800">활동</p>
-                {profile.role === 'manager' ? (
-                  <>
-                    <Link href="/manager/jobs" className="flex items-center gap-3 px-4 py-3.5 hover:bg-blue-50 transition-colors group">
-                      <span className="w-8 h-8 rounded-lg bg-blue-50 group-hover:bg-blue-100 flex items-center justify-center transition-colors shrink-0">
-                        <svg className="w-4 h-4 text-blue-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
-                          <rect x="3" y="3" width="18" height="18" rx="2" />
-                          <path d="M9 9h6M9 13h6M9 17h4" strokeLinecap="round" />
-                        </svg>
-                      </span>
-                      <span className="text-sm font-semibold text-gray-700 group-hover:text-blue-600 transition-colors">내 일감 관리</span>
-                      <svg className="w-4 h-4 text-gray-300 ml-auto" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}><path d="M9 18l6-6-6-6" /></svg>
-                    </Link>
-                    <Link href="/mypage/ledger" className="flex items-center gap-3 px-4 py-3.5 hover:bg-blue-50 transition-colors group">
-                      <span className="w-8 h-8 rounded-lg bg-blue-50 group-hover:bg-blue-100 flex items-center justify-center transition-colors shrink-0">
-                        <svg className="w-4 h-4 text-blue-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
-                          <path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2" />
-                          <rect x="9" y="3" width="6" height="4" rx="1" />
-                          <line x1="9" y1="12" x2="15" y2="12" /><line x1="9" y1="16" x2="13" y2="16" />
-                        </svg>
-                      </span>
-                      <span className="text-sm font-semibold text-gray-700 group-hover:text-blue-600 transition-colors">소장 장부</span>
-                      <svg className="w-4 h-4 text-gray-300 ml-auto" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}><path d="M9 18l6-6-6-6" /></svg>
-                    </Link>
-                    <Link href="/mypage/reviews" className="flex items-center gap-3 px-4 py-3.5 hover:bg-blue-50 transition-colors group">
-                      <span className="w-8 h-8 rounded-lg bg-blue-50 group-hover:bg-blue-100 flex items-center justify-center transition-colors shrink-0">
-                        <svg className="w-4 h-4 text-blue-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
-                          <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
-                        </svg>
-                      </span>
-                      <span className="text-sm font-semibold text-gray-700 group-hover:text-blue-600 transition-colors">받은 평가</span>
-                      <svg className="w-4 h-4 text-gray-300 ml-auto" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}><path d="M9 18l6-6-6-6" /></svg>
-                    </Link>
-                  </>
-                ) : (
-                  <>
-                    <Link href="/mypage/applications" className="flex items-center gap-3 px-4 py-3.5 hover:bg-blue-50 transition-colors group">
-                      <span className="w-8 h-8 rounded-lg bg-blue-50 group-hover:bg-blue-100 flex items-center justify-center transition-colors shrink-0">
-                        <svg className="w-4 h-4 text-blue-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
-                          <path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2" />
-                          <rect x="9" y="3" width="6" height="4" rx="1" />
-                          <path d="M9 12l2 2 4-4" strokeLinecap="round" strokeLinejoin="round" />
-                        </svg>
-                      </span>
-                      <span className="text-sm font-semibold text-gray-700 group-hover:text-blue-600 transition-colors">지원 현황</span>
-                      <svg className="w-4 h-4 text-gray-300 ml-auto" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}><path d="M9 18l6-6-6-6" /></svg>
-                    </Link>
-                    <Link href="/mypage/ledger" className="flex items-center gap-3 px-4 py-3.5 hover:bg-blue-50 transition-colors group">
-                      <span className="w-8 h-8 rounded-lg bg-blue-50 group-hover:bg-blue-100 flex items-center justify-center transition-colors shrink-0">
-                        <svg className="w-4 h-4 text-blue-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
-                          <path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2" />
-                          <rect x="9" y="3" width="6" height="4" rx="1" />
-                          <line x1="9" y1="12" x2="15" y2="12" /><line x1="9" y1="16" x2="13" y2="16" />
-                        </svg>
-                      </span>
-                      <span className="text-sm font-semibold text-gray-700 group-hover:text-blue-600 transition-colors">기사 수당 장부</span>
-                      <svg className="w-4 h-4 text-gray-300 ml-auto" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}><path d="M9 18l6-6-6-6" /></svg>
-                    </Link>
-                    <Link href="/mypage/reviews" className="flex items-center gap-3 px-4 py-3.5 hover:bg-blue-50 transition-colors group">
-                      <span className="w-8 h-8 rounded-lg bg-blue-50 group-hover:bg-blue-100 flex items-center justify-center transition-colors shrink-0">
-                        <svg className="w-4 h-4 text-blue-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
-                          <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
-                        </svg>
-                      </span>
-                      <span className="text-sm font-semibold text-gray-700 group-hover:text-blue-600 transition-colors">받은 평가</span>
-                      <svg className="w-4 h-4 text-gray-300 ml-auto" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}><path d="M9 18l6-6-6-6" /></svg>
-                    </Link>
-                  </>
-                )}
-              </div>
-
-              {/* 계정 설정 */}
-              <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden divide-y divide-gray-100">
-                <p className="px-5 pt-4 pb-2 text-sm font-bold text-slate-800">계정 설정</p>
-                <Link href="/notifications" className="flex items-center gap-3 px-4 py-3.5 hover:bg-blue-50 transition-colors group">
-                  <span className="w-8 h-8 rounded-lg bg-blue-50 group-hover:bg-blue-100 flex items-center justify-center transition-colors">
-                    <svg className="w-4 h-4 text-blue-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
-                      <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
-                      <path d="M13.73 21a2 2 0 0 1-3.46 0" />
-                    </svg>
-                  </span>
-                  <span className="text-sm font-semibold text-gray-700 group-hover:text-blue-600 transition-colors">알림 설정</span>
-                  <svg className="w-4 h-4 text-gray-300 ml-auto" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}><path d="M9 18l6-6-6-6" /></svg>
-                </Link>
-                <Link href="/mypage/password" className="flex items-center gap-3 px-4 py-3.5 hover:bg-blue-50 transition-colors group">
-                  <span className="w-8 h-8 rounded-lg bg-blue-50 group-hover:bg-blue-100 flex items-center justify-center transition-colors">
-                    <svg className="w-4 h-4 text-blue-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
-                      <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
-                      <path d="M7 11V7a5 5 0 0 1 10 0v4" />
-                    </svg>
-                  </span>
-                  <span className="text-sm font-semibold text-gray-700 group-hover:text-blue-600 transition-colors">비밀번호 변경</span>
-                  <svg className="w-4 h-4 text-gray-300 ml-auto" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}><path d="M9 18l6-6-6-6" /></svg>
-                </Link>
-                <DeleteAccountButton />
-              </div>
-
             </div>
-          )}
 
+            {/* 좌측: 계정 설정 (모바일에서 아래, 데스크톱에서 sticky 고정) */}
+            <div className="order-2 lg:order-1 lg:col-span-1">
+              <div className="lg:sticky lg:top-24 space-y-3">
+                <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden divide-y divide-gray-100">
+                  <p className="px-5 pt-4 pb-2 text-sm font-bold text-slate-800">계정 설정</p>
+
+                  {/* 알림 설정 — 일반 유저만 */}
+                  {profile.role !== 'admin' && (
+                    <Link href="/notifications" className="flex items-center gap-3 px-4 py-3.5 hover:bg-blue-50 transition-colors group">
+                      <span className="w-8 h-8 rounded-lg bg-blue-50 group-hover:bg-blue-100 flex items-center justify-center transition-colors shrink-0">
+                        <svg className="w-4 h-4 text-blue-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+                          <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
+                          <path d="M13.73 21a2 2 0 0 1-3.46 0" />
+                        </svg>
+                      </span>
+                      <span className="text-sm font-semibold text-gray-700 group-hover:text-blue-600 transition-colors">알림 설정</span>
+                      <svg className="w-4 h-4 text-gray-300 ml-auto" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}><path d="M9 18l6-6-6-6" /></svg>
+                    </Link>
+                  )}
+
+                  <Link href="/mypage/password" className="flex items-center gap-3 px-4 py-3.5 hover:bg-blue-50 transition-colors group">
+                    <span className="w-8 h-8 rounded-lg bg-blue-50 group-hover:bg-blue-100 flex items-center justify-center transition-colors shrink-0">
+                      <svg className="w-4 h-4 text-blue-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+                        <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                        <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                      </svg>
+                    </span>
+                    <span className="text-sm font-semibold text-gray-700 group-hover:text-blue-600 transition-colors">비밀번호 변경</span>
+                    <svg className="w-4 h-4 text-gray-300 ml-auto" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}><path d="M9 18l6-6-6-6" /></svg>
+                  </Link>
+
+                  <DeleteAccountButton />
+                </div>
+              </div>
+            </div>
+
+          </div>
         </div>
       </div>
     </div>
