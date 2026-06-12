@@ -103,43 +103,66 @@ export default async function MypagePage({
       process.env.SUPABASE_SERVICE_ROLE_KEY!
     )
 
-    // ── 서류 + 분쟁 리뷰 병렬 패칭 ──
-    // reviews 테이블이 profiles를 두 FK(reviewer_id, reviewee_id)로 참조하므로
-    // PostgREST 모호성 해소를 위해 FK 제약 조건명을 명시해야 한다.
-    // Supabase 기본 FK 제약 조건명 규칙: {테이블}_{컬럼}_fkey
-    const [certResult, disputeResult] = await Promise.all([
+    // ── 서류 + 저평점 리뷰 병렬 패칭 ──
+    // reviews 테이블이 profiles를 두 FK로 참조해 PostgREST embedded join이 불안정하므로
+    // reviews만 먼저 가져온 뒤 profiles/jobs를 별도 쿼리로 fetch해 JS에서 직접 병합한다.
+    const [certResult, reviewResult] = await Promise.all([
       adminClient
         .from('certifications')
         .select('id, driver_id, cert_type, image_url, status, created_at')
         .order('created_at', { ascending: false }),
       adminClient
         .from('reviews')
-        .select(`
-          id,
-          rating,
-          comment,
-          created_at,
-          reviewer:profiles!reviews_reviewer_id_fkey(id, name, role),
-          reviewee:profiles!reviews_reviewee_id_fkey(id, name, role),
-          job:jobs!reviews_job_id_fkey(id, title)
-        `)
+        .select('id, rating, comment, created_at, reviewer_id, reviewee_id, job_id')
         .lte('rating', 2)
         .order('created_at', { ascending: false }),
     ])
 
-    // 에러 로깅 — 쿼리 실패 시 원인 추적
     if (certResult.error) {
-      console.error('[admin] certifications fetch error:', certResult.error)
+      console.error('[admin] certifications fetch error:', JSON.stringify(certResult.error))
     }
-    if (disputeResult.error) {
-      console.error('[admin] disputes fetch error:', disputeResult.error)
+    if (reviewResult.error) {
+      console.error('[admin] reviews fetch error:', JSON.stringify(reviewResult.error))
     }
 
     const allCertData = certResult.data ?? []
+    const rawReviews = reviewResult.data ?? []
 
-    // 분쟁 리뷰: 전체 저장 후 역할 기반 JS 필터
-    // disputeRole이 'all'이면 전체, 'manager'/'driver'는 reviewer.role로 필터
-    const allDisputes = (disputeResult.data ?? []) as unknown as DisputeRow[]
+    // 리뷰에서 참조하는 profile ID·job ID 수집
+    const reviewerIds = [...new Set(rawReviews.map(r => r.reviewer_id).filter(Boolean))] as string[]
+    const revieweeIds = [...new Set(rawReviews.map(r => r.reviewee_id).filter(Boolean))] as string[]
+    const jobIdsForReview = [...new Set(rawReviews.map(r => r.job_id).filter(Boolean))] as string[]
+    const allProfileIds = [...new Set([...reviewerIds, ...revieweeIds])]
+
+    // 관련 profiles, jobs 병렬 fetch
+    const [reviewProfilesResult, reviewJobsResult] = await Promise.all([
+      allProfileIds.length > 0
+        ? adminClient.from('profiles').select('id, name, role').in('id', allProfileIds)
+        : Promise.resolve({ data: [] as { id: string; name: string; role: string }[] }),
+      jobIdsForReview.length > 0
+        ? adminClient.from('jobs').select('id, title').in('id', jobIdsForReview)
+        : Promise.resolve({ data: [] as { id: string; title: string }[] }),
+    ])
+
+    const reviewProfileMap = Object.fromEntries(
+      (reviewProfilesResult.data ?? []).map(p => [p.id, p])
+    )
+    const reviewJobMap = Object.fromEntries(
+      (reviewJobsResult.data ?? []).map(j => [j.id, j])
+    )
+
+    // JS에서 수동 병합
+    const allDisputes: DisputeRow[] = rawReviews.map(r => ({
+      id: r.id,
+      rating: r.rating,
+      comment: r.comment ?? null,
+      created_at: r.created_at,
+      reviewer: r.reviewer_id ? (reviewProfileMap[r.reviewer_id] ?? null) : null,
+      reviewee: r.reviewee_id ? (reviewProfileMap[r.reviewee_id] ?? null) : null,
+      job: r.job_id ? (reviewJobMap[r.job_id] ?? null) : null,
+    }))
+
+    // 역할 기반 클라이언트 필터
     disputes =
       disputeRole === 'manager'
         ? allDisputes.filter(d => d.reviewer?.role === 'manager')
