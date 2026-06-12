@@ -28,6 +28,7 @@ export interface Profile {
   latitude: number | null
   longitude: number | null
   rating_avg: number
+  review_count: number
   is_certified: boolean
   preferred_job_types: JobType[]
   preferred_equipment_codes: EquipmentCode[]

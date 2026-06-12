@@ -694,3 +694,47 @@ setMessages(prev => {
 ```
 
 > flex 컨테이너 내부에서 % 기반 max-w를 쓸 때는 항상 "무엇의 %인가"를 확인해야 한다. 부모가 flex 아이템이면서 명시적 너비가 없으면 순환 의존성이 발생한다.
+
+### Supabase reviews 테이블 — service_role SELECT 권한 누락 (42501)
+
+**증상**: `adminClient.from('reviews').select(...)` 실행 시 `permission denied for table reviews (code: 42501)`
+
+**원인**: SQL로 직접 생성한 `reviews` 테이블에 `service_role`의 SELECT 권한이 자동 부여되지 않음. `authenticated` 롤과 달리 `service_role`도 명시적 grant가 필요하다.
+
+**해결**: Supabase SQL Editor에서 실행
+```sql
+GRANT SELECT ON public.reviews TO service_role;
+```
+
+> SQL로 생성한 테이블은 `authenticated`뿐 아니라 `service_role`에도 필요한 권한을 별도로 부여해야 한다. admin 클라이언트가 bypass RLS를 하더라도 테이블 자체의 GRANT 권한은 별개다.
+
+### Supabase PostgREST embedded join — 동일 테이블 다중 FK 모호성
+
+**증상**: `reviews` 테이블에서 `profiles`를 두 FK(`reviewer_id`, `reviewee_id`)로 참조할 때 join 결과가 `null` 또는 0건
+
+**원인**: PostgREST가 `profiles` 테이블로의 관계가 둘 이상이라 어느 FK를 사용할지 알 수 없어 "more than one relationship found" 에러를 내며 `data: null` 반환. `!컬럼명` 또는 `!제약조건명` hint를 써도 Supabase 버전이나 마이그레이션 방식에 따라 불안정함.
+
+**해결**: embedded join을 포기하고 별도 쿼리 후 JS에서 수동 병합.
+
+```typescript
+// 1단계: reviews 단순 fetch (FK 컬럼 포함)
+const { data: rawReviews } = await adminClient
+  .from('reviews')
+  .select('id, rating, comment, created_at, reviewer_id, reviewee_id, job_id')
+  .lte('rating', 2)
+
+// 2단계: 관련 ID 수집 후 profiles, jobs 별도 fetch
+const allProfileIds = [...new Set([...reviewerIds, ...revieweeIds])]
+const { data: reviewProfiles } = await adminClient
+  .from('profiles').select('id, name, role').in('id', allProfileIds)
+
+// 3단계: Map 생성 후 JS에서 병합
+const profileMap = Object.fromEntries(reviewProfiles.map(p => [p.id, p]))
+const disputes = rawReviews.map(r => ({
+  ...r,
+  reviewer: r.reviewer_id ? profileMap[r.reviewer_id] ?? null : null,
+  reviewee: r.reviewee_id ? profileMap[r.reviewee_id] ?? null : null,
+}))
+```
+
+> 같은 테이블을 두 개 이상의 FK로 참조하는 경우 PostgREST join은 신뢰할 수 없다. 별도 쿼리 + JS 병합이 가장 안정적이다.

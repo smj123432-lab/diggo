@@ -252,18 +252,19 @@ export default async function JobDetailPage({ params }: Props) {
                 <div className="border-t border-gray-100 pt-4 mb-5">
                   <p className="text-xs text-gray-400 mb-2.5">소장 정보</p>
                   <div className="flex items-center gap-2.5">
-                    <div className="w-9 h-9 rounded-full bg-slate-100 flex items-center justify-center text-slate-600 font-bold text-sm shrink-0">
-                      {job.profiles.name.charAt(0)}
-                    </div>
+                    <ManagerAvatar name={job.profiles.name} avatarUrl={job.profiles.avatar_url} size="sm" />
                     <div>
-                      <div className="flex items-center gap-1.5">
-                        <span className="text-sm font-semibold text-gray-800">{job.profiles.name} 소장</span>
+                      <div className="flex items-center gap-1.5 flex-wrap">
+                        <Link href={`/profiles/${job.profiles.id}`} className="text-sm font-semibold text-gray-800 hover:text-blue-500 transition-colors">{job.profiles.name} 소장</Link>
                         {job.profiles.is_certified && (
                           <span className="inline-flex items-center justify-center bg-blue-500 text-white w-4 h-4 rounded-full shrink-0">
                             <svg className="w-2.5 h-2.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={3}>
                               <path d="M20 6L9 17l-5-5" strokeLinecap="round" strokeLinejoin="round" />
                             </svg>
                           </span>
+                        )}
+                        {job.profiles.rating_avg > 0 && job.profiles.rating_avg <= 2.0 && (
+                          <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-red-100 text-red-600">주의</span>
                         )}
                       </div>
                       <div className="flex items-center gap-1 mt-0.5">
@@ -290,23 +291,36 @@ export default async function JobDetailPage({ params }: Props) {
 
 /* ── 서브컴포넌트 ── */
 
-function ManagerBlock({ job }: { job: { profiles: { name: string; is_certified: boolean; rating_avg: number } } }) {
+function ManagerAvatar({ name, avatarUrl, size }: { name: string; avatarUrl: string | null; size: 'sm' | 'md' }) {
+  const cls = size === 'md' ? 'w-10 h-10 text-sm' : 'w-9 h-9 text-xs'
+  return avatarUrl ? (
+    <img src={avatarUrl} alt={name} className={`${cls} rounded-full object-cover shrink-0`} />
+  ) : (
+    <div className={`${cls} rounded-full bg-slate-100 flex items-center justify-center text-slate-600 font-bold shrink-0`}>
+      {name.charAt(0)}
+    </div>
+  )
+}
+
+function ManagerBlock({ job }: { job: { profiles: { id: string; name: string; is_certified: boolean; rating_avg: number; avatar_url: string | null } } }) {
+  const isLowRating = job.profiles.rating_avg > 0 && job.profiles.rating_avg <= 2.0
   return (
     <>
       <p className="text-xs text-gray-400 font-medium mb-3">소장 정보</p>
       <div className="flex items-center gap-3">
-        <div className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-600 font-bold text-sm shrink-0">
-          {job.profiles.name.charAt(0)}
-        </div>
+        <ManagerAvatar name={job.profiles.name} avatarUrl={job.profiles.avatar_url} size="md" />
         <div>
-          <div className="flex items-center gap-1.5">
-            <span className="text-sm font-semibold text-gray-800">{job.profiles.name} 소장</span>
+          <div className="flex items-center gap-1.5 flex-wrap">
+            <Link href={`/profiles/${job.profiles.id}`} className="text-sm font-semibold text-gray-800 hover:text-blue-500 transition-colors">{job.profiles.name} 소장</Link>
             {job.profiles.is_certified && (
               <span className="inline-flex items-center justify-center bg-blue-500 text-white w-4 h-4 rounded-full shrink-0">
                 <svg className="w-2.5 h-2.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={3}>
                   <path d="M20 6L9 17l-5-5" strokeLinecap="round" strokeLinejoin="round" />
                 </svg>
               </span>
+            )}
+            {isLowRating && (
+              <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-red-100 text-red-600">주의</span>
             )}
           </div>
           <div className="flex items-center gap-1 mt-0.5">
