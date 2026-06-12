@@ -103,7 +103,10 @@ export default async function MypagePage({
       process.env.SUPABASE_SERVICE_ROLE_KEY!
     )
 
-    // 전체 서류 + 분쟁 병렬 패칭
+    // ── 서류 + 분쟁 리뷰 병렬 패칭 ──
+    // reviews 테이블이 profiles를 두 FK(reviewer_id, reviewee_id)로 참조하므로
+    // PostgREST 모호성 해소를 위해 FK 제약 조건명을 명시해야 한다.
+    // Supabase 기본 FK 제약 조건명 규칙: {테이블}_{컬럼}_fkey
     const [certResult, disputeResult] = await Promise.all([
       adminClient
         .from('certifications')
@@ -112,24 +115,37 @@ export default async function MypagePage({
       adminClient
         .from('reviews')
         .select(`
-          id, rating, comment, created_at,
-          reviewer:profiles!reviewer_id(id, name, role),
-          reviewee:profiles!reviewee_id(id, name, role),
-          job:jobs!job_id(id, title)
+          id,
+          rating,
+          comment,
+          created_at,
+          reviewer:profiles!reviews_reviewer_id_fkey(id, name, role),
+          reviewee:profiles!reviews_reviewee_id_fkey(id, name, role),
+          job:jobs!reviews_job_id_fkey(id, title)
         `)
         .lte('rating', 2)
         .order('created_at', { ascending: false }),
     ])
 
-    const allCertData = certResult.data ?? []
-    const allDisputes = (disputeResult.data ?? []) as unknown as DisputeRow[]
+    // 에러 로깅 — 쿼리 실패 시 원인 추적
+    if (certResult.error) {
+      console.error('[admin] certifications fetch error:', certResult.error)
+    }
+    if (disputeResult.error) {
+      console.error('[admin] disputes fetch error:', disputeResult.error)
+    }
 
-    // 역할 필터 적용 (JS 단위)
-    disputes = disputeRole === 'manager'
-      ? allDisputes.filter(d => d.reviewer?.role === 'manager')
-      : disputeRole === 'driver'
-      ? allDisputes.filter(d => d.reviewer?.role === 'driver')
-      : allDisputes
+    const allCertData = certResult.data ?? []
+
+    // 분쟁 리뷰: 전체 저장 후 역할 기반 JS 필터
+    // disputeRole이 'all'이면 전체, 'manager'/'driver'는 reviewer.role로 필터
+    const allDisputes = (disputeResult.data ?? []) as unknown as DisputeRow[]
+    disputes =
+      disputeRole === 'manager'
+        ? allDisputes.filter(d => d.reviewer?.role === 'manager')
+        : disputeRole === 'driver'
+        ? allDisputes.filter(d => d.reviewer?.role === 'driver')
+        : allDisputes
     totalDisputeCount = allDisputes.length
 
     // 탭 뱃지용 — 전체 데이터에서 pending 건수 산출
