@@ -1,6 +1,7 @@
 'use client'
 
 // 실시간 채팅방 — Supabase Realtime 구독 + 낙관적 업데이트 + 이미지 전송
+// 기능: 메시지 읽음 처리, 메시지 삭제, 채팅방 나가기
 import { useEffect, useRef, useState, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
@@ -45,6 +46,8 @@ export default function ChatRoom({ room, initialMessages, currentUserId }: Props
   const [isUploading, setIsUploading] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
   const [isDispatching, setIsDispatching] = useState(false)
+  const [showLeaveConfirm, setShowLeaveConfirm] = useState(false)
+  const [isLeaving, setIsLeaving] = useState(false)
   const bottomRef = useRef<HTMLDivElement>(null)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
@@ -90,14 +93,50 @@ export default function ChatRoom({ room, initialMessages, currentUserId }: Props
     }
   }
 
+  // 채팅방 나가기
+  const handleLeave = async () => {
+    setShowLeaveConfirm(false)
+    setIsLeaving(true)
+    try {
+      const res = await fetch(`/api/chats/${room.id}/leave`, { method: 'POST' })
+      const json = await res.json() as { error?: string }
+      if (!res.ok) throw new Error(json.error ?? '나가기 실패')
+      toast.success('채팅방을 나갔습니다.')
+      router.replace('/chats')
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : '채팅방 나가기에 실패했습니다.')
+      setIsLeaving(false)
+    }
+  }
+
+  // 메시지 소프트 딜리트 (낙관적 업데이트)
+  const handleDeleteMessage = async (messageId: string) => {
+    setMessages((prev) =>
+      prev.map((m) => (m.id === messageId ? { ...m, is_deleted: true } : m))
+    )
+    try {
+      const res = await fetch(`/api/chats/${room.id}/messages/${messageId}`, {
+        method: 'DELETE',
+      })
+      if (!res.ok) {
+        const json = await res.json() as { error?: string }
+        throw new Error(json.error ?? '삭제 실패')
+      }
+    } catch (err) {
+      // 실패 시 롤백
+      setMessages((prev) =>
+        prev.map((m) => (m.id === messageId ? { ...m, is_deleted: false } : m))
+      )
+      console.error('[handleDeleteMessage]', err)
+      toast.error('메시지 삭제에 실패했습니다.')
+    }
+  }
+
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages])
 
-  // Realtime 구독
-  // Supabase 싱글톤 클라이언트는 같은 topic 이름의 채널을 내부 캐시에서 재사용한다.
-  // Math.random() suffix로 매 마운트마다 완전히 새로운 채널 이름을 만들어
-  // 이미 subscribed된 캐시 인스턴스를 반환하는 문제를 원천 차단한다.
+  // Realtime 구독 — INSERT(새 메시지 + 즉시 읽음 처리) + UPDATE(삭제/읽음 반영)
   useEffect(() => {
     const supabase = createClient()
     const channelName = `room:${room.id}:${Math.random().toString(36).slice(2, 9)}`
@@ -112,11 +151,34 @@ export default function ChatRoom({ room, initialMessages, currentUserId }: Props
           table: 'chat_messages',
           filter: `room_id=eq.${room.id}`,
         },
-        (payload) => {
+        async (payload) => {
+          const newMsg = payload.new as ChatMessage
           setMessages((prev) => {
-            if (prev.some((msg) => msg.id === payload.new.id)) return prev
-            return [...prev, payload.new as ChatMessage]
+            if (prev.some((m) => m.id === newMsg.id)) return prev
+            return [...prev, newMsg]
           })
+          // 상대방 메시지라면 즉시 읽음 처리
+          if (newMsg.sender_id !== currentUserId) {
+            await supabase
+              .from('chat_messages')
+              .update({ is_read: true })
+              .eq('id', newMsg.id)
+          }
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'chat_messages',
+          filter: `room_id=eq.${room.id}`,
+        },
+        (payload) => {
+          const updated = payload.new as ChatMessage
+          setMessages((prev) =>
+            prev.map((m) => (m.id === updated.id ? { ...m, ...updated } : m))
+          )
         }
       )
       .subscribe()
@@ -124,7 +186,7 @@ export default function ChatRoom({ room, initialMessages, currentUserId }: Props
     return () => {
       supabase.removeChannel(channel)
     }
-  }, [room.id])
+  }, [room.id, currentUserId])
 
   // 메시지 API 전송 공용 헬퍼
   const postMessage = useCallback(async (message: string): Promise<ChatMessage> => {
@@ -149,7 +211,7 @@ export default function ChatRoom({ room, initialMessages, currentUserId }: Props
     const tempId = `temp-${Date.now()}`
     const tempMsg: ChatMessage = {
       id: tempId, room_id: room.id, sender_id: currentUserId,
-      message: text, is_read: false, created_at: new Date().toISOString(),
+      message: text, is_read: false, is_deleted: false, created_at: new Date().toISOString(),
     }
     setMessages((prev) => [...prev, tempMsg])
 
@@ -202,7 +264,6 @@ export default function ChatRoom({ room, initialMessages, currentUserId }: Props
         .getPublicUrl(uploadData.path)
 
       const saved = await postMessage(`${IMG_PREFIX}${publicUrl}`)
-      // Realtime dedup이 처리하지만, 응답 즉시 추가해 빠른 UX 보장
       setMessages((prev) => {
         if (prev.some((m) => m.id === saved.id)) return prev
         return [...prev, saved]
@@ -261,7 +322,7 @@ export default function ChatRoom({ room, initialMessages, currentUserId }: Props
               onClick={() => setMenuOpen((v) => !v)}
               className="p-2 rounded-xl hover:bg-gray-100 transition-colors"
               aria-label="메뉴"
-              disabled={isDispatching}
+              disabled={isDispatching || isLeaving}
             >
               <svg className="w-5 h-5 text-slate-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
                 <circle cx="12" cy="5" r="1" fill="currentColor" stroke="none" />
@@ -323,6 +384,19 @@ export default function ChatRoom({ room, initialMessages, currentUserId }: Props
                     </Link>
                   </>
                 )}
+
+                {/* 공통: 채팅방 나가기 */}
+                <button
+                  onClick={() => { setMenuOpen(false); setShowLeaveConfirm(true) }}
+                  className="w-full flex items-center gap-2.5 px-4 py-3 text-sm text-red-500 font-semibold hover:bg-red-50 transition-colors border-t border-gray-100"
+                >
+                  <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+                    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" strokeLinecap="round" strokeLinejoin="round" />
+                    <polyline points="16 17 21 12 16 7" strokeLinecap="round" strokeLinejoin="round" />
+                    <line x1="21" y1="12" x2="9" y2="12" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                  채팅방 나가기
+                </button>
               </div>
             )}
           </div>
@@ -343,6 +417,7 @@ export default function ChatRoom({ room, initialMessages, currentUserId }: Props
               const isMine = msg.sender_id === currentUserId
               const isTemp = msg.id.startsWith('temp-')
               const isImg = msg.message.startsWith(IMG_PREFIX)
+              const isDeletedMsg = msg.is_deleted
 
               return (
                 <div key={msg.id} className={`flex items-end gap-2 ${isMine ? 'flex-row-reverse' : 'flex-row'}`}>
@@ -359,25 +434,53 @@ export default function ChatRoom({ room, initialMessages, currentUserId }: Props
                     <div className="shrink-0 w-7" />
                   )}
 
-                  {/* 말풍선 or 이미지 */}
-                  <div className={`max-w-[68%] ${isTemp ? 'opacity-60' : ''} ${
-                    isImg
-                      ? 'rounded-2xl overflow-hidden'
-                      : `px-3.5 py-2.5 rounded-2xl text-sm leading-relaxed break-words ${
-                          isMine
-                            ? 'bg-blue-500 text-white rounded-br-sm'
-                            : 'bg-gray-100 text-slate-800 rounded-bl-sm'
-                        }`
-                  }`}>
-                    {isImg ? (
-                      <img
-                        src={msg.message.slice(IMG_PREFIX.length)}
-                        alt="이미지"
-                        className="max-w-full max-h-56 object-cover block"
-                        loading="lazy"
-                      />
-                    ) : (
-                      msg.message
+                  {/* 삭제 버튼 + 말풍선 묶음 */}
+                  <div className={`flex items-end gap-1.5 ${isMine ? 'flex-row-reverse' : 'flex-row'} ${!isTemp && isMine && !isDeletedMsg ? 'group' : ''}`}>
+
+                    {/* 말풍선 or 이미지 */}
+                    <div className={`max-w-[68%] ${isTemp ? 'opacity-60' : ''} ${
+                      isDeletedMsg
+                        ? `px-3.5 py-2.5 rounded-2xl text-sm italic ${
+                            isMine
+                              ? 'bg-blue-100 text-blue-300 rounded-br-sm'
+                              : 'bg-gray-100 text-gray-400 rounded-bl-sm'
+                          }`
+                        : isImg
+                          ? 'rounded-2xl overflow-hidden'
+                          : `px-3.5 py-2.5 rounded-2xl text-sm leading-relaxed break-words ${
+                              isMine
+                                ? 'bg-blue-500 text-white rounded-br-sm'
+                                : 'bg-gray-100 text-slate-800 rounded-bl-sm'
+                            }`
+                    }`}>
+                      {isDeletedMsg
+                        ? '삭제된 메시지입니다.'
+                        : isImg
+                          ? (
+                            <img
+                              src={msg.message.slice(IMG_PREFIX.length)}
+                              alt="이미지"
+                              className="max-w-full max-h-56 object-cover block"
+                              loading="lazy"
+                            />
+                          )
+                          : msg.message
+                      }
+                    </div>
+
+                    {/* 내 메시지 삭제 버튼 — hover 시 노출 */}
+                    {isMine && !isTemp && !isDeletedMsg && (
+                      <button
+                        onClick={() => handleDeleteMessage(msg.id)}
+                        className="opacity-0 group-hover:opacity-100 transition-opacity p-1 rounded-lg hover:bg-gray-100 shrink-0 self-center"
+                        aria-label="메시지 삭제"
+                      >
+                        <svg className="w-3.5 h-3.5 text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+                          <polyline points="3 6 5 6 21 6" strokeLinecap="round" strokeLinejoin="round" />
+                          <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" strokeLinecap="round" strokeLinejoin="round" />
+                          <path d="M10 11v6M14 11v6" strokeLinecap="round" strokeLinejoin="round" />
+                        </svg>
+                      </button>
                     )}
                   </div>
 
@@ -451,6 +554,31 @@ export default function ChatRoom({ room, initialMessages, currentUserId }: Props
         className="hidden"
         onChange={handleImageSelect}
       />
+
+      {/* 채팅방 나가기 확인 모달 */}
+      {showLeaveConfirm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
+          <div className="bg-white rounded-2xl shadow-xl mx-4 p-6 max-w-xs w-full">
+            <p className="text-[15px] font-bold text-slate-900 mb-1.5">채팅방 나가기</p>
+            <p className="text-sm text-gray-500 mb-5">나가면 목록에서 삭제됩니다. 계속할까요?</p>
+            <div className="flex gap-2">
+              <button
+                onClick={() => setShowLeaveConfirm(false)}
+                className="flex-1 py-2.5 rounded-xl border border-gray-200 text-sm font-semibold text-slate-700 hover:bg-gray-50 transition-colors"
+              >
+                취소
+              </button>
+              <button
+                onClick={handleLeave}
+                disabled={isLeaving}
+                className="flex-1 py-2.5 rounded-xl bg-red-500 text-sm font-semibold text-white hover:bg-red-600 transition-colors disabled:opacity-50"
+              >
+                {isLeaving ? '처리중...' : '나가기'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

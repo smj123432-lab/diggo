@@ -166,11 +166,13 @@ export default function ChatList({ rooms, currentUserId, currentUserName }: Prop
                         unread > 0
                           ? 'text-slate-700 font-semibold'
                           : 'text-gray-400 font-normal'
-                      }`}>
-                        {last?.message ?? '대화를 시작해 보세요'}
+                      } ${last?.is_deleted ? 'italic' : ''}`}>
+                        {last?.is_deleted
+                          ? '삭제된 메시지입니다.'
+                          : last?.message ?? '대화를 시작해 보세요'}
                       </p>
                       {unread > 0 && (
-                        <span className="shrink-0 min-w-[18px] h-[18px] px-1 flex items-center justify-center rounded-full bg-orange-500 text-[10px] font-bold text-white leading-none">
+                        <span className="shrink-0 min-w-[18px] h-[18px] px-1 flex items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white leading-none">
                           {unread > 99 ? '99+' : unread}
                         </span>
                       )}

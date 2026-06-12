@@ -212,6 +212,8 @@ export interface ChatRoom {
   job_id: string
   manager_id: string
   driver_id: string
+  manager_left: boolean
+  driver_left: boolean
   created_at: string
 }
 
@@ -229,6 +231,7 @@ export interface ChatMessage {
   sender_id: string
   message: string
   is_read: boolean
+  is_deleted: boolean
   created_at: string
 }
 

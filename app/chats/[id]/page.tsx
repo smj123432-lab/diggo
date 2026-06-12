@@ -17,7 +17,7 @@ export default async function ChatRoomPage({ params }: Props) {
   // 채팅방 기본 정보 조회 (profile join 없이 — FK가 auth.users 참조라 auto-join 불가)
   const { data: room } = await supabase
     .from('chat_rooms')
-    .select('id, job_id, manager_id, driver_id, created_at')
+    .select('id, job_id, manager_id, driver_id, manager_left, driver_left, created_at')
     .eq('id', id)
     .maybeSingle()
 

@@ -15,10 +15,14 @@ export default async function ChatsLayout({ children }: { children: React.ReactN
     .eq('id', user.id)
     .single()
 
+  // 나간 방은 목록에서 제외
   const { data: rooms } = await supabase
     .from('chat_rooms')
-    .select('id, job_id, manager_id, driver_id, created_at')
-    .or(`manager_id.eq.${user.id},driver_id.eq.${user.id}`)
+    .select('id, job_id, manager_id, driver_id, manager_left, driver_left, created_at')
+    .or(
+      `and(manager_id.eq.${user.id},manager_left.eq.false),` +
+      `and(driver_id.eq.${user.id},driver_left.eq.false)`
+    )
     .order('created_at', { ascending: false })
 
   let enriched: ChatRoomWithDetails[] = []

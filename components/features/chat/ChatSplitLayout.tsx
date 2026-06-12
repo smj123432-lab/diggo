@@ -1,10 +1,12 @@
 'use client'
 
 // 데스크톱: 인스타그램 DM 스타일 좌우 분할 뷰 / 모바일: 단일 뷰
-import { useState } from 'react'
+// 기능: 미읽음 카운트 실시간 업데이트 (Realtime INSERT 구독)
+import { useState, useEffect, useRef } from 'react'
 import { usePathname, useRouter } from 'next/navigation'
 import Link from 'next/link'
-import type { ChatRoomWithDetails } from '@/types'
+import { createClient } from '@/lib/supabase/client'
+import type { ChatMessage, ChatRoomWithDetails } from '@/types'
 import ChatList from './ChatList'
 
 interface Props {
@@ -84,6 +86,11 @@ function DesktopRoomList({ rooms, currentUserId, activeRoomId }: DesktopRoomList
         const timeStr = last ? timeAgo(last.created_at) : timeAgo(room.created_at)
         const isActive = room.id === activeRoomId
 
+        // 삭제된 메시지 미리보기 처리
+        const previewText = last?.is_deleted
+          ? '삭제된 메시지입니다.'
+          : last?.message ?? '대화를 시작해 보세요'
+
         return (
           <li key={room.id}>
             <Link
@@ -109,11 +116,11 @@ function DesktopRoomList({ rooms, currentUserId, activeRoomId }: DesktopRoomList
                 <div className="flex items-center gap-1.5">
                   <p className={`text-[12px] line-clamp-1 flex-1 min-w-0 ${
                     unread > 0 ? 'text-slate-700 font-semibold' : 'text-gray-400'
-                  }`}>
-                    {last?.message ?? '대화를 시작해 보세요'}
+                  } ${last?.is_deleted ? 'italic' : ''}`}>
+                    {previewText}
                   </p>
                   {unread > 0 && (
-                    <span className="shrink-0 min-w-[16px] h-4 px-1 flex items-center justify-center rounded-full bg-orange-500 text-[9px] font-bold text-white leading-none">
+                    <span className="shrink-0 min-w-[16px] h-4 px-1 flex items-center justify-center rounded-full bg-red-500 text-[9px] font-bold text-white leading-none">
                       {unread > 99 ? '99+' : unread}
                     </span>
                   )}
@@ -132,14 +139,82 @@ export default function ChatSplitLayout({ rooms, currentUserId, currentUserName,
   const pathname = usePathname()
   const [searchQuery, setSearchQuery] = useState('')
 
+  // 로컬 방 목록 상태 — Realtime 업데이트를 반영
+  const [localRooms, setLocalRooms] = useState<ChatRoomWithDetails[]>(rooms)
+
+  // props 변경(레이아웃 재렌더) 시 동기화
+  useEffect(() => {
+    setLocalRooms(rooms)
+  }, [rooms])
+
   const isRootPage = pathname === '/chats'
   const activeRoomId = !isRootPage && pathname.startsWith('/chats/')
     ? pathname.replace('/chats/', '')
     : undefined
 
-  // 상대방 이름·마지막 메시지·일감 제목으로 실시간 필터링
+  // activeRoomId를 ref로 유지 — Realtime 클로저에서 최신값 참조
+  const activeRoomIdRef = useRef(activeRoomId)
+  useEffect(() => {
+    activeRoomIdRef.current = activeRoomId
+  }, [activeRoomId])
+
+  // 방 진입 시 해당 방 unread_count 즉시 0으로 리셋
+  useEffect(() => {
+    if (!activeRoomId) return
+    setLocalRooms((prev) =>
+      prev.map((r) => (r.id === activeRoomId ? { ...r, unread_count: 0 } : r))
+    )
+  }, [activeRoomId])
+
+  // Realtime INSERT 구독 — 미읽음 카운트 + last_message + 방 순서 실시간 갱신
+  useEffect(() => {
+    const supabase = createClient()
+    const channelName = `chats-list:${currentUserId}:${Math.random().toString(36).slice(2, 9)}`
+
+    const channel = supabase
+      .channel(channelName)
+      .on(
+        'postgres_changes',
+        { event: 'INSERT', schema: 'public', table: 'chat_messages' },
+        (payload) => {
+          const msg = payload.new as ChatMessage
+
+          setLocalRooms((prev) => {
+            const targetRoom = prev.find((r) => r.id === msg.room_id)
+            if (!targetRoom) return prev
+
+            const isActive = msg.room_id === activeRoomIdRef.current
+            // 내 메시지거나 현재 보고 있는 방이면 unread 증가 안 함
+            const delta = (msg.sender_id === currentUserId || isActive) ? 0 : 1
+
+            const updated = prev.map((r) => {
+              if (r.id !== msg.room_id) return r
+              return {
+                ...r,
+                last_message: msg as ChatRoomWithDetails['last_message'],
+                unread_count: (r.unread_count ?? 0) + delta,
+              }
+            })
+
+            // 최신 메시지 방을 맨 위로 정렬
+            return [...updated].sort((a, b) => {
+              const aTime = a.last_message?.created_at ?? a.created_at
+              const bTime = b.last_message?.created_at ?? b.created_at
+              return new Date(bTime).getTime() - new Date(aTime).getTime()
+            })
+          })
+        }
+      )
+      .subscribe()
+
+    return () => {
+      supabase.removeChannel(channel)
+    }
+  }, [currentUserId]) // activeRoomId는 deps 제외 — ref로 처리
+
+  // 검색 필터 (localRooms 기반)
   const filteredRooms = searchQuery.trim()
-    ? rooms.filter((room) => {
+    ? localRooms.filter((room) => {
         const isManager = currentUserId === room.manager_id
         const opponent = isManager ? room.driver : room.manager
         const q = searchQuery.toLowerCase()
@@ -149,7 +224,7 @@ export default function ChatSplitLayout({ rooms, currentUserId, currentUserName,
           room.jobs?.title?.toLowerCase().includes(q)
         )
       })
-    : rooms
+    : localRooms
 
   return (
     <>
@@ -215,7 +290,7 @@ export default function ChatSplitLayout({ rooms, currentUserId, currentUserName,
       {/* ── 모바일: 단일 뷰 (md 미만) ── */}
       <div className="md:hidden">
         {isRootPage
-          ? <ChatList rooms={rooms} currentUserId={currentUserId} currentUserName={currentUserName} />
+          ? <ChatList rooms={localRooms} currentUserId={currentUserId} currentUserName={currentUserName} />
           : children
         }
       </div>
