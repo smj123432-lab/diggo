@@ -448,96 +448,104 @@ export default function ChatRoom({ room, initialMessages, currentUserId }: Props
               const isPrevSame = isSameGroup(prevMsg, msg)
               const isNextSame = isSameGroup(msg, nextMsg)
 
-              // 연속 그룹 간격: 같은 그룹 안이면 촘촘하게, 새 그룹이면 여유롭게
               const marginTop = index === 0 ? '' : isPrevSame ? 'mt-0.5' : 'mt-2.5'
-
-              // 상대방 아바타: 연속 묶음의 마지막에만 표시
               const showAvatar = !isMine && !isNextSame
-
-              // 타임스탬프: 연속 묶음의 마지막에만 표시
               const showTime = !isNextSame
-
-              // 말풍선 모서리 — 이미지는 항상 둥글게
               const bubbleRadius = isImg ? 'rounded-2xl' : getBubbleRadius(isMine, isPrevSame, isNextSame)
 
-              return (
-                <div key={msg.id} className={`flex items-end gap-2 ${isMine ? 'flex-row-reverse' : 'flex-row'} ${marginTop}`}>
-                  {/* 상대방 아바타 or 스페이서 */}
-                  {!isMine ? (
-                    showAvatar ? (
-                      <div className="shrink-0 w-7 h-7 rounded-full overflow-hidden ring-1 ring-gray-200 self-end mb-0.5">
-                        {opponent?.avatar_url ? (
-                          <img src={opponent.avatar_url} alt={opponent.name ?? ''} className="w-full h-full object-cover" />
-                        ) : (
-                          <DefaultAvatar size={28} />
+              if (isMine) {
+                // ── 내 메시지: justify-end + 일반 row 순서
+                // 시각 순서: [FREE SPACE] [1+시간] [말풍선] [삭제버튼(hover)]
+                // flex-row-reverse 제거 → 삭제버튼이 타임스탬프와 말풍선 사이에 끼는 버그 해소
+                return (
+                  <div key={msg.id} className={`flex items-end justify-end gap-1.5 ${marginTop}`}>
+
+                    {/* [안 읽음 1 + 시간] — 말풍선 왼쪽 바로 옆 밀착 */}
+                    {(showTime || (!msg.is_read && !isTemp)) && (
+                      <div className="flex flex-col items-end justify-end select-none shrink-0 pb-0.5 gap-0.5">
+                        {!msg.is_read && !isTemp && (
+                          <span className="text-[10px] font-bold text-yellow-400 leading-none">1</span>
+                        )}
+                        {showTime && (
+                          <span className="text-[10px] text-gray-400 leading-tight">
+                            {isTemp ? '전송중' : formatTime(msg.created_at)}
+                          </span>
                         )}
                       </div>
-                    ) : (
-                      <div className="shrink-0 w-7" />
-                    )
+                    )}
+
+                    {/* 말풍선 → 삭제 버튼 순서 (outer edge에 위치) */}
+                    <div className={`flex items-end gap-1.5 max-w-[70%] min-w-0 ${!isTemp && !isDeletedMsg ? 'group' : ''}`}>
+                      <div className={`min-w-[50px] ${isTemp ? 'opacity-60' : ''} ${
+                        isDeletedMsg
+                          ? `px-3.5 py-2.5 text-sm italic whitespace-pre-wrap break-words ${bubbleRadius} bg-blue-100 text-blue-300`
+                          : isImg
+                            ? `overflow-hidden ${bubbleRadius}`
+                            : `px-3.5 py-2.5 text-sm leading-relaxed whitespace-pre-wrap break-words ${bubbleRadius} bg-blue-500 text-white`
+                      }`}>
+                        {isDeletedMsg
+                          ? '삭제된 메시지입니다.'
+                          : isImg
+                            ? <img src={msg.message.slice(IMG_PREFIX.length)} alt="이미지" className="max-w-full max-h-56 object-cover block" loading="lazy" />
+                            : msg.message
+                        }
+                      </div>
+
+                      {!isTemp && !isDeletedMsg && (
+                        <button
+                          onClick={() => handleDeleteMessage(msg.id)}
+                          className="opacity-0 group-hover:opacity-100 transition-opacity p-1 rounded-lg hover:bg-gray-100 shrink-0 self-center"
+                          aria-label="메시지 삭제"
+                        >
+                          <svg className="w-3.5 h-3.5 text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+                            <polyline points="3 6 5 6 21 6" strokeLinecap="round" strokeLinejoin="round" />
+                            <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" strokeLinecap="round" strokeLinejoin="round" />
+                            <path d="M10 11v6M14 11v6" strokeLinecap="round" strokeLinejoin="round" />
+                          </svg>
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                )
+              }
+
+              // ── 상대방 메시지: 기존 구조 유지
+              return (
+                <div key={msg.id} className={`flex items-end gap-2 ${marginTop}`}>
+                  {showAvatar ? (
+                    <div className="shrink-0 w-7 h-7 rounded-full overflow-hidden ring-1 ring-gray-200 self-end mb-0.5">
+                      {opponent?.avatar_url ? (
+                        <img src={opponent.avatar_url} alt={opponent.name ?? ''} className="w-full h-full object-cover" />
+                      ) : (
+                        <DefaultAvatar size={28} />
+                      )}
+                    </div>
                   ) : (
                     <div className="shrink-0 w-7" />
                   )}
 
-                  {/* 삭제 버튼 + 말풍선 묶음
-                      max-w는 여기(row의 직계 자식)에 적용 → row 너비 기준 % 계산으로 순환 의존성 해소 */}
-                  <div className={`flex items-end gap-1.5 max-w-[70%] min-w-0 ${isMine ? 'flex-row-reverse' : 'flex-row'} ${!isTemp && isMine && !isDeletedMsg ? 'group' : ''}`}>
-
-                    {/* 말풍선 or 이미지 */}
-                    <div className={`min-w-[50px] ${isTemp ? 'opacity-60' : ''} ${
+                  <div className="flex items-end gap-1.5 max-w-[70%] min-w-0">
+                    <div className={`min-w-[50px] ${
                       isDeletedMsg
-                        ? `px-3.5 py-2.5 text-sm italic whitespace-pre-wrap break-words ${bubbleRadius} ${
-                            isMine ? 'bg-blue-100 text-blue-300' : 'bg-gray-100 text-gray-400'
-                          }`
+                        ? `px-3.5 py-2.5 text-sm italic whitespace-pre-wrap break-words ${bubbleRadius} bg-gray-100 text-gray-400`
                         : isImg
                           ? `overflow-hidden ${bubbleRadius}`
-                          : `px-3.5 py-2.5 text-sm leading-relaxed whitespace-pre-wrap break-words ${bubbleRadius} ${
-                              isMine ? 'bg-blue-500 text-white' : 'bg-gray-100 text-slate-800'
-                            }`
+                          : `px-3.5 py-2.5 text-sm leading-relaxed whitespace-pre-wrap break-words ${bubbleRadius} bg-gray-100 text-slate-800`
                     }`}>
                       {isDeletedMsg
                         ? '삭제된 메시지입니다.'
                         : isImg
-                          ? (
-                            <img
-                              src={msg.message.slice(IMG_PREFIX.length)}
-                              alt="이미지"
-                              className="max-w-full max-h-56 object-cover block"
-                              loading="lazy"
-                            />
-                          )
+                          ? <img src={msg.message.slice(IMG_PREFIX.length)} alt="이미지" className="max-w-full max-h-56 object-cover block" loading="lazy" />
                           : msg.message
                       }
                     </div>
-
-                    {/* 내 메시지 삭제 버튼 — hover 시 노출 */}
-                    {isMine && !isTemp && !isDeletedMsg && (
-                      <button
-                        onClick={() => handleDeleteMessage(msg.id)}
-                        className="opacity-0 group-hover:opacity-100 transition-opacity p-1 rounded-lg hover:bg-gray-100 shrink-0 self-center"
-                        aria-label="메시지 삭제"
-                      >
-                        <svg className="w-3.5 h-3.5 text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
-                          <polyline points="3 6 5 6 21 6" strokeLinecap="round" strokeLinejoin="round" />
-                          <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" strokeLinecap="round" strokeLinejoin="round" />
-                          <path d="M10 11v6M14 11v6" strokeLinecap="round" strokeLinejoin="round" />
-                        </svg>
-                      </button>
-                    )}
                   </div>
 
-                  {/* 타임스탬프 + 읽음 표시(1) */}
-                  {(showTime || (isMine && !msg.is_read && !isTemp)) && (
-                    <div className={`flex flex-col shrink-0 pb-0.5 gap-0.5 ${isMine ? 'items-end' : 'items-start'}`}>
-                      {/* 안 읽음 표시: 내 메시지이고 상대방이 아직 읽지 않은 경우 */}
-                      {isMine && !msg.is_read && !isTemp && (
-                        <span className="text-[10px] font-bold text-yellow-400 leading-none">1</span>
-                      )}
-                      {showTime && (
-                        <span className="text-[10px] text-gray-400 leading-tight">
-                          {isTemp ? '전송중' : formatTime(msg.created_at)}
-                        </span>
-                      )}
+                  {showTime && (
+                    <div className="flex flex-col items-start justify-end shrink-0 pb-0.5">
+                      <span className="text-[10px] text-gray-400 leading-tight">
+                        {formatTime(msg.created_at)}
+                      </span>
                     </div>
                   )}
                 </div>
