@@ -53,7 +53,7 @@ export default function ChatList({ rooms, currentUserId, currentUserName }: Prop
     : rooms
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-white">
       {/* ── 상단 고정 헤더 ── */}
       <div className="sticky top-0 z-10 bg-white border-b border-gray-200/80 shadow-sm">
         {/* 뒤로가기 + 이름 */}
