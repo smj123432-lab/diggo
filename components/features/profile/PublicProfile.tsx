@@ -2,8 +2,9 @@
 
 // 공개 프로필 페이지 — 소장/기사 역할별 분기 UI
 import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { Star, Award, Briefcase, MapPin, Calendar, ChevronRight } from 'lucide-react'
+import { Star, Award, Briefcase, MapPin, Calendar, ChevronRight, AlertTriangle } from 'lucide-react'
 import type { Profile, Job, EquipmentCode } from '@/types'
 import { EQUIPMENT_LABELS, JOB_TYPE_LABELS } from '@/types'
 
@@ -112,12 +113,30 @@ function JobCard({ job }: { job: Props['openJobs'][number] }) {
 }
 
 export default function PublicProfile({ profile, reviews, openJobs, matchCount }: Props) {
+  const router = useRouter()
   const [activeTab, setActiveTab] = useState<'jobs' | 'reviews'>('jobs')
   const isManager = profile.role === 'manager'
   const isVeteran = profile.rating_avg >= 4.5 && profile.review_count >= 5
+  const isLowRating = profile.review_count >= 5 && profile.rating_avg <= 2.0
 
   return (
     <div className="min-h-screen bg-gray-50 pb-16">
+      {/* 뒤로가기 헤더 */}
+      <div className="sticky top-0 z-10 bg-white border-b border-gray-100">
+        <div className="max-w-xl mx-auto px-3 py-3 flex items-center gap-2">
+          <button
+            onClick={() => router.back()}
+            className="p-1.5 rounded-lg hover:bg-gray-100 transition-colors text-gray-500 hover:text-gray-800"
+            aria-label="뒤로가기"
+          >
+            <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+              <path d="M19 12H5M12 5l-7 7 7 7" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          </button>
+          <span className="text-sm font-semibold text-slate-700">프로필</span>
+        </div>
+      </div>
+
       {/* 헤더 카드 */}
       <div className="bg-white border-b border-gray-100">
         <div className="max-w-xl mx-auto px-4 py-6">
@@ -145,6 +164,12 @@ export default function PublicProfile({ profile, reviews, openJobs, matchCount }
                   <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-bold bg-gradient-to-r from-amber-400 to-orange-400 text-white">
                     <Award className="w-3 h-3" />
                     우수 베테랑
+                  </span>
+                )}
+                {isLowRating && (
+                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-bold bg-red-100 text-red-600 border border-red-200">
+                    <AlertTriangle className="w-3 h-3" />
+                    저평점 주의
                   </span>
                 )}
               </div>

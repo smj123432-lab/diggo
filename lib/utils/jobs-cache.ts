@@ -29,7 +29,7 @@ export async function getCachedJobDetail(id: string) {
   const supabase = createPublicClient()
   const { data, error } = await supabase
     .from('jobs')
-    .select('*, profiles(id, name, rating_avg, is_certified)')
+    .select('*, profiles(id, name, rating_avg, is_certified, avatar_url)')
     .eq('id', id)
     .single()
 
