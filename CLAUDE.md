@@ -620,3 +620,77 @@ net: displayData.totalIncome - displayData.totalManagerExpense,
 ```
 
 > `ledger_expenses`에 수입/지출을 함께 저장하는 구조는 집계 로직 3곳을 반드시 함께 수정해야 한다. 한 곳만 고치면 화면에 따라 수치가 달라지는 혼란이 발생한다.
+
+### Supabase Realtime UPDATE — REPLICA IDENTITY DEFAULT에서 payload.new 컬럼 누락
+
+**증상**: UPDATE 이벤트(is_deleted, is_read 등 단일 컬럼 변경)가 상대방 화면에 실시간 반영되지 않음
+
+**원인**: `REPLICA IDENTITY DEFAULT`(기본값) 환경에서 `payload.new`는 PK(`id`)와 **실제로 변경된 컬럼만** 포함한다. `room_id` 등 변경되지 않은 컬럼은 payload에 없어서 `undefined`가 됨. 따라서 `updated.room_id !== room.id` 조건이 항상 `true`가 되어 early return → `setMessages` 미호출 → 실시간 미반영.
+
+**해결**: `room_id` 체크 대신 메시지 ID가 현재 state에 존재하는지 확인.
+
+```typescript
+// 변경 전 (room_id가 payload에 없으면 undefined → 항상 early return)
+if (updated.room_id !== room.id) return
+setMessages(prev => prev.map(m => m.id === updated.id ? { ...m, ...updated } : m))
+
+// 변경 후 (ID 존재 여부로 귀속 판단)
+setMessages(prev => {
+  if (!prev.some(m => m.id === updated.id)) return prev
+  return prev.map(m => m.id === updated.id ? { ...m, ...updated } : m)
+})
+```
+
+> `REPLICA IDENTITY FULL`을 설정하면 모든 컬럼이 payload에 포함되어 filter도 동작하지만, 설정하지 않은 환경에서는 반드시 ID 기반 존재 확인으로 대체해야 한다.
+
+### 채팅 말풍선 flex-row-reverse + 삭제버튼 레이아웃 버그 — 타임스탬프가 버블과 멀어짐
+
+**증상**: 내 메시지(isMine) 타임스탬프가 말풍선에서 ~40px 이상 떨어져 표시됨
+
+**원인**: 외부 row와 bubble-wrapper 모두 `flex-row-reverse`를 사용하면, bubble-wrapper 내부 DOM 순서 `[bubble][delete-btn]`이 시각적으로 `[delete-btn][bubble]`로 반전됨. 외부 row까지 반전되면 전체 시각 순서가 `[timestamp][delete-btn(invisible, ~28px)][bubble][spacer]`가 되어 delete 버튼이 timestamp와 bubble 사이에 끼어 ~42px 갭 발생.
+
+**해결**: isMine 메시지 외부 row에서 `flex-row-reverse` 제거, `justify-end`로 교체. DOM 순서를 `[timestamp][bubble-wrapper]`로 배치. bubble-wrapper 내부도 `flex-row`로 변경해 bubble 먼저, delete 버튼은 오른쪽(outer edge)에 배치.
+
+```tsx
+// 변경 전: flex-row-reverse 이중 적용 → 타임스탬프-버블 사이에 삭제버튼 개입
+<div className="flex items-end gap-2 flex-row-reverse">
+  <div className="flex items-end gap-1.5 flex-row-reverse max-w-[70%]">
+    <div>bubble</div>
+    <button>delete</button>  {/* 시각적으로 bubble 왼쪽에 위치 */}
+  </div>
+  <div>timestamp</div>
+</div>
+
+// 변경 후: justify-end + 정방향 DOM 순서
+<div className="flex items-end justify-end gap-1.5">
+  <div>timestamp</div>  {/* DOM 먼저 → 시각적으로 bubble 왼쪽 */}
+  <div className="flex items-end gap-1.5 max-w-[70%]">
+    <div>bubble</div>
+    <button>delete</button>  {/* 오른쪽(outer edge) */}
+  </div>
+</div>
+```
+
+> `flex-row-reverse`를 중첩 사용하면 invisible 요소(opacity-0)가 레이아웃 공간을 차지해 예기치 않은 간격이 생긴다. isMine 우측 정렬은 `justify-end`로 처리하고 DOM 순서는 시각 순서와 일치시켜야 한다.
+
+### 채팅 말풍선 텍스트 세로 쪼개짐 — max-w % CSS 순환 의존성
+
+**증상**: 짧은 메시지("뭐요?" 등)가 한 글자씩 세로로 쌓여 렌더링됨
+
+**원인**: `max-w-[68%]`를 flex 래퍼 내부 div에 적용하면 % 기준이 래퍼 자체 너비가 되는데, 래퍼 너비는 자식에 의해 결정되는 순환 의존성 발생 → 브라우저가 너비를 거의 0으로 계산.
+
+**해결**: `max-w-[70%]`를 row의 **직계 자식**(flex 아이템)에 적용. 버블 div에는 `min-w-[50px]` + `whitespace-pre-wrap` + `break-words` 추가.
+
+```tsx
+// 변경 전: max-w가 내부 div에 → % 기준 불확정
+<div className="flex items-end gap-1.5">  {/* 래퍼: 너비 불확정 */}
+  <div className="max-w-[68%]">bubble</div>  {/* 68% of 불확정 = ~0 */}
+</div>
+
+// 변경 후: max-w를 row 직계 자식(래퍼)에 적용
+<div className="max-w-[70%] min-w-0 flex items-end gap-1.5">  {/* row 너비 기준 % */}
+  <div className="min-w-[50px] whitespace-pre-wrap break-words">bubble</div>
+</div>
+```
+
+> flex 컨테이너 내부에서 % 기반 max-w를 쓸 때는 항상 "무엇의 %인가"를 확인해야 한다. 부모가 flex 아이템이면서 명시적 너비가 없으면 순환 의존성이 발생한다.
