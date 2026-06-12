@@ -477,18 +477,19 @@ export default function ChatRoom({ room, initialMessages, currentUserId }: Props
                     <div className="shrink-0 w-7" />
                   )}
 
-                  {/* 삭제 버튼 + 말풍선 묶음 */}
-                  <div className={`flex items-end gap-1.5 ${isMine ? 'flex-row-reverse' : 'flex-row'} ${!isTemp && isMine && !isDeletedMsg ? 'group' : ''}`}>
+                  {/* 삭제 버튼 + 말풍선 묶음
+                      max-w는 여기(row의 직계 자식)에 적용 → row 너비 기준 % 계산으로 순환 의존성 해소 */}
+                  <div className={`flex items-end gap-1.5 max-w-[70%] min-w-0 ${isMine ? 'flex-row-reverse' : 'flex-row'} ${!isTemp && isMine && !isDeletedMsg ? 'group' : ''}`}>
 
                     {/* 말풍선 or 이미지 */}
-                    <div className={`max-w-[68%] ${isTemp ? 'opacity-60' : ''} ${
+                    <div className={`min-w-[50px] ${isTemp ? 'opacity-60' : ''} ${
                       isDeletedMsg
-                        ? `px-3.5 py-2.5 text-sm italic ${bubbleRadius} ${
+                        ? `px-3.5 py-2.5 text-sm italic whitespace-pre-wrap break-words ${bubbleRadius} ${
                             isMine ? 'bg-blue-100 text-blue-300' : 'bg-gray-100 text-gray-400'
                           }`
                         : isImg
                           ? `overflow-hidden ${bubbleRadius}`
-                          : `px-3.5 py-2.5 text-sm leading-relaxed break-words ${bubbleRadius} ${
+                          : `px-3.5 py-2.5 text-sm leading-relaxed whitespace-pre-wrap break-words ${bubbleRadius} ${
                               isMine ? 'bg-blue-500 text-white' : 'bg-gray-100 text-slate-800'
                             }`
                     }`}>
@@ -523,11 +524,19 @@ export default function ChatRoom({ room, initialMessages, currentUserId }: Props
                     )}
                   </div>
 
-                  {/* 타임스탬프: 연속 묶음 마지막에만 표시 */}
-                  {showTime && (
-                    <span className="text-[10px] text-gray-400 shrink-0 pb-0.5">
-                      {isTemp ? '전송중' : formatTime(msg.created_at)}
-                    </span>
+                  {/* 타임스탬프 + 읽음 표시(1) */}
+                  {(showTime || (isMine && !msg.is_read && !isTemp)) && (
+                    <div className={`flex flex-col shrink-0 pb-0.5 gap-0.5 ${isMine ? 'items-end' : 'items-start'}`}>
+                      {/* 읽음 표시: 내 메시지이고 상대방이 아직 읽지 않은 경우 */}
+                      {isMine && !msg.is_read && !isTemp && (
+                        <span className="text-[9px] font-semibold text-blue-400 leading-none">1</span>
+                      )}
+                      {showTime && (
+                        <span className="text-[10px] text-gray-400 leading-tight">
+                          {isTemp ? '전송중' : formatTime(msg.created_at)}
+                        </span>
+                      )}
+                    </div>
                   )}
                 </div>
               )
