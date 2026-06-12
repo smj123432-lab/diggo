@@ -194,10 +194,12 @@ export default function ChatRoom({ room, initialMessages, currentUserId }: Props
           event: 'UPDATE',
           schema: 'public',
           table: 'chat_messages',
-          filter: `room_id=eq.${room.id}`,
+          // filter 제거: REPLICA IDENTITY FULL 없이도 UPDATE 이벤트를 수신하기 위해
+          // room_id 체크를 코드에서 직접 처리
         },
         (payload) => {
           const updated = payload.new as ChatMessage
+          if (updated.room_id !== room.id) return
           setMessages((prev) =>
             prev.map((m) => (m.id === updated.id ? { ...m, ...updated } : m))
           )
@@ -527,9 +529,9 @@ export default function ChatRoom({ room, initialMessages, currentUserId }: Props
                   {/* 타임스탬프 + 읽음 표시(1) */}
                   {(showTime || (isMine && !msg.is_read && !isTemp)) && (
                     <div className={`flex flex-col shrink-0 pb-0.5 gap-0.5 ${isMine ? 'items-end' : 'items-start'}`}>
-                      {/* 읽음 표시: 내 메시지이고 상대방이 아직 읽지 않은 경우 */}
+                      {/* 안 읽음 표시: 내 메시지이고 상대방이 아직 읽지 않은 경우 */}
                       {isMine && !msg.is_read && !isTemp && (
-                        <span className="text-[9px] font-semibold text-blue-400 leading-none">1</span>
+                        <span className="text-[10px] font-bold text-yellow-400 leading-none">1</span>
                       )}
                       {showTime && (
                         <span className="text-[10px] text-gray-400 leading-tight">
