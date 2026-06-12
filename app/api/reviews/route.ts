@@ -16,12 +16,11 @@ export async function GET(request: NextRequest) {
     if (type === 'given') {
       const { data } = await supabase
         .from('reviews')
-        .select('job_id')
+        .select('job_id, reviewee_id')
         .eq('reviewer_id', user.id)
-      return NextResponse.json({ data: (data ?? []).map((r) => r.job_id) })
+      return NextResponse.json({ data: data ?? [] })
     }
 
-    // received
     const { data: reviews } = await supabase
       .from('reviews')
       .select('id, rating, comment, created_at, job_id, reviewer_id')
@@ -60,13 +59,8 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const supabase = await createClient()
-    const {
-      data: { user },
-    } = await supabase.auth.getUser()
-
-    if (!user) {
-      return NextResponse.json({ error: '로그인이 필요합니다.' }, { status: 401 })
-    }
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return NextResponse.json({ error: '로그인이 필요합니다.' }, { status: 401 })
 
     const body = await request.json()
     const { job_id, reviewee_id, rating, comment } = body
@@ -98,11 +92,27 @@ export async function POST(request: NextRequest) {
 
     if (error) {
       if (error.code === '23505') {
-        return NextResponse.json({ error: '이미 평가를 작성했습니다.' }, { status: 409 })
+        return NextResponse.json({ error: '이 일감에 대한 평가를 이미 작성했습니다.' }, { status: 409 })
       }
       console.error('[POST /api/reviews] insert error:', JSON.stringify(error))
       return NextResponse.json({ error: `DB 오류: ${error.code} — ${error.message}` }, { status: 500 })
     }
+
+    // 리뷰 등록 성공 후 대상자의 평점 재집계 → profiles 업데이트
+    const { data: allRatings } = await supabase
+      .from('reviews')
+      .select('rating')
+      .eq('reviewee_id', reviewee_id)
+
+    const count = allRatings?.length ?? 0
+    const avg = count > 0
+      ? Math.round((allRatings!.reduce((sum, r) => sum + r.rating, 0) / count) * 100) / 100
+      : 0
+
+    await supabase
+      .from('profiles')
+      .update({ rating_avg: avg, review_count: count })
+      .eq('id', reviewee_id)
 
     return NextResponse.json({ data }, { status: 201 })
   } catch (error) {

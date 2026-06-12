@@ -166,17 +166,30 @@ diggo/
 
 ## 작업 완료 후 자동 문서 업데이트 규칙
 
-**사용자가 별도로 요청하지 않아도** 커밋 완료 시 반드시 아래 세 곳을 자동 업데이트한다.
+**사용자가 별도로 요청하지 않아도** 커밋 완료 시 반드시 아래 네 곳을 자동 업데이트한다.
 
-1. **Notion** (Page ID: `368da2371b5b8075b4cdc8a162ecc7c2`)
+### Notion 링크
+
+| 페이지 | Page ID | 용도 |
+|--------|---------|------|
+| Diggo 개발 로그 | `368da2371b5b8075b4cdc8a162ecc7c2` | 기술 기록, 트러블슈팅, 개발 일지 |
+| 올인원 생산성 관리 시스템 | `40eda2371b5b839fa78f0163aea75a3e` | 프로젝트 관리, 작업 추가, 저널 |
+
+1. **Notion — Diggo 개발 로그** (`368da2371b5b8075b4cdc8a162ecc7c2`)
    - ✅ 완료 섹션에 작업 내용 추가
    - 📅 개발 일지에 날짜 + 작업 내용 추가
    - 🐛 트러블슈팅 발생 시 기록
    - 📌 예정 항목에서 완료된 것 제거
 
-2. **CLAUDE.md** — 새 트러블슈팅 패턴, 코딩 규칙 변경사항 추가
+2. **Notion — 올인원 생산성 관리 시스템** (`40eda2371b5b839fa78f0163aea75a3e`)
+   - 작업 관리 시스템 DB에 완료된 작업 추가 (완료=true, 마감일, 프로젝트 연결)
+   - 저널 "Diggo 개발 일지"에 당일 세션 일지 항목 추가
+   - 예정 작업은 완료=false, Not started로 추가
+   - 단순 마감일 있는 작업은 일일/주간 플래너에 자동 반영됨 (별도 작업 불필요)
 
-3. **PLAN.md** — 기술스택 변경, 작업 체크리스트 ⬜→✅, 아키텍처 변경 반영
+3. **CLAUDE.md** — 새 트러블슈팅 패턴, 코딩 규칙 변경사항 추가
+
+4. **PLAN.md** — 기술스택 변경, 작업 체크리스트 ⬜→✅, 아키텍처 변경 반영
 
 ## 작업 시작 전 체크리스트
 
@@ -535,3 +548,193 @@ export async function GET(_: NextRequest, { params }: { params: Promise<{ id: st
 ```
 
 > 서버 SSR 프리페치와 클라이언트 TanStack Query의 `queryKey`, `정렬 기준`, `필터 조건`이 완전히 일치해야 한다. 불일치 시 staleTime 만료 후 리스트가 교체되는 UX 버그 발생.
+
+### 장부 API endDate KST 오프-바이-원 버그 — 월말 일감 미표시
+
+**증상**: 6월 달력에서 6월 29~30일 일감이 달력 리본에 미표시
+
+**원인**: `new Date(year, month, 0).toISOString().split('T')[0]`는 UTC 기준으로 ISO 문자열을 생성하는데, KST(UTC+9)에서 자정(00:00 KST = 전날 15:00 UTC)에 실행하면 하루 일찍 반환됨. 예를 들어 6월 마지막 날 계산 시 `2026-06-29`가 반환되어 30일 일감이 범위에서 제외됨.
+
+**해결**: `toISOString()` 대신 `getDate()` + 직접 문자열 조합.
+
+```typescript
+// 변경 전 (KST에서 하루 밀릴 수 있음)
+const endDate = new Date(year, month, 0).toISOString().split('T')[0]
+
+// 변경 후 (항상 정확한 마지막 날)
+const lastDay = new Date(year, month, 0).getDate()
+const endDate = `${year}-${String(month).padStart(2, '0')}-${String(lastDay).padStart(2, '0')}`
+```
+
+> `new Date(...).toISOString()`은 UTC 변환이 포함되므로 KST 환경에서 날짜 경계 계산에 절대 사용하지 말 것. 날짜 문자열이 필요할 때는 항상 `getFullYear/getMonth/getDate` + 직접 문자열 조합을 사용한다.
+
+### 채팅 배차 기사의 applied_equipment_code null — 달력/목록 장비 표시 누락
+
+**증상**: 채팅으로 배차된 기사의 일감이 달력 리본에 미표시되거나, DriverApplicationsList에서 장비 뱃지가 미표시됨
+
+**원인**: 소장이 채팅 ⋮ 메뉴의 "배치 수락"으로 배차하면 `applications.applied_equipment_code`와 `equipment_id`가 모두 null. 일반 지원 흐름(기사가 장비 선택 후 지원)에서만 이 필드가 채워짐.
+
+**해결**: `applied_equipment_code → equipment.model_code → job.equipment_codes[0]` 순서로 fallback 체인 적용.
+
+```typescript
+// buildIncomeEntries (lib/utils/ledger.ts)
+const eqCode = (a.applied_equipment_code as EquipmentCode | null)
+  ?? a.equipments?.model_code
+  ?? (job.equipment_codes?.[0] as EquipmentCode | undefined)
+  ?? null
+
+// DriverApplicationsList
+const displayCode = (applied_equipment_code ?? equipment?.model_code ?? job.equipment_codes?.[0] ?? null) as EquipmentCode | null
+```
+
+> 채팅 배차와 일반 지원 배차는 `applied_equipment_code` 존재 여부가 다르다. 장비 코드를 사용하는 모든 곳에 fallback 체인을 반드시 적용해야 한다.
+
+### 수동 수입(category='수입') 지출 집계 버그 — 세 곳 동시 수정 필요
+
+**증상**: 수동 수입 내역 추가 시 월 요약 카드에서 수익이 아닌 지출로 표시됨 (또는 일부 위젯만 올바르게 표시됨)
+
+**원인**: `ledger_expenses` 테이블에 `category='수입'`으로 수동 수입을 저장하는 구조. 집계 로직이 세 곳에 분산되어 있어 한 곳만 수정하면 다른 곳에서 불일치가 발생함:
+1. `lib/utils/ledger.ts` `buildMonthData` — 월 전체 집계
+2. `components/features/ledger/LedgerDayPanel.tsx` `computePanelNet` — 특정 날짜 순수익
+3. `app/mypage/ledger/LedgerClientPage.tsx` `summaryValues` — 요약 카드 표시값
+
+**해결**: 세 곳 모두에서 `category === '수입'` 여부를 체크해 분기.
+
+```typescript
+// buildMonthData — '수입' 카테고리는 totalExpense 대신 totalIncome에 가산
+if (entry.category === '수입') {
+  day.totalIncome += Number(entry.amount) || 0
+} else {
+  day.totalExpense += Number(entry.amount) || 0
+}
+
+// computePanelNet (소장) — manualInc(수동 수입) 별도 집계 후 포함
+const raw = role === 'manager'
+  ? manualInc - jobPay - actualExp
+  : jobIncome + manualInc - actualExp
+return raw || 0  // -0 방지
+
+// summaryValues (소장)
+income: displayData.totalIncome,  // 수동 수입 포함된 값 사용
+net: displayData.totalIncome - displayData.totalManagerExpense,
+```
+
+> `ledger_expenses`에 수입/지출을 함께 저장하는 구조는 집계 로직 3곳을 반드시 함께 수정해야 한다. 한 곳만 고치면 화면에 따라 수치가 달라지는 혼란이 발생한다.
+
+### Supabase Realtime UPDATE — REPLICA IDENTITY DEFAULT에서 payload.new 컬럼 누락
+
+**증상**: UPDATE 이벤트(is_deleted, is_read 등 단일 컬럼 변경)가 상대방 화면에 실시간 반영되지 않음
+
+**원인**: `REPLICA IDENTITY DEFAULT`(기본값) 환경에서 `payload.new`는 PK(`id`)와 **실제로 변경된 컬럼만** 포함한다. `room_id` 등 변경되지 않은 컬럼은 payload에 없어서 `undefined`가 됨. 따라서 `updated.room_id !== room.id` 조건이 항상 `true`가 되어 early return → `setMessages` 미호출 → 실시간 미반영.
+
+**해결**: `room_id` 체크 대신 메시지 ID가 현재 state에 존재하는지 확인.
+
+```typescript
+// 변경 전 (room_id가 payload에 없으면 undefined → 항상 early return)
+if (updated.room_id !== room.id) return
+setMessages(prev => prev.map(m => m.id === updated.id ? { ...m, ...updated } : m))
+
+// 변경 후 (ID 존재 여부로 귀속 판단)
+setMessages(prev => {
+  if (!prev.some(m => m.id === updated.id)) return prev
+  return prev.map(m => m.id === updated.id ? { ...m, ...updated } : m)
+})
+```
+
+> `REPLICA IDENTITY FULL`을 설정하면 모든 컬럼이 payload에 포함되어 filter도 동작하지만, 설정하지 않은 환경에서는 반드시 ID 기반 존재 확인으로 대체해야 한다.
+
+### 채팅 말풍선 flex-row-reverse + 삭제버튼 레이아웃 버그 — 타임스탬프가 버블과 멀어짐
+
+**증상**: 내 메시지(isMine) 타임스탬프가 말풍선에서 ~40px 이상 떨어져 표시됨
+
+**원인**: 외부 row와 bubble-wrapper 모두 `flex-row-reverse`를 사용하면, bubble-wrapper 내부 DOM 순서 `[bubble][delete-btn]`이 시각적으로 `[delete-btn][bubble]`로 반전됨. 외부 row까지 반전되면 전체 시각 순서가 `[timestamp][delete-btn(invisible, ~28px)][bubble][spacer]`가 되어 delete 버튼이 timestamp와 bubble 사이에 끼어 ~42px 갭 발생.
+
+**해결**: isMine 메시지 외부 row에서 `flex-row-reverse` 제거, `justify-end`로 교체. DOM 순서를 `[timestamp][bubble-wrapper]`로 배치. bubble-wrapper 내부도 `flex-row`로 변경해 bubble 먼저, delete 버튼은 오른쪽(outer edge)에 배치.
+
+```tsx
+// 변경 전: flex-row-reverse 이중 적용 → 타임스탬프-버블 사이에 삭제버튼 개입
+<div className="flex items-end gap-2 flex-row-reverse">
+  <div className="flex items-end gap-1.5 flex-row-reverse max-w-[70%]">
+    <div>bubble</div>
+    <button>delete</button>  {/* 시각적으로 bubble 왼쪽에 위치 */}
+  </div>
+  <div>timestamp</div>
+</div>
+
+// 변경 후: justify-end + 정방향 DOM 순서
+<div className="flex items-end justify-end gap-1.5">
+  <div>timestamp</div>  {/* DOM 먼저 → 시각적으로 bubble 왼쪽 */}
+  <div className="flex items-end gap-1.5 max-w-[70%]">
+    <div>bubble</div>
+    <button>delete</button>  {/* 오른쪽(outer edge) */}
+  </div>
+</div>
+```
+
+> `flex-row-reverse`를 중첩 사용하면 invisible 요소(opacity-0)가 레이아웃 공간을 차지해 예기치 않은 간격이 생긴다. isMine 우측 정렬은 `justify-end`로 처리하고 DOM 순서는 시각 순서와 일치시켜야 한다.
+
+### 채팅 말풍선 텍스트 세로 쪼개짐 — max-w % CSS 순환 의존성
+
+**증상**: 짧은 메시지("뭐요?" 등)가 한 글자씩 세로로 쌓여 렌더링됨
+
+**원인**: `max-w-[68%]`를 flex 래퍼 내부 div에 적용하면 % 기준이 래퍼 자체 너비가 되는데, 래퍼 너비는 자식에 의해 결정되는 순환 의존성 발생 → 브라우저가 너비를 거의 0으로 계산.
+
+**해결**: `max-w-[70%]`를 row의 **직계 자식**(flex 아이템)에 적용. 버블 div에는 `min-w-[50px]` + `whitespace-pre-wrap` + `break-words` 추가.
+
+```tsx
+// 변경 전: max-w가 내부 div에 → % 기준 불확정
+<div className="flex items-end gap-1.5">  {/* 래퍼: 너비 불확정 */}
+  <div className="max-w-[68%]">bubble</div>  {/* 68% of 불확정 = ~0 */}
+</div>
+
+// 변경 후: max-w를 row 직계 자식(래퍼)에 적용
+<div className="max-w-[70%] min-w-0 flex items-end gap-1.5">  {/* row 너비 기준 % */}
+  <div className="min-w-[50px] whitespace-pre-wrap break-words">bubble</div>
+</div>
+```
+
+> flex 컨테이너 내부에서 % 기반 max-w를 쓸 때는 항상 "무엇의 %인가"를 확인해야 한다. 부모가 flex 아이템이면서 명시적 너비가 없으면 순환 의존성이 발생한다.
+
+### Supabase reviews 테이블 — service_role SELECT 권한 누락 (42501)
+
+**증상**: `adminClient.from('reviews').select(...)` 실행 시 `permission denied for table reviews (code: 42501)`
+
+**원인**: SQL로 직접 생성한 `reviews` 테이블에 `service_role`의 SELECT 권한이 자동 부여되지 않음. `authenticated` 롤과 달리 `service_role`도 명시적 grant가 필요하다.
+
+**해결**: Supabase SQL Editor에서 실행
+```sql
+GRANT SELECT ON public.reviews TO service_role;
+```
+
+> SQL로 생성한 테이블은 `authenticated`뿐 아니라 `service_role`에도 필요한 권한을 별도로 부여해야 한다. admin 클라이언트가 bypass RLS를 하더라도 테이블 자체의 GRANT 권한은 별개다.
+
+### Supabase PostgREST embedded join — 동일 테이블 다중 FK 모호성
+
+**증상**: `reviews` 테이블에서 `profiles`를 두 FK(`reviewer_id`, `reviewee_id`)로 참조할 때 join 결과가 `null` 또는 0건
+
+**원인**: PostgREST가 `profiles` 테이블로의 관계가 둘 이상이라 어느 FK를 사용할지 알 수 없어 "more than one relationship found" 에러를 내며 `data: null` 반환. `!컬럼명` 또는 `!제약조건명` hint를 써도 Supabase 버전이나 마이그레이션 방식에 따라 불안정함.
+
+**해결**: embedded join을 포기하고 별도 쿼리 후 JS에서 수동 병합.
+
+```typescript
+// 1단계: reviews 단순 fetch (FK 컬럼 포함)
+const { data: rawReviews } = await adminClient
+  .from('reviews')
+  .select('id, rating, comment, created_at, reviewer_id, reviewee_id, job_id')
+  .lte('rating', 2)
+
+// 2단계: 관련 ID 수집 후 profiles, jobs 별도 fetch
+const allProfileIds = [...new Set([...reviewerIds, ...revieweeIds])]
+const { data: reviewProfiles } = await adminClient
+  .from('profiles').select('id, name, role').in('id', allProfileIds)
+
+// 3단계: Map 생성 후 JS에서 병합
+const profileMap = Object.fromEntries(reviewProfiles.map(p => [p.id, p]))
+const disputes = rawReviews.map(r => ({
+  ...r,
+  reviewer: r.reviewer_id ? profileMap[r.reviewer_id] ?? null : null,
+  reviewee: r.reviewee_id ? profileMap[r.reviewee_id] ?? null : null,
+}))
+```
+
+> 같은 테이블을 두 개 이상의 FK로 참조하는 경우 PostgREST join은 신뢰할 수 없다. 별도 쿼리 + JS 병합이 가장 안정적이다.

@@ -95,25 +95,43 @@ export function NavButtons() {
       >
         {user ? (
           <>
-            {role === 'manager' && (
-              <Link
-                href="/manager/jobs"
-                onClick={close}
-                className="flex items-center gap-3 px-4 py-3.5 text-sm text-slate-200 hover:bg-white/10 transition-colors"
-              >
+            {/* 1. 일감 찾기(기사) / 일감 올리기(소장) */}
+            {role === 'driver' && (
+              <Link href="/jobs" onClick={close} className="flex items-center gap-3 px-4 py-3.5 text-sm text-slate-200 hover:bg-white/10 transition-colors">
                 <svg className="w-4 h-4 text-slate-400 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
-                  <rect x="3" y="3" width="18" height="18" rx="2" />
-                  <path d="M9 9h6M9 13h6M9 17h4" strokeLinecap="round" />
+                  <circle cx="11" cy="11" r="8" /><path d="m21 21-4.35-4.35" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+                일감 찾기
+              </Link>
+            )}
+            {role === 'manager' && (
+              <Link href="/jobs" onClick={close} className="flex items-center gap-3 px-4 py-3.5 text-sm text-slate-200 hover:bg-white/10 transition-colors">
+                <svg className="w-4 h-4 text-slate-400 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+                  <path d="M12 5v14M5 12h14" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+                일감 올리기
+              </Link>
+            )}
+            {/* 2. 장부 */}
+            <Link href="/mypage/ledger" onClick={close} className="flex items-center gap-3 px-4 py-3.5 text-sm text-slate-200 hover:bg-white/10 transition-colors border-t border-white/5">
+              <svg className="w-4 h-4 text-slate-400 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+                <path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2" />
+                <rect x="9" y="3" width="6" height="4" rx="1" />
+                <line x1="9" y1="12" x2="15" y2="12" /><line x1="9" y1="16" x2="13" y2="16" />
+              </svg>
+              장부
+            </Link>
+            {/* 3. 내 일감(소장) / 내 지원(기사) */}
+            {role === 'manager' && (
+              <Link href="/manager/jobs" onClick={close} className="flex items-center gap-3 px-4 py-3.5 text-sm text-slate-200 hover:bg-white/10 transition-colors border-t border-white/5">
+                <svg className="w-4 h-4 text-slate-400 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+                  <rect x="3" y="3" width="18" height="18" rx="2" /><path d="M9 9h6M9 13h6M9 17h4" strokeLinecap="round" />
                 </svg>
                 내 일감
               </Link>
             )}
             {role === 'driver' && (
-              <Link
-                href="/mypage/applications"
-                onClick={close}
-                className="flex items-center gap-3 px-4 py-3.5 text-sm text-slate-200 hover:bg-white/10 transition-colors"
-              >
+              <Link href="/mypage/applications" onClick={close} className="flex items-center gap-3 px-4 py-3.5 text-sm text-slate-200 hover:bg-white/10 transition-colors border-t border-white/5">
                 <svg className="w-4 h-4 text-slate-400 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
                   <path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2" />
                   <rect x="9" y="3" width="6" height="4" rx="1" />
@@ -122,26 +140,17 @@ export function NavButtons() {
                 내 지원
               </Link>
             )}
-            <Link
-              href="/mypage/ledger"
-              onClick={close}
-              className="flex items-center gap-3 px-4 py-3.5 text-sm text-slate-200 hover:bg-white/10 transition-colors border-t border-white/5"
-            >
+            {/* 4. 채팅 */}
+            <Link href="/chats" onClick={close} className="flex items-center gap-3 px-4 py-3.5 text-sm text-slate-200 hover:bg-white/10 transition-colors border-t border-white/5">
               <svg className="w-4 h-4 text-slate-400 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
-                <path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2" />
-                <rect x="9" y="3" width="6" height="4" rx="1" />
-                <line x1="9" y1="12" x2="15" y2="12" /><line x1="9" y1="16" x2="13" y2="16" />
+                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
-              장부
+              채팅
             </Link>
-            <Link
-              href="/mypage"
-              onClick={close}
-              className="flex items-center gap-3 px-4 py-3.5 text-sm text-slate-200 hover:bg-white/10 transition-colors border-t border-white/5"
-            >
+            {/* 5. 마이페이지 */}
+            <Link href="/mypage" onClick={close} className="flex items-center gap-3 px-4 py-3.5 text-sm text-slate-200 hover:bg-white/10 transition-colors border-t border-white/5">
               <svg className="w-4 h-4 text-slate-400 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
-                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-                <circle cx="12" cy="7" r="4" />
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" />
               </svg>
               마이페이지
             </Link>

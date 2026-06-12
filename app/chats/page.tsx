@@ -1,8 +1,4 @@
+// 모바일 목록은 ChatSplitLayout에서 처리 — 이 파일은 라우트 유지용
 export default function ChatsPage() {
-  return (
-    <main className="min-h-screen px-4 py-6 max-w-lg mx-auto">
-      <h1 className="text-xl font-bold mb-4">채팅</h1>
-      <p className="text-gray-500">구현 예정 (v2)</p>
-    </main>
-  )
+  return null
 }

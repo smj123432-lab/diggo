@@ -1,17 +1,14 @@
 # Diggo — 굴착기 배차 플랫폼
 
-> 굴착기 기사와 소장을 연결하는 신뢰 기반 배차 플랫폼  
-> 배차 중개 + 자격 인증 + 전자장부를 하나의 서비스로 통합합니다.
-
-🔗 **[diggo-zr4b.vercel.app](https://diggo-zr4b.vercel.app)**
+배포: https://diggo-zr4b.vercel.app
 
 ---
 
 ## 1. 서비스 소개
 
-Diggo는 굴착기 기사와 소장(현장 책임자)을 연결하는 배차 플랫폼입니다.
+굴착기 기사와 소장(현장 책임자)을 연결하는 배차 플랫폼입니다.
 
-기존 중장비 플랫폼이 배차 중개에서 그치는 반면, Diggo는 **자격 인증 시스템**과 **전자장부 기능**을 함께 제공합니다. 기사는 검증된 이력으로 일감을 얻고, 소장은 자격이 확인된 기사를 안전하게 섭외할 수 있습니다.
+기존 중장비 플랫폼은 배차 중개까지만 합니다. 정산이나 기록은 여전히 수기입니다. Diggo는 배차 중개, 자격 인증, 전자장부를 한 곳에서 씁니다.
 
 | 역할 | 주요 기능 |
 |---|---|
@@ -23,17 +20,13 @@ Diggo는 굴착기 기사와 소장(현장 책임자)을 연결하는 배차 플
 
 ## 2. 개발 배경
 
-저는 굴착기 기사로 현장에서 직접 일한 경험이 있습니다. 그 과정에서 구조적인 문제를 직접 겪었습니다.
+굴착기 기사로 직접 현장을 뛴 경험이 있습니다.
 
-**기사 입장**
-- 경력과 실력이 있어도 나이가 어리다는 이유로 일감을 받지 못하는 경우가 빈번합니다
-- 작업 완료 후 대금 지급이 미뤄지거나 지급되지 않는 사례가 적지 않습니다
-- 수기 장부로 일한 날짜와 금액을 관리하는 것이 불편합니다
+기사 쪽에서 보면, 경력이 있어도 나이가 어리면 일감을 못 잡는 경우가 많습니다. 작업을 마쳐도 대금이 밀리거나 아예 안 들어오는 일도 드물지 않습니다. 장부는 여전히 수기가 기본이라, 어느 날 일했는지 나중에 확인하는 것도 번거롭습니다.
 
-**소장 입장**
-- 경력을 속인 기사로 인한 현장 사고 피해가 실제로 발생합니다
+소장 쪽도 마찬가지입니다. 경력을 속인 기사가 투입돼 현장 사고가 나는 건 실제로 있는 일입니다.
 
-이를 해결하기 위해 **상호 평가와 자격 인증**으로 신뢰를 쌓고, **전자장부**로 수기 관리 문제를 해결하는 플랫폼을 직접 만들었습니다.
+양쪽 다 상대를 검증할 방법이 없어서 생기는 문제입니다. 상호 평가와 자격 인증으로 서로를 확인하고, 전자장부로 수기 관리 문제를 해결하는 플랫폼을 만들었습니다.
 
 ---
 
@@ -85,7 +78,7 @@ flowchart LR
 
 ---
 
-## 4. 서비스 주요 기능
+## 4. 핵심 기능
 
 ### 일감 등록 · 조회
 - 일감 유형(토목/철거), 필요 장비, 작업 일자, 지급 금액 등록
@@ -117,15 +110,15 @@ flowchart LR
 
 ## 5. 기술 스택
 
-| 분류 | 기술 |
-|---|---|
-| Frontend | Next.js 14 (App Router), TypeScript, Tailwind CSS |
-| Backend | Supabase (PostgreSQL, Auth, Storage, Realtime) |
-| 클라이언트 상태 | Zustand |
-| 서버 상태 | TanStack Query v5 |
-| 지도 | 카카오맵 JavaScript SDK |
-| 패키지 매니저 | Bun |
-| 배포 | Vercel |
+| 분류 | 기술 | 선택 이유 |
+|---|---|---|
+| Frontend | Next.js 16 (App Router), TypeScript, Tailwind CSS | `"use cache"` + cacheComponents로 공개 일감 목록 정적 캐싱, SSR/CSR 하이브리드 |
+| Backend | Supabase (PostgreSQL, Auth, Storage, Realtime) | RLS로 역할별 접근 제어 선언적 처리, 인증·실시간 내장 |
+| 클라이언트 상태 | Zustand | 유저 세션·role처럼 앱 전역에서 동기적으로 참조하는 값 전용 |
+| 서버 상태 | TanStack Query v5 | 무한스크롤, 낙관적 업데이트, staleTime 기반 캐싱 |
+| 지도 | 카카오맵 API | 주소 검색(Kakao 로컬 API) + 지도 렌더링(Kakao Maps SDK) |
+| 패키지 매니저 | Bun | npm 대비 빠른 설치, Vercel 배포 환경 지원 |
+| 배포 | Vercel | |
 
 ---
 
@@ -146,30 +139,45 @@ Supabase (BaaS)
 └── Realtime              — 채팅 · 알림 구독
 ```
 
-**렌더링 전략**
+### 캐싱 전략
 
-| 페이지 | 전략 | 이유 |
-|---|---|---|
-| 일감 목록 | ISR (30초) | 자주 바뀌지만 개인 데이터 아님 |
-| 일감 상세 | ISR (60초) | SEO 필요 |
-| 마이페이지 · 장부 | no-store | 개인 데이터 |
-| 채팅 · 알림 | Realtime | 즉시성 필요 |
+공개 일감 목록은 Next.js 16의 `"use cache"` + `cacheLife('seconds')`로 30초 캐싱합니다. 인증이 필요한 페이지는 `createClient()`에 `'use no-store'`를 선언해 자동으로 동적 처리됩니다. 클라이언트에서는 TanStack Query staleTime이 추가 캐싱을 담당합니다.
+
+```
+공개 페이지:  "use cache" (Next.js 16) → 서버 캐시
+클라이언트:  TanStack Query staleTime → 클라이언트 캐시
+인증 필요:   'use no-store' → 매 요청마다 fresh
+실시간:      Supabase Realtime 구독
+```
+
+### 렌더링 전략
+
+| 페이지 | 방식 | 이유 |
+|--------|------|------|
+| 일감 목록 | SSR + "use cache" | SEO + 30초 캐싱 |
+| 일감 상세 | Partial Prerender | SEO, 공유 링크 미리보기 |
+| 장부 / 마이페이지 | Dynamic (no-store) | 개인 데이터 |
+| 채팅 | CSR + Realtime | 실시간 |
 
 ---
 
 ## 7. 기술 의사결정
 
 ### Supabase vs 직접 API 서버 구축
-Supabase를 선택했습니다. Auth, Storage, Realtime을 별도로 구축하려면 개발 리소스가 크게 늘어납니다. 1인 개발로 MVP를 빠르게 완성하는 것이 우선이었고, RLS(Row Level Security)로 역할별 접근 제어가 선언적으로 가능해 보안 코드를 줄일 수 있었습니다.
+
+Supabase를 선택했습니다. Auth, Storage, Realtime을 별도로 구축하려면 개발 리소스가 크게 늘어납니다. 1인 개발로 MVP를 빠르게 완성하는 것이 우선이었고, RLS로 역할별 접근 제어를 선언적으로 처리할 수 있어 보안 코드를 줄일 수 있었습니다.
 
 ### Zustand + TanStack Query 병행
-서버 상태와 클라이언트 상태를 명확히 분리했습니다. 유저 세션·역할처럼 앱 전역에서 동기적으로 참조하는 값은 Zustand, 일감 목록·지원 이력처럼 캐싱·리페치가 필요한 서버 데이터는 TanStack Query로 관리합니다.
+
+서버 상태와 클라이언트 상태를 분리했습니다. 유저 세션·역할처럼 앱 전역에서 동기적으로 참조하는 값은 Zustand, 일감 목록·지원 이력처럼 캐싱·리페치가 필요한 서버 데이터는 TanStack Query로 관리합니다.
 
 ### Next.js App Router 선택
-서버 컴포넌트로 초기 데이터를 서버에서 fetch해 렌더링하면 SEO와 초기 로딩 성능이 개선됩니다. 일감 목록처럼 검색엔진 노출이 중요한 페이지에서 효과적입니다. 클라이언트 상태가 필요한 컴포넌트에만 `'use client'`를 최소화해 번들 크기를 줄였습니다.
+
+서버 컴포넌트로 초기 데이터를 서버에서 fetch해 렌더링하면 SEO와 초기 로딩 성능이 개선됩니다. 일감 목록처럼 검색엔진 노출이 중요한 페이지에 효과적입니다. `'use client'`를 최소화해 번들 크기도 줄였습니다.
 
 ### Bun 선택
-npm 대비 패키지 설치 속도가 빠르고 Vercel 배포 환경에서도 지원됩니다. 런타임으로도 사용 가능해 로컬 개발 환경을 단순하게 유지할 수 있습니다.
+
+npm 대비 패키지 설치 속도가 빠르고 Vercel 배포 환경에서도 지원됩니다.
 
 ---
 
@@ -200,7 +208,6 @@ as $$ ... $$;
 **해결**: 필요한 권한을 명시적으로 부여
 ```sql
 GRANT INSERT, SELECT, UPDATE ON public.jobs TO authenticated;
-GRANT INSERT, SELECT, UPDATE, DELETE ON public.certifications TO service_role;
 ```
 
 ---
@@ -239,11 +246,26 @@ function onOutside(e: MouseEvent) {
 
 ---
 
+### SSR 정렬과 클라이언트 re-fetch 정렬 불일치
+
+**증상**: `/jobs` 페이지 진입 30초 후 포커스 전환 시 일감 목록 순서가 바뀜
+
+**원인**: 서버 프리페치는 최신 등록순으로 정렬하고, 클라이언트 기본값은 마감 임박순이었습니다. TanStack Query staleTime 30초가 만료된 뒤 포커스 이벤트로 클라이언트 re-fetch가 트리거되면서 목록 순서가 교체되는 버그입니다. Hydration 직후가 아니라 staleTime 만료 시점에 발생해 재현이 어려웠습니다.
+
+**해결**: 서버 프리페치 쿼리를 클라이언트 기본 정렬(마감 임박순, `work_date ASC`)로 통일
+```typescript
+// 변경 전: .order('created_at', { ascending: false })
+// 변경 후:
+.order('work_date', { ascending: true })
+```
+
+---
+
 ### 일감 상태값 추가 시 DB 500 에러
 
 **증상**: 새 `status` 값으로 PATCH 요청 시 500 에러
 
-**원인**: `jobs` 테이블의 `status` 컬럼에 CHECK 제약 조건이 있어 허용되지 않은 값 차단
+**원인**: `jobs` 테이블의 `status` 컬럼에 CHECK 제약 조건이 있어 허용되지 않은 값 차단. TypeScript 타입만 수정하면 DB에서 거부됨
 
 **해결**: 새 상태값 추가 시 TypeScript 타입과 DB 제약 조건을 함께 수정
 ```sql
@@ -257,7 +279,7 @@ ALTER TABLE jobs ADD CONSTRAINT jobs_status_check
 ## 9. 성능 최적화
 
 ### 렌더링 전략 분리
-- 일감 목록/상세 페이지에 ISR 적용 → 서버 부하 감소 + SEO 유지
+- 일감 목록/상세 페이지에 "use cache" 적용 → 서버 부하 감소 + SEO 유지
 - 마이페이지·장부는 `no-store` → 항상 최신 개인 데이터 보장
 
 ### 서버 컴포넌트 우선
@@ -267,10 +289,6 @@ ALTER TABLE jobs ADD CONSTRAINT jobs_status_check
 ### 병렬 쿼리 처리
 - 인증 승인 처리 시 `Promise.all`로 관련 쿼리 병렬 실행
 - 독립적인 API 요청은 클라이언트에서도 `Promise.all`로 동시 처리
-
-### 이미지 최적화
-- Supabase Storage URL로 직접 서빙
-- 자격 서류 이미지는 관리자 전용 접근으로 불필요한 노출 차단
 
 ---
 
@@ -298,8 +316,7 @@ diggo/
 │   ├── supabase/           # Supabase 클라이언트 (browser / server)
 │   └── utils/              # 헬퍼 함수
 ├── store/                  # Zustand 스토어
-├── types/                  # TypeScript 타입 · 상수 정의
-└── docs/                   # 기획서, ERD
+└── types/                  # TypeScript 타입 · 상수 정의
 ```
 
 ---
@@ -307,20 +324,16 @@ diggo/
 ## 11. 개선 예정
 
 ### 기능
-- [ ] 채팅 (Supabase Realtime 기반 1:1 채팅)
 - [ ] 알림 (지원·수락·거절·채팅 수신)
-- [ ] 소장 지원자 관리 페이지 (수락/거절)
+- [ ] 장비 여러 대 운용 (담당 기사 지정)
 - [ ] 기사·소장 상호 평가 시스템
-- [ ] 전자장부 (달력 뷰, 월별 수입/지출/순수익)
 - [ ] 노쇼 패널티 (취소 시 평점 감점 + 패널티 뱃지)
+- [ ] 차고지 기준 거리 표시 ("내 차고지에서 15km")
+- [ ] 장부 Excel/PDF 내보내기 (종합소득세 신고용)
+- [ ] 체불 소장 블랙리스트
 
 ### 관리자 기능 (v2)
 - [ ] 회원 정지·탈퇴 처리
 - [ ] 신고 접수 및 처리
 - [ ] 플랫폼 통계 대시보드
 - [ ] 인증 뱃지 자동화 (평점 4.5 이상 시 자동 부여)
-
-### 기술
-- [ ] 무한스크롤 (TanStack Query `useInfiniteQuery`)
-- [ ] 푸시 알림 (FCM 또는 Web Push)
-- [ ] E2E 테스트 (Playwright)

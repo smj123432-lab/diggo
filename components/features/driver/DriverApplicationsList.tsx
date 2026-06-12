@@ -1,18 +1,21 @@
 'use client'
 
 // 기사 — 지원한 일감 목록 + 4단계 필터
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect, useCallback } from 'react'
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
+import { toast } from 'sonner'
 import type { EquipmentCode, JobStatus } from '@/types'
 import { EquipmentBadge } from '@/components/ui/EquipmentBadge'
 import { ReviewModal } from '@/components/features/mypage/ReviewModal'
+import { useAuthStore } from '@/store/auth'
 
 export interface DriverApplication {
   id: string
   status: string
   applied_at: string
   hasReview: boolean
+  applied_equipment_code: string | null
   job: {
     id: string
     title: string
@@ -26,11 +29,12 @@ export interface DriverApplication {
   equipment: { id: string; model_code: EquipmentCode } | null
 }
 
-type StageFilter = 'all' | 'applying' | 'confirmed' | 'pending_settlement' | 'settled'
+type StageFilter = 'all' | 'applying' | 'waiting' | 'confirmed' | 'pending_settlement' | 'settled'
 
 const STAGE_TABS: { value: StageFilter; label: string; desc: string }[] = [
   { value: 'all',                label: '전체',    desc: '' },
-  { value: 'applying',           label: '지원중',  desc: '소장님 선택 대기' },
+  { value: 'applying',           label: '지원중',  desc: '소장님 검토 대기' },
+  { value: 'waiting',            label: '배차대기', desc: '소장님 검토중' },
   { value: 'confirmed',          label: '배차완료', desc: '출근 확정' },
   { value: 'pending_settlement', label: '정산대기', desc: '입금 대기' },
   { value: 'settled',            label: '정산완료', desc: '입금 완료' },
@@ -39,6 +43,7 @@ const STAGE_TABS: { value: StageFilter; label: string; desc: string }[] = [
 const STAGE_BAR: Record<StageFilter, string> = {
   all:                '',
   applying:           'bg-blue-400',
+  waiting:            'bg-violet-400',
   confirmed:          'bg-emerald-400',
   pending_settlement: 'bg-amber-400',
   settled:            'bg-emerald-400',
@@ -47,13 +52,15 @@ const STAGE_BAR: Record<StageFilter, string> = {
 const STAGE_BADGE: Record<StageFilter, string> = {
   all:                '',
   applying:           'bg-blue-50 text-blue-700',
+  waiting:            'bg-violet-50 text-violet-700',
   confirmed:          'bg-emerald-50 text-emerald-700',
   pending_settlement: 'bg-amber-50 text-amber-700',
   settled:            'bg-emerald-50 text-emerald-700',
 }
 
 function getStage(appStatus: string, jobStatus: JobStatus): StageFilter {
-  if (appStatus === 'pending' || appStatus === 'reviewing') return 'applying'
+  if (appStatus === 'pending') return 'applying'
+  if (appStatus === 'reviewing') return 'waiting'
   if (appStatus === 'accepted') {
     if (jobStatus === 'settled') return 'settled'
     if (jobStatus === 'completed') return 'pending_settlement'
@@ -69,11 +76,32 @@ interface Props {
 export function DriverApplicationsList({ applications }: Props) {
   const router = useRouter()
   const searchParams = useSearchParams()
+  const currentUserId = useAuthStore((s) => s.user?.id)
   const [filter, setFilter] = useState<StageFilter>(() => {
     const s = searchParams.get('stage')
     return STAGE_TABS.some((t) => t.value === s) ? (s as StageFilter) : 'all'
   })
   const [reviewTarget, setReviewTarget] = useState<{ jobId: string; managerId: string } | null>(null)
+  const [chattingJobId, setChattingJobId] = useState<string | null>(null)
+
+  const handleOpenChat = useCallback(async (jobId: string) => {
+    if (!currentUserId) return
+    setChattingJobId(jobId)
+    try {
+      const res = await fetch('/api/chats', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ job_id: jobId, driver_id: currentUserId }),
+      })
+      const json = await res.json() as { data?: { id: string }; error?: string }
+      if (!res.ok) throw new Error(json.error)
+      router.push(`/chats/${json.data!.id}`)
+    } catch {
+      toast.error('채팅방을 열지 못했습니다.')
+    } finally {
+      setChattingJobId(null)
+    }
+  }, [router, currentUserId])
   const [tabScrollState, setTabScrollState] = useState({ canLeft: false, canRight: true })
   const tabScrollRef = useRef<HTMLDivElement>(null)
 
@@ -101,6 +129,7 @@ export function DriverApplicationsList({ applications }: Props) {
   const counts: Record<StageFilter, number> = {
     all:                applications.filter((a) => a.status !== 'rejected').length,
     applying:           withStage.filter((a) => a.stage === 'applying').length,
+    waiting:            withStage.filter((a) => a.stage === 'waiting').length,
     confirmed:          withStage.filter((a) => a.stage === 'confirmed').length,
     pending_settlement: withStage.filter((a) => a.stage === 'pending_settlement').length,
     settled:            withStage.filter((a) => a.stage === 'settled').length,
@@ -199,7 +228,8 @@ export function DriverApplicationsList({ applications }: Props) {
       ) : (
         <div className="flex flex-col gap-4">
           {filtered.map((app) => {
-            const { job, equipment, stage } = app
+            const { job, equipment, stage, applied_equipment_code } = app
+            const displayCode = (applied_equipment_code ?? equipment?.model_code ?? job.equipment_codes?.[0] ?? null) as EquipmentCode | null
             const effectiveStage = stage ?? 'applying'
             const isSettled = effectiveStage === 'settled'
             const isRejected = app.status === 'rejected'
@@ -242,7 +272,7 @@ export function DriverApplicationsList({ applications }: Props) {
                           {stageLabel?.label}
                         </span>
                       )}
-                      {equipment && <EquipmentBadge code={equipment.model_code} size="sm" />}
+                      {displayCode && <EquipmentBadge code={displayCode} size="sm" />}
                     </div>
                     <h3 className="text-sm font-bold text-gray-900 mb-1 line-clamp-1">{job.title}</h3>
                     <p className="text-xs text-gray-400 flex items-center gap-1">
@@ -254,7 +284,7 @@ export function DriverApplicationsList({ applications }: Props) {
                     </p>
                   </div>
 
-                  {/* 우측: 날짜·금액·리뷰 버튼 */}
+                  {/* 우측: 날짜·금액·리뷰/채팅 버튼 */}
                   <div className="flex flex-col items-end gap-1.5 shrink-0">
                     <span className="text-xs text-slate-400">{workDate}</span>
                     <span className="text-sm font-bold text-gray-800">{payText}</span>
@@ -275,6 +305,20 @@ export function DriverApplicationsList({ applications }: Props) {
                       !isRejected && stageLabel?.desc && (
                         <span className="text-xs text-gray-400">{stageLabel.desc}</span>
                       )
+                    )}
+                    {/* reviewing(배차대기) · accepted 상태 카드에 채팅 아이콘 */}
+                    {(app.status === 'reviewing' || app.status === 'accepted') && !isRejected && (
+                      <button
+                        onClick={(e) => { e.preventDefault(); handleOpenChat(job.id) }}
+                        disabled={chattingJobId === job.id}
+                        className="flex items-center gap-1 text-xs text-gray-500 hover:text-blue-500 disabled:opacity-50 transition-colors"
+                        title="채팅하기"
+                      >
+                        <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+                          <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" strokeLinecap="round" strokeLinejoin="round" />
+                        </svg>
+                        {chattingJobId === job.id ? '연결중' : '채팅'}
+                      </button>
                     )}
                   </div>
                 </div>

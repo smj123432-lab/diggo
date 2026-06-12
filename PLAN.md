@@ -232,23 +232,23 @@
 | 일감 목록 | `/jobs` | ✅ |
 | 일감 등록 | `/jobs/new` | ✅ |
 | 일감 상세 | `/jobs/[id]` | ✅ |
-| 내 일감 목록 (소장) | `/manager/jobs` | ⬜ |
-| 지원자 목록 (소장) | `/manager/jobs/[id]/applicants` | ⬜ |
-| 지원자 상세 (소장) | `/manager/jobs/[id]/applicants/[id]` | ⬜ |
-| 마이페이지 | `/mypage` | ⬜ |
-| 프로필 수정 | `/mypage/edit` | ⬜ |
+| 내 일감 목록 (소장) | `/manager/jobs` | ✅ |
+| 지원자 목록 (소장) | `/manager/jobs/[id]/applicants` | ✅ |
+| 지원자 상세 (소장) | `/manager/jobs/[id]/applicants/[id]` | ✅ |
+| 마이페이지 | `/mypage` | ✅ |
+| 프로필 수정 | `/mypage/edit` | ✅ |
 | 장부 | `/mypage/ledger` | ✅ |
-| 내 지원 목록 (기사) | `/mypage/applications` | ⬜ |
-| 받은 평가 (기사) | `/mypage/reviews` | ⬜ |
-| 관리자 대시보드 | `/admin` | ⬜ |
+| 내 지원 목록 (기사) | `/mypage/applications` | ✅ |
+| 받은 평가 (기사) | `/mypage/reviews` | ✅ |
+| 관리자 대시보드 | `/admin` | ✅ |
 
 **MVP 이후 (v2)**
 
-- 채팅
-- 자격증 인증 플로우
+- ✅ 채팅 (구현 완료)
+- ✅ 자격증 인증 플로우 (구현 완료)
 - 알림
 - 장비 여러 대 운용
-- 관리자 세부 페이지
+- ✅ 관리자 대시보드 고도화 (마이페이지 통합, 인증 서류 관리 + 분쟁 평판 모니터링 탭)
 
 ---
 
@@ -542,10 +542,11 @@ return (
 | 9    | 내 지원 목록 (기사)                   | ✅ 완료 |
 | 10   | 관리자 대시보드 (인증 승인)           | ✅ 완료 |
 | 11   | Vercel 배포 + 버그 수정               | ✅ 완료 |
-| 12   | 받은 평가 UI                          | ⬜ 미완료 |
+| 12   | 받은 평가 UI                          | ✅ 완료 |
 | 13   | 장부 UI (달력 + 지출 입력)            | ✅ 완료 |
-| 14   | 채팅 (Supabase Realtime)              | ⬜ 미완료 |
-| 15   | 알림                                  | ⬜ 미완료 |
+| 14   | 채팅 (Supabase Realtime)              | ✅ 완료 |
+| 15   | 공개 프로필 페이지 + 평가 자동화      | ✅ 완료 |
+| 16   | 알림                                  | ⬜ 미완료 |
 
 ### 완료 상세 내역 (2026-05-28 기준)
 
@@ -615,9 +616,33 @@ return (
 - 환경변수 5개 등록 (Supabase, Kakao)
 - 카카오맵 JavaScript SDK 도메인 등록 완료
 
+**채팅 (`/chats`, `/chats/[id]`) — 2026-06-12**
+- Supabase Realtime 기반 실시간 메시지 송수신 (INSERT 구독)
+- 이미지 전송 (Supabase Storage `chat-images` 버킷)
+- 채팅방 배차 수락/거절 메뉴 (소장 전용)
+- 낙관적 업데이트 + 임시 메시지 ID(`temp-`)로 전송 중 표시
+- 미읽음 카운트 실시간 배지 (ChatSplitLayout Realtime INSERT 구독)
+- 읽음 처리: 방 진입 시 일괄 + 새 메시지 수신 즉시 처리
+- 읽음 표시 "1" (노란색, is_read=false 내 메시지 옆 표시, UPDATE 이벤트로 실시간 소멸)
+- 채팅방 나가기 (soft-delete: manager_left / driver_left 컬럼)
+- 연속 메시지 그룹화: 동일 발신자 + 동일 분 기준 border-radius 동적 변경, 타임스탬프 마지막만 표시
+- 카카오톡 스타일 말풍선: isMine justify-end, 상대방 avatar + left-align
+- 데스크톱: 좌우 분할 레이아웃 (ChatSplitLayout), 모바일: 단일 뷰
+
+**공개 프로필 페이지 + 평가 자동화 (`/profiles/[id]`) — 2026-06-12**
+- `/profiles/[id]` 서버 컴포넌트 신규 — 소장/기사 역할별 분기 UI
+- 소장: [모집중 일감] / [받은 평가] 탭 전환 (useState)
+- 기사: 받은 평가 목록 (rating 높은 순, 탭 없음)
+- 우수 베테랑 배지: `rating_avg >= 4.5 && review_count >= 5` (amber→orange 그라디언트)
+- 평가 등록 후 reviewee의 `rating_avg`, `review_count` 자동 재집계 → `profiles` 업데이트
+- reviews 중복 제약: `(reviewer_id, reviewee_id)` → `(reviewer_id, reviewee_id, job_id)` — 일감별 평가 1회
+- 일감 상세 소장 이름에 `/profiles/[id]` Link 연결 (ManagerBlock + 데스크톱 사이드바)
+- 채팅방 ⋮ 메뉴: 기사→소장 프로필 보기, 소장→기사 프로필 보기 추가
+- lucide-react 설치 (Star, Award, Briefcase, MapPin, Calendar, ChevronRight)
+
 ### v2 (MVP 이후)
 
-- 채팅 (Supabase Realtime)
+- 채팅 (Supabase Realtime) — 완료
 - 알림
 - 장비 여러 대 운용 (담당 기사 지정)
 - 차고지 기준 거리 계산 (카카오맵 API — "내 차고지로부터 15km" 표시)

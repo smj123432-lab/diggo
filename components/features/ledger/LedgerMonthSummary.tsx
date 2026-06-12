@@ -1,5 +1,5 @@
 // components/features/ledger/LedgerMonthSummary.tsx
-// 월 요약 카드 — 수익 / 지출 / 총 수익 (필터탭 연동 값을 받아 표시)
+// 월 요약 카드 — 수익 / 지출 / 총 수익 (필터탭 연동)
 import { formatKRWCompact } from '@/lib/utils/ledger'
 
 interface Props {
@@ -31,7 +31,6 @@ export function LedgerMonthSummary({ income, expense, net, jobCount, pendingNote
         </div>
       </div>
 
-      {/* 이달 현장 건수 */}
       {jobCount !== undefined && jobCount > 0 && (
         <div className="mt-3 pt-3 border-t border-gray-100 flex items-center justify-between">
           <span className="text-xs text-gray-400 font-semibold flex items-center gap-1">
@@ -42,7 +41,6 @@ export function LedgerMonthSummary({ income, expense, net, jobCount, pendingNote
         </div>
       )}
 
-      {/* 정산대기 */}
       {pendingNote !== undefined && pendingNote > 0 && (
         <div className="mt-1.5 flex items-center justify-between">
           <span className="text-xs text-amber-500 font-semibold flex items-center gap-1">
@@ -53,7 +51,6 @@ export function LedgerMonthSummary({ income, expense, net, jobCount, pendingNote
         </div>
       )}
 
-      {/* 정산완료 (정산대기도 있을 때만) */}
       {settledNote !== undefined && settledNote > 0 && pendingNote !== undefined && pendingNote > 0 && (
         <div className="mt-1.5 flex items-center justify-between">
           <span className="text-xs text-emerald-500 font-semibold flex items-center gap-1">

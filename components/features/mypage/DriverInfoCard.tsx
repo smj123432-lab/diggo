@@ -1,7 +1,7 @@
 'use client'
 
-// 기사 정보 카드 — 보유 장비·경력·면허 표시 + 정보 수정 버튼
-import { useState } from 'react'
+// 기사 정보 카드 — 보유 장비·경력·면허·차고지 표시 + 정보 수정 버튼
+import { useState, useEffect } from 'react'
 import type { Profile, EquipmentCode } from '@/types'
 import { EquipmentBadge } from '@/components/ui/EquipmentBadge'
 import { DriverInfoEditModal } from './DriverInfoEditModal'
@@ -17,6 +17,13 @@ export function DriverInfoCard({ profile, initialEquipments, certApproved, certP
   const [modalOpen, setModalOpen] = useState(false)
   const [experienceYears, setExperienceYears] = useState(profile.experience_years)
   const [equipments, setEquipments] = useState(initialEquipments)
+  const [garageAddress, setGarageAddress] = useState(profile.garage_address)
+
+  useEffect(() => {
+    const handler = (e: CustomEvent<string | null>) => setGarageAddress(e.detail)
+    window.addEventListener('garage-address-updated', handler as EventListener)
+    return () => window.removeEventListener('garage-address-updated', handler as EventListener)
+  }, [])
 
   return (
     <>
@@ -45,6 +52,20 @@ export function DriverInfoCard({ profile, initialEquipments, certApproved, certP
             <p className="text-sm text-gray-400">등록된 장비 없음</p>
           )}
         </div>
+
+        {/* 차고지 주소 */}
+        {garageAddress && (
+          <div className="border border-blue-100 bg-blue-50/30 rounded-xl p-3 mb-3 flex items-center gap-2">
+            <svg className="w-4 h-4 shrink-0 text-blue-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+              <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
+              <circle cx="12" cy="10" r="3" />
+            </svg>
+            <div>
+              <p className="text-xs text-gray-400 mb-0.5">차고지 주소</p>
+              <p className="text-sm font-medium text-gray-800">{garageAddress}</p>
+            </div>
+          </div>
+        )}
 
         {/* 경력·면허·평점 */}
         <div className="grid grid-cols-3 gap-2">

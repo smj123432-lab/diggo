@@ -16,18 +16,21 @@ interface Props {
 }
 
 function computePanelNet(dayData: LedgerDayData, role: UserRole): number {
-  const jobIncome = dayData.incomes.reduce((s, i) => s + i.amount, 0)
-  const manualIncome = dayData.expenses
-    .filter((e) => e.category === '수입')
-    .reduce((s, e) => s + e.amount, 0)
-  const actualExpense = dayData.expenses
-    .filter((e) => e.category !== '수입')
-    .reduce((s, e) => s + e.amount, 0)
-  const jobPay = dayData.jobs.reduce((s, j) => s + j.totalPayAmount, 0)
+  const jobIncome = dayData.incomes.reduce((s, i) => s + (Number(i.amount) || 0), 0)
+  const manualInc = dayData.expenses
+    .filter(e => e.category === '수입')
+    .reduce((s, e) => s + (Number(e.amount) || 0), 0)
+  const actualExp = dayData.expenses
+    .filter(e => e.category !== '수입')
+    .reduce((s, e) => s + (Number(e.amount) || 0), 0)
+  const jobPay = dayData.jobs.reduce((s, j) => s + (Number(j.dailyAmount) || 0), 0)
 
-  return role === 'manager'
-    ? -(jobPay + actualExpense)
-    : jobIncome + manualIncome - actualExpense
+  const raw = role === 'manager'
+    ? manualInc - jobPay - actualExp
+    : jobIncome + manualInc - actualExp
+
+  // -0 → 0 방지 (-0 은 falsy)
+  return raw || 0
 }
 
 export function LedgerDayPanel({ dayData, role, onClose, onDelete, onAddExpense }: Props) {
@@ -47,7 +50,7 @@ export function LedgerDayPanel({ dayData, role, onClose, onDelete, onAddExpense 
           transition={{ duration: 0.18 }}
           className="mt-4 bg-white border border-gray-200 rounded-2xl overflow-hidden"
         >
-          {/* 헤더: 날짜 + 버튼들 (총 수익 금액 제거 → 금액이 커도 안 겹침) */}
+          {/* 헤더: 날짜 + 버튼 */}
           <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100">
             <span className="text-sm font-bold text-gray-900 shrink-0">
               {dayData.date.replace(/-/g, '.')}
@@ -83,12 +86,14 @@ export function LedgerDayPanel({ dayData, role, onClose, onDelete, onAddExpense 
             )}
           </div>
 
-          {/* 푸터: 이 날의 총 수익 (내역이 있을 때만) */}
+          {/* 푸터: 이 날의 총 수익 */}
           {allEntries.length > 0 && (
             <div className="flex items-center justify-between px-4 py-3 border-t border-gray-100 bg-gray-50/60">
               <span className="text-xs font-semibold text-gray-400">이 날의 총 수익</span>
-              <span className={`text-sm font-black whitespace-nowrap ${dayNet >= 0 ? 'text-blue-600' : 'text-red-600'}`}>
-                {dayNet >= 0 ? '+' : ''}{formatKRW(dayNet)}
+              <span className={`text-sm font-black whitespace-nowrap ${
+                dayNet > 0 ? 'text-blue-600' : dayNet < 0 ? 'text-red-600' : 'text-gray-400'
+              }`}>
+                {dayNet > 0 ? '+' : ''}{formatKRW(dayNet)}
               </span>
             </div>
           )}

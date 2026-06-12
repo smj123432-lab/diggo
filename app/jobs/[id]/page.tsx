@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { getCachedJobDetail } from '@/lib/utils/jobs-cache'
 import { UserJobSection } from './UserJobSection'
 import { KakaoMap } from '@/components/features/jobs/KakaoMap'
+import { JobDetailBackButton } from '@/components/features/jobs/JobDetailBackButton'
 import { CopyButton } from '@/components/ui/CopyButton'
 import {
   EQUIPMENT_LABELS,
@@ -57,12 +58,13 @@ export default async function JobDetailPage({ params }: Props) {
       {/* 헤더 */}
       <div className="bg-white border-b border-gray-100 sticky top-0 z-10">
         <div className="max-w-6xl mx-auto px-4 lg:px-8 py-3 flex items-center gap-3">
-          <Link href="/jobs" className="p-1.5 -ml-1.5 rounded-lg hover:bg-gray-100 transition-colors">
-            <svg className="w-5 h-5 text-gray-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
-              <path d="M19 12H5M12 5l-7 7 7 7" strokeLinecap="round" strokeLinejoin="round" />
+          <JobDetailBackButton />
+          <span className="flex-1 text-sm font-semibold text-gray-700">일감 상세</span>
+          <Link href="/chats" className="p-1.5 rounded-lg hover:bg-gray-100 transition-colors text-gray-500 hover:text-blue-500" title="채팅">
+            <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
           </Link>
-          <span className="text-sm font-semibold text-gray-700">일감 상세</span>
         </div>
       </div>
 
@@ -177,7 +179,7 @@ export default async function JobDetailPage({ params }: Props) {
 
             {/* 모바일: 소장 일감 관리 — UserJobSection이 렌더 */}
             <div className="lg:hidden">
-              <UserJobSection job={job} effectiveStatus={effectiveStatus} payDueDate={payDueDate} />
+              <UserJobSection job={{ ...job, equipment_codes: job.equipment_codes as EquipmentCode[] }} effectiveStatus={effectiveStatus} payDueDate={payDueDate} />
             </div>
 
           </div>
@@ -250,18 +252,19 @@ export default async function JobDetailPage({ params }: Props) {
                 <div className="border-t border-gray-100 pt-4 mb-5">
                   <p className="text-xs text-gray-400 mb-2.5">소장 정보</p>
                   <div className="flex items-center gap-2.5">
-                    <div className="w-9 h-9 rounded-full bg-slate-100 flex items-center justify-center text-slate-600 font-bold text-sm shrink-0">
-                      {job.profiles.name.charAt(0)}
-                    </div>
+                    <ManagerAvatar name={job.profiles.name} avatarUrl={job.profiles.avatar_url} size="sm" />
                     <div>
-                      <div className="flex items-center gap-1.5">
-                        <span className="text-sm font-semibold text-gray-800">{job.profiles.name} 소장</span>
+                      <div className="flex items-center gap-1.5 flex-wrap">
+                        <Link href={`/profiles/${job.profiles.id}`} className="text-sm font-semibold text-gray-800 hover:text-blue-500 transition-colors">{job.profiles.name} 소장</Link>
                         {job.profiles.is_certified && (
                           <span className="inline-flex items-center justify-center bg-blue-500 text-white w-4 h-4 rounded-full shrink-0">
                             <svg className="w-2.5 h-2.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={3}>
                               <path d="M20 6L9 17l-5-5" strokeLinecap="round" strokeLinejoin="round" />
                             </svg>
                           </span>
+                        )}
+                        {job.profiles.rating_avg > 0 && job.profiles.rating_avg <= 2.0 && (
+                          <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-red-100 text-red-600">주의</span>
                         )}
                       </div>
                       <div className="flex items-center gap-1 mt-0.5">
@@ -273,7 +276,7 @@ export default async function JobDetailPage({ params }: Props) {
                 </div>
 
                 {/* 데스크탑: 사용자별 액션 (지원 버튼 / 소장 관리) */}
-                <UserJobSection job={job} effectiveStatus={effectiveStatus} payDueDate={payDueDate} />
+                <UserJobSection job={{ ...job, equipment_codes: job.equipment_codes as EquipmentCode[] }} effectiveStatus={effectiveStatus} payDueDate={payDueDate} />
 
               </div>
             </div>
@@ -288,23 +291,36 @@ export default async function JobDetailPage({ params }: Props) {
 
 /* ── 서브컴포넌트 ── */
 
-function ManagerBlock({ job }: { job: { profiles: { name: string; is_certified: boolean; rating_avg: number } } }) {
+function ManagerAvatar({ name, avatarUrl, size }: { name: string; avatarUrl: string | null; size: 'sm' | 'md' }) {
+  const cls = size === 'md' ? 'w-10 h-10 text-sm' : 'w-9 h-9 text-xs'
+  return avatarUrl ? (
+    <img src={avatarUrl} alt={name} className={`${cls} rounded-full object-cover shrink-0`} />
+  ) : (
+    <div className={`${cls} rounded-full bg-slate-100 flex items-center justify-center text-slate-600 font-bold shrink-0`}>
+      {name.charAt(0)}
+    </div>
+  )
+}
+
+function ManagerBlock({ job }: { job: { profiles: { id: string; name: string; is_certified: boolean; rating_avg: number; avatar_url: string | null } } }) {
+  const isLowRating = job.profiles.rating_avg > 0 && job.profiles.rating_avg <= 2.0
   return (
     <>
       <p className="text-xs text-gray-400 font-medium mb-3">소장 정보</p>
       <div className="flex items-center gap-3">
-        <div className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-600 font-bold text-sm shrink-0">
-          {job.profiles.name.charAt(0)}
-        </div>
+        <ManagerAvatar name={job.profiles.name} avatarUrl={job.profiles.avatar_url} size="md" />
         <div>
-          <div className="flex items-center gap-1.5">
-            <span className="text-sm font-semibold text-gray-800">{job.profiles.name} 소장</span>
+          <div className="flex items-center gap-1.5 flex-wrap">
+            <Link href={`/profiles/${job.profiles.id}`} className="text-sm font-semibold text-gray-800 hover:text-blue-500 transition-colors">{job.profiles.name} 소장</Link>
             {job.profiles.is_certified && (
               <span className="inline-flex items-center justify-center bg-blue-500 text-white w-4 h-4 rounded-full shrink-0">
                 <svg className="w-2.5 h-2.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={3}>
                   <path d="M20 6L9 17l-5-5" strokeLinecap="round" strokeLinejoin="round" />
                 </svg>
               </span>
+            )}
+            {isLowRating && (
+              <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-red-100 text-red-600">주의</span>
             )}
           </div>
           <div className="flex items-center gap-1 mt-0.5">
