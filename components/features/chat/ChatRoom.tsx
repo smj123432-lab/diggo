@@ -131,30 +131,7 @@ export default function ChatRoom({ room, initialMessages, currentUserId }: Props
     }
   }
 
-  // 메시지 소프트 딜리트 (낙관적 업데이트)
-  const handleDeleteMessage = async (messageId: string) => {
-    setMessages((prev) =>
-      prev.map((m) => (m.id === messageId ? { ...m, is_deleted: true } : m))
-    )
-    try {
-      const res = await fetch(`/api/chats/${room.id}/messages/${messageId}`, {
-        method: 'DELETE',
-      })
-      if (!res.ok) {
-        const json = await res.json() as { error?: string }
-        throw new Error(json.error ?? '삭제 실패')
-      }
-    } catch (err) {
-      // 실패 시 롤백
-      setMessages((prev) =>
-        prev.map((m) => (m.id === messageId ? { ...m, is_deleted: false } : m))
-      )
-      console.error('[handleDeleteMessage]', err)
-      toast.error('메시지 삭제에 실패했습니다.')
-    }
-  }
-
-  useEffect(() => {
+useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages])
 
@@ -475,8 +452,8 @@ export default function ChatRoom({ room, initialMessages, currentUserId }: Props
                       </div>
                     )}
 
-                    {/* 말풍선 → 삭제 버튼 순서 (outer edge에 위치) */}
-                    <div className={`flex items-end gap-1.5 max-w-[70%] min-w-0 ${!isTemp && !isDeletedMsg ? 'group' : ''}`}>
+                    {/* 말풍선 */}
+                    <div className="max-w-[70%] min-w-0">
                       <div className={`min-w-[50px] ${isTemp ? 'opacity-60' : ''} ${
                         isDeletedMsg
                           ? `px-3.5 py-2.5 text-sm italic whitespace-pre-wrap break-words ${bubbleRadius} bg-gray-100 text-gray-400`
@@ -491,20 +468,6 @@ export default function ChatRoom({ room, initialMessages, currentUserId }: Props
                             : msg.message
                         }
                       </div>
-
-                      {!isTemp && !isDeletedMsg && (
-                        <button
-                          onClick={() => handleDeleteMessage(msg.id)}
-                          className="opacity-0 group-hover:opacity-100 transition-opacity p-1 rounded-lg hover:bg-gray-100 shrink-0 self-center"
-                          aria-label="메시지 삭제"
-                        >
-                          <svg className="w-3.5 h-3.5 text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
-                            <polyline points="3 6 5 6 21 6" strokeLinecap="round" strokeLinejoin="round" />
-                            <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" strokeLinecap="round" strokeLinejoin="round" />
-                            <path d="M10 11v6M14 11v6" strokeLinecap="round" strokeLinejoin="round" />
-                          </svg>
-                        </button>
-                      )}
                     </div>
                   </div>
                 )
