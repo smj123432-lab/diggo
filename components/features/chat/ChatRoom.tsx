@@ -11,6 +11,28 @@ import type { ChatMessage, ChatRoomWithDetails } from '@/types'
 
 const IMG_PREFIX = '[img]'
 
+// 같은 발신자 + 같은 분(minute) 단위면 연속 그룹으로 판단
+function isSameGroup(a: ChatMessage | null | undefined, b: ChatMessage | null | undefined): boolean {
+  if (!a || !b) return false
+  if (a.sender_id !== b.sender_id) return false
+  return a.created_at.slice(0, 16) === b.created_at.slice(0, 16)
+}
+
+// 발신자·위치(solo/first/middle/last)에 따라 말풍선 모서리 클래스 반환
+function getBubbleRadius(isMine: boolean, isPrevSame: boolean, isNextSame: boolean): string {
+  if (isMine) {
+    if (!isPrevSame && !isNextSame) return 'rounded-2xl rounded-br-sm'                  // 단독
+    if (!isPrevSame && isNextSame)  return 'rounded-2xl rounded-br-[5px]'               // 첫 번째
+    if (isPrevSame  && isNextSame)  return 'rounded-l-2xl rounded-r-[5px]'              // 중간
+    return 'rounded-l-2xl rounded-tr-[5px] rounded-br-sm'                              // 마지막
+  } else {
+    if (!isPrevSame && !isNextSame) return 'rounded-2xl rounded-bl-sm'                  // 단독
+    if (!isPrevSame && isNextSame)  return 'rounded-2xl rounded-bl-[5px]'               // 첫 번째
+    if (isPrevSame  && isNextSame)  return 'rounded-r-2xl rounded-l-[5px]'              // 중간
+    return 'rounded-r-2xl rounded-tl-[5px] rounded-bl-sm'                              // 마지막
+  }
+}
+
 interface Props {
   room: ChatRoomWithDetails
   initialMessages: ChatMessage[]
@@ -412,24 +434,45 @@ export default function ChatRoom({ room, initialMessages, currentUserId }: Props
               <p className="text-sm text-gray-400">첫 메시지를 보내보세요.</p>
             </div>
           )}
-          <div className="flex flex-col gap-2.5">
-            {messages.map((msg) => {
+          <div className="flex flex-col">
+            {messages.map((msg, index) => {
               const isMine = msg.sender_id === currentUserId
               const isTemp = msg.id.startsWith('temp-')
               const isImg = msg.message.startsWith(IMG_PREFIX)
               const isDeletedMsg = msg.is_deleted
 
+              const prevMsg = index > 0 ? messages[index - 1] : null
+              const nextMsg = index < messages.length - 1 ? messages[index + 1] : null
+              const isPrevSame = isSameGroup(prevMsg, msg)
+              const isNextSame = isSameGroup(msg, nextMsg)
+
+              // 연속 그룹 간격: 같은 그룹 안이면 촘촘하게, 새 그룹이면 여유롭게
+              const marginTop = index === 0 ? '' : isPrevSame ? 'mt-0.5' : 'mt-2.5'
+
+              // 상대방 아바타: 연속 묶음의 마지막에만 표시
+              const showAvatar = !isMine && !isNextSame
+
+              // 타임스탬프: 연속 묶음의 마지막에만 표시
+              const showTime = !isNextSame
+
+              // 말풍선 모서리 — 이미지는 항상 둥글게
+              const bubbleRadius = isImg ? 'rounded-2xl' : getBubbleRadius(isMine, isPrevSame, isNextSame)
+
               return (
-                <div key={msg.id} className={`flex items-end gap-2 ${isMine ? 'flex-row-reverse' : 'flex-row'}`}>
-                  {/* 상대방 아바타 */}
+                <div key={msg.id} className={`flex items-end gap-2 ${isMine ? 'flex-row-reverse' : 'flex-row'} ${marginTop}`}>
+                  {/* 상대방 아바타 or 스페이서 */}
                   {!isMine ? (
-                    <div className="shrink-0 w-7 h-7 rounded-full overflow-hidden ring-1 ring-gray-200 self-end mb-0.5">
-                      {opponent?.avatar_url ? (
-                        <img src={opponent.avatar_url} alt={opponent.name ?? ''} className="w-full h-full object-cover" />
-                      ) : (
-                        <DefaultAvatar size={28} />
-                      )}
-                    </div>
+                    showAvatar ? (
+                      <div className="shrink-0 w-7 h-7 rounded-full overflow-hidden ring-1 ring-gray-200 self-end mb-0.5">
+                        {opponent?.avatar_url ? (
+                          <img src={opponent.avatar_url} alt={opponent.name ?? ''} className="w-full h-full object-cover" />
+                        ) : (
+                          <DefaultAvatar size={28} />
+                        )}
+                      </div>
+                    ) : (
+                      <div className="shrink-0 w-7" />
+                    )
                   ) : (
                     <div className="shrink-0 w-7" />
                   )}
@@ -440,17 +483,13 @@ export default function ChatRoom({ room, initialMessages, currentUserId }: Props
                     {/* 말풍선 or 이미지 */}
                     <div className={`max-w-[68%] ${isTemp ? 'opacity-60' : ''} ${
                       isDeletedMsg
-                        ? `px-3.5 py-2.5 rounded-2xl text-sm italic ${
-                            isMine
-                              ? 'bg-blue-100 text-blue-300 rounded-br-sm'
-                              : 'bg-gray-100 text-gray-400 rounded-bl-sm'
+                        ? `px-3.5 py-2.5 text-sm italic ${bubbleRadius} ${
+                            isMine ? 'bg-blue-100 text-blue-300' : 'bg-gray-100 text-gray-400'
                           }`
                         : isImg
-                          ? 'rounded-2xl overflow-hidden'
-                          : `px-3.5 py-2.5 rounded-2xl text-sm leading-relaxed break-words ${
-                              isMine
-                                ? 'bg-blue-500 text-white rounded-br-sm'
-                                : 'bg-gray-100 text-slate-800 rounded-bl-sm'
+                          ? `overflow-hidden ${bubbleRadius}`
+                          : `px-3.5 py-2.5 text-sm leading-relaxed break-words ${bubbleRadius} ${
+                              isMine ? 'bg-blue-500 text-white' : 'bg-gray-100 text-slate-800'
                             }`
                     }`}>
                       {isDeletedMsg
@@ -484,9 +523,12 @@ export default function ChatRoom({ room, initialMessages, currentUserId }: Props
                     )}
                   </div>
 
-                  <span className="text-[10px] text-gray-400 shrink-0 pb-0.5">
-                    {isTemp ? '전송중' : formatTime(msg.created_at)}
-                  </span>
+                  {/* 타임스탬프: 연속 묶음 마지막에만 표시 */}
+                  {showTime && (
+                    <span className="text-[10px] text-gray-400 shrink-0 pb-0.5">
+                      {isTemp ? '전송중' : formatTime(msg.created_at)}
+                    </span>
+                  )}
                 </div>
               )
             })}
