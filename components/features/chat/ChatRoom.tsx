@@ -358,6 +358,17 @@ useEffect(() => {
                       </svg>
                       배치 거절
                     </button>
+                    <Link
+                      href={`/profiles/${room.driver_id}`}
+                      onClick={() => setMenuOpen(false)}
+                      className="flex items-center gap-2.5 px-4 py-3 text-sm text-slate-700 hover:bg-gray-50 transition-colors border-t border-gray-100"
+                    >
+                      <svg className="w-4 h-4 shrink-0 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                        <circle cx="12" cy="7" r="4" />
+                      </svg>
+                      기사 프로필 보기
+                    </Link>
                   </>
                 ) : (
                   <>
@@ -373,7 +384,7 @@ useEffect(() => {
                       게시물 확인
                     </Link>
                     <Link
-                      href={`/jobs/${room.job_id}`}
+                      href={`/profiles/${room.manager_id}`}
                       onClick={() => setMenuOpen(false)}
                       className="flex items-center gap-2.5 px-4 py-3 text-sm text-slate-700 hover:bg-gray-50 transition-colors border-t border-gray-100"
                     >
@@ -381,7 +392,7 @@ useEffect(() => {
                         <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
                         <circle cx="12" cy="7" r="4" />
                       </svg>
-                      소장 프로필
+                      소장 프로필 보기
                     </Link>
                   </>
                 )}

@@ -257,7 +257,7 @@ export default async function JobDetailPage({ params }: Props) {
                     </div>
                     <div>
                       <div className="flex items-center gap-1.5">
-                        <span className="text-sm font-semibold text-gray-800">{job.profiles.name} 소장</span>
+                        <Link href={`/profiles/${job.profiles.id}`} className="text-sm font-semibold text-gray-800 hover:text-blue-500 transition-colors">{job.profiles.name} 소장</Link>
                         {job.profiles.is_certified && (
                           <span className="inline-flex items-center justify-center bg-blue-500 text-white w-4 h-4 rounded-full shrink-0">
                             <svg className="w-2.5 h-2.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={3}>
@@ -290,7 +290,7 @@ export default async function JobDetailPage({ params }: Props) {
 
 /* ── 서브컴포넌트 ── */
 
-function ManagerBlock({ job }: { job: { profiles: { name: string; is_certified: boolean; rating_avg: number } } }) {
+function ManagerBlock({ job }: { job: { profiles: { id: string; name: string; is_certified: boolean; rating_avg: number } } }) {
   return (
     <>
       <p className="text-xs text-gray-400 font-medium mb-3">소장 정보</p>
@@ -300,7 +300,7 @@ function ManagerBlock({ job }: { job: { profiles: { name: string; is_certified: 
         </div>
         <div>
           <div className="flex items-center gap-1.5">
-            <span className="text-sm font-semibold text-gray-800">{job.profiles.name} 소장</span>
+            <Link href={`/profiles/${job.profiles.id}`} className="text-sm font-semibold text-gray-800 hover:text-blue-500 transition-colors">{job.profiles.name} 소장</Link>
             {job.profiles.is_certified && (
               <span className="inline-flex items-center justify-center bg-blue-500 text-white w-4 h-4 rounded-full shrink-0">
                 <svg className="w-2.5 h-2.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={3}>
