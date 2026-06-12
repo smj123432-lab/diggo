@@ -23,10 +23,17 @@ interface DisputeRow {
   job: { id: string; title: string } | null
 }
 
+const CERT_STATUS_TABS = [
+  { label: '전체', value: 'all' },
+  { label: '대기중', value: 'pending' },
+  { label: '승인', value: 'approved' },
+  { label: '거절', value: 'rejected' },
+]
+
 export default async function MypagePage({
   searchParams,
 }: {
-  searchParams: Promise<{ tab?: string }>
+  searchParams: Promise<{ tab?: string; status?: string }>
 }) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
@@ -39,6 +46,10 @@ export default async function MypagePage({
     .single()
   if (!profile) redirect('/login')
 
+  const { tab: rawTab, status: rawStatus } = await searchParams
+  const adminTab = rawTab === 'disputes' ? 'disputes' : 'certs'
+  const certStatus = rawStatus ?? 'pending'
+
   // 역할별 데이터
   let jobCount = 0
   let equipments: { id: string; model_code: EquipmentCode }[] = []
@@ -49,9 +60,6 @@ export default async function MypagePage({
   let drivers: DriverEntry[] = []
   let pendingCertCount = 0
   let disputes: DisputeRow[] = []
-
-  const { tab: rawTab } = await searchParams
-  const adminTab = rawTab === 'disputes' ? 'disputes' : 'certs'
 
   if (profile.role === 'manager') {
     const { count } = await supabase
@@ -85,12 +93,11 @@ export default async function MypagePage({
       process.env.SUPABASE_SERVICE_ROLE_KEY!
     )
 
-    // 서류(대기) + 분쟁 데이터 병렬 패칭 — 탭 배지 카운트를 위해 항상 fetch
+    // 전체 서류 + 분쟁 병렬 패칭
     const [certResult, disputeResult] = await Promise.all([
       adminClient
         .from('certifications')
         .select('id, driver_id, cert_type, image_url, status, created_at')
-        .eq('status', 'pending')
         .order('created_at', { ascending: false }),
       adminClient
         .from('reviews')
@@ -104,11 +111,13 @@ export default async function MypagePage({
         .order('created_at', { ascending: false }),
     ])
 
-    const certData = certResult.data ?? []
+    const allCertData = certResult.data ?? []
     disputes = (disputeResult.data ?? []) as unknown as DisputeRow[]
-    pendingCertCount = certData.length
 
-    const driverIds = Array.from(new Set(certData.map(c => c.driver_id)))
+    // 탭 뱃지용 — 전체 데이터에서 pending 건수 산출
+    pendingCertCount = allCertData.filter(c => c.status === 'pending').length
+
+    const driverIds = Array.from(new Set(allCertData.map(c => c.driver_id)))
     const [profilesResult, authResult] = await Promise.all([
       driverIds.length > 0
         ? adminClient.from('profiles').select('id, name, phone, avatar_url').in('id', driverIds)
@@ -119,13 +128,23 @@ export default async function MypagePage({
     const profileMap = Object.fromEntries((profilesResult.data ?? []).map(p => [p.id, p]))
     const emailMap = Object.fromEntries(authResult.data.users.map(u => [u.id, u.email ?? '']))
 
-    const driverCertMap: Record<string, typeof certData> = {}
-    for (const cert of certData) {
+    // 드라이버별 그룹화
+    const driverCertMap: Record<string, typeof allCertData> = {}
+    for (const cert of allCertData) {
       if (!driverCertMap[cert.driver_id]) driverCertMap[cert.driver_id] = []
       driverCertMap[cert.driver_id]!.push(cert)
     }
 
-    drivers = driverIds.map(driverId => {
+    // certStatus 필터 적용 (드라이버 단위)
+    const filteredDriverIds = driverIds.filter(driverId => {
+      const dc = driverCertMap[driverId] ?? []
+      if (certStatus === 'pending') return dc.some(c => c.status === 'pending')
+      if (certStatus === 'approved') return dc.every(c => c.status === 'approved')
+      if (certStatus === 'rejected') return dc.some(c => c.status === 'rejected')
+      return true // 'all'
+    })
+
+    drivers = filteredDriverIds.map(driverId => {
       const p = profileMap[driverId] as { name: string; phone: string; avatar_url: string | null } | undefined
       return {
         driverId,
@@ -195,11 +214,11 @@ export default async function MypagePage({
                 /* ── 관리자 통합 관제 카드 ── */
                 <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
 
-                  {/* 50:50 탭 바 — 카드 상단 full-width */}
+                  {/* 50:50 탭 바 */}
                   <div className="grid grid-cols-2 border-b border-gray-100">
                     <Link
-                      href="/mypage?tab=certs"
-                      className={`flex items-center justify-center gap-2 py-4 text-sm font-bold transition-colors ${
+                      href="/mypage?tab=certs&status=pending"
+                      className={`flex items-center justify-center gap-2 py-3.5 text-sm font-bold transition-colors ${
                         adminTab === 'certs'
                           ? 'bg-slate-900 text-white'
                           : 'bg-gray-50 text-gray-500 hover:bg-gray-100 hover:text-gray-700'
@@ -209,7 +228,7 @@ export default async function MypagePage({
                       <span>인증 서류 관리</span>
                       <span className={`text-xs font-bold px-1.5 py-0.5 rounded-full shrink-0 ${
                         adminTab === 'certs'
-                          ? pendingCertCount > 0 ? 'bg-white/20 text-white' : 'bg-white/10 text-white/60'
+                          ? pendingCertCount > 0 ? 'bg-white/20 text-white' : 'bg-white/10 text-white/50'
                           : pendingCertCount > 0 ? 'bg-yellow-100 text-yellow-700' : 'bg-gray-200 text-gray-400'
                       }`}>
                         {pendingCertCount}
@@ -217,7 +236,7 @@ export default async function MypagePage({
                     </Link>
                     <Link
                       href="/mypage?tab=disputes"
-                      className={`flex items-center justify-center gap-2 py-4 text-sm font-bold transition-colors border-l border-gray-100 ${
+                      className={`flex items-center justify-center gap-2 py-3.5 text-sm font-bold transition-colors border-l border-gray-100 ${
                         adminTab === 'disputes'
                           ? 'bg-red-600 text-white'
                           : 'bg-gray-50 text-gray-500 hover:bg-gray-100 hover:text-gray-700'
@@ -227,7 +246,7 @@ export default async function MypagePage({
                       <span>분쟁 평판 모니터링</span>
                       <span className={`text-xs font-bold px-1.5 py-0.5 rounded-full shrink-0 ${
                         adminTab === 'disputes'
-                          ? disputes.length > 0 ? 'bg-white/20 text-white' : 'bg-white/10 text-white/60'
+                          ? disputes.length > 0 ? 'bg-white/20 text-white' : 'bg-white/10 text-white/50'
                           : disputes.length > 0 ? 'bg-red-100 text-red-600' : 'bg-gray-200 text-gray-400'
                       }`}>
                         {disputes.length}
@@ -235,28 +254,45 @@ export default async function MypagePage({
                     </Link>
                   </div>
 
+                  {/* 인증 서류 상태 필터 — certs 탭 활성 시만, 스크롤 영역 밖 */}
+                  {adminTab === 'certs' && (
+                    <div className="flex gap-1.5 px-4 py-2.5 border-b border-gray-50 bg-gray-50/60 flex-wrap">
+                      {CERT_STATUS_TABS.map(t => (
+                        <Link
+                          key={t.value}
+                          href={`/mypage?tab=certs&status=${t.value}`}
+                          className={`px-3 py-1 rounded-lg text-xs font-semibold transition-colors ${
+                            certStatus === t.value
+                              ? 'bg-slate-800 text-white'
+                              : 'bg-white border border-gray-200 text-gray-500 hover:border-slate-400 hover:text-gray-700'
+                          }`}
+                        >
+                          {t.label}
+                        </Link>
+                      ))}
+                    </div>
+                  )}
+
                   {/* 고정 높이 콘텐츠 영역 — 내부 독립 스크롤 */}
-                  <div className="h-[520px] overflow-y-auto p-5">
+                  <div className="h-[400px] overflow-y-auto p-4">
 
                     {adminTab === 'certs' ? (
-                      /* 인증 서류 목록 */
                       drivers.length === 0 ? (
                         <div className="h-full flex flex-col items-center justify-center gap-3 text-gray-400">
-                          <FileText className="w-10 h-10 text-gray-200" />
-                          <p className="text-sm font-medium">대기 중인 서류가 없습니다.</p>
+                          <FileText className="w-9 h-9 text-gray-200" />
+                          <p className="text-sm font-medium">해당하는 서류가 없습니다.</p>
                         </div>
                       ) : (
                         <CertDriverList drivers={drivers} />
                       )
                     ) : (
-                      /* 분쟁 평판 모니터링 목록 */
                       disputes.length === 0 ? (
                         <div className="h-full flex flex-col items-center justify-center gap-3 text-gray-400">
-                          <ShieldAlert className="w-10 h-10 text-gray-200" />
+                          <ShieldAlert className="w-9 h-9 text-gray-200" />
                           <p className="text-sm font-medium">저평점 리뷰가 없습니다.</p>
                         </div>
                       ) : (
-                        <div className="space-y-3">
+                        <div className="space-y-2.5">
                           {disputes.map(d => {
                             const date = new Date(d.created_at).toLocaleDateString('ko-KR', {
                               year: 'numeric', month: 'long', day: 'numeric',
