@@ -23,7 +23,11 @@ interface DisputeRow {
   job: { id: string; title: string } | null
 }
 
-export default async function MypagePage() {
+export default async function MypagePage({
+  searchParams,
+}: {
+  searchParams: Promise<{ tab?: string }>
+}) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
@@ -45,6 +49,9 @@ export default async function MypagePage() {
   let drivers: DriverEntry[] = []
   let pendingCertCount = 0
   let disputes: DisputeRow[] = []
+
+  const { tab: rawTab } = await searchParams
+  const adminTab = rawTab === 'disputes' ? 'disputes' : 'certs'
 
   if (profile.role === 'manager') {
     const { count } = await supabase
@@ -78,7 +85,7 @@ export default async function MypagePage() {
       process.env.SUPABASE_SERVICE_ROLE_KEY!
     )
 
-    // 서류 + 분쟁 데이터 병렬 패칭
+    // 서류(대기) + 분쟁 데이터 병렬 패칭 — 탭 배지 카운트를 위해 항상 fetch
     const [certResult, disputeResult] = await Promise.all([
       adminClient
         .from('certifications')
@@ -181,111 +188,130 @@ export default async function MypagePage() {
           {/* ── 2단 스플릿 그리드 ── */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8 items-start">
 
-            {/* 우측: 메인 콘텐츠 (모바일에서 먼저 노출) */}
+            {/* 우측: 메인 콘텐츠 (모바일에서 먼저) */}
             <div className="order-1 lg:order-2 lg:col-span-2">
               {profile.role === 'admin' ? (
-                /* ── 관리자 통합 관제 박스 (50 : 50) ── */
+
+                /* ── 관리자 통합 관제 카드 ── */
                 <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-                  <div className="grid grid-cols-1 md:grid-cols-2 divide-y md:divide-y-0 md:divide-x divide-gray-100">
 
-                    {/* 왼쪽 50% — 인증 서류 관리 */}
-                    <div className="flex flex-col">
-                      <div className="px-5 py-4 flex items-center gap-2 border-b border-gray-100">
-                        <FileText className="w-4 h-4 text-slate-500 shrink-0" />
-                        <span className="text-sm font-bold text-slate-800">인증 서류 관리</span>
-                        <span className={`ml-auto text-xs font-bold px-2 py-0.5 rounded-full shrink-0 ${
-                          pendingCertCount > 0
-                            ? 'bg-yellow-100 text-yellow-700'
-                            : 'bg-gray-100 text-gray-400'
-                        }`}>
-                          대기 {pendingCertCount}건
-                        </span>
-                      </div>
-                      <div className="p-4 overflow-y-auto max-h-[480px]">
-                        {drivers.length === 0 ? (
-                          <div className="flex flex-col items-center justify-center py-12 gap-2 text-gray-400">
-                            <FileText className="w-8 h-8 text-gray-200" />
-                            <p className="text-sm">대기 중인 서류가 없습니다.</p>
-                          </div>
-                        ) : (
-                          <CertDriverList drivers={drivers} />
-                        )}
-                      </div>
-                    </div>
+                  {/* 50:50 탭 바 — 카드 상단 full-width */}
+                  <div className="grid grid-cols-2 border-b border-gray-100">
+                    <Link
+                      href="/mypage?tab=certs"
+                      className={`flex items-center justify-center gap-2 py-4 text-sm font-bold transition-colors ${
+                        adminTab === 'certs'
+                          ? 'bg-slate-900 text-white'
+                          : 'bg-gray-50 text-gray-500 hover:bg-gray-100 hover:text-gray-700'
+                      }`}
+                    >
+                      <FileText className="w-4 h-4 shrink-0" />
+                      <span>인증 서류 관리</span>
+                      <span className={`text-xs font-bold px-1.5 py-0.5 rounded-full shrink-0 ${
+                        adminTab === 'certs'
+                          ? pendingCertCount > 0 ? 'bg-white/20 text-white' : 'bg-white/10 text-white/60'
+                          : pendingCertCount > 0 ? 'bg-yellow-100 text-yellow-700' : 'bg-gray-200 text-gray-400'
+                      }`}>
+                        {pendingCertCount}
+                      </span>
+                    </Link>
+                    <Link
+                      href="/mypage?tab=disputes"
+                      className={`flex items-center justify-center gap-2 py-4 text-sm font-bold transition-colors border-l border-gray-100 ${
+                        adminTab === 'disputes'
+                          ? 'bg-red-600 text-white'
+                          : 'bg-gray-50 text-gray-500 hover:bg-gray-100 hover:text-gray-700'
+                      }`}
+                    >
+                      <ShieldAlert className="w-4 h-4 shrink-0" />
+                      <span>분쟁 평판 모니터링</span>
+                      <span className={`text-xs font-bold px-1.5 py-0.5 rounded-full shrink-0 ${
+                        adminTab === 'disputes'
+                          ? disputes.length > 0 ? 'bg-white/20 text-white' : 'bg-white/10 text-white/60'
+                          : disputes.length > 0 ? 'bg-red-100 text-red-600' : 'bg-gray-200 text-gray-400'
+                      }`}>
+                        {disputes.length}
+                      </span>
+                    </Link>
+                  </div>
 
-                    {/* 오른쪽 50% — 분쟁 평판 모니터링 */}
-                    <div className="flex flex-col">
-                      <div className="px-5 py-4 flex items-center gap-2 border-b border-gray-100">
-                        <ShieldAlert className="w-4 h-4 text-red-500 shrink-0" />
-                        <span className="text-sm font-bold text-slate-800">분쟁 평판 모니터링</span>
-                        <span className={`ml-auto text-xs font-bold px-2 py-0.5 rounded-full shrink-0 ${
-                          disputes.length > 0
-                            ? 'bg-red-100 text-red-600'
-                            : 'bg-gray-100 text-gray-400'
-                        }`}>
-                          {disputes.length}건
-                        </span>
-                      </div>
-                      <div className="p-4 overflow-y-auto max-h-[480px]">
-                        {disputes.length === 0 ? (
-                          <div className="flex flex-col items-center justify-center py-12 gap-2 text-gray-400">
-                            <ShieldAlert className="w-8 h-8 text-gray-200" />
-                            <p className="text-sm">저평점 리뷰가 없습니다.</p>
-                          </div>
-                        ) : (
-                          <div className="space-y-2.5">
-                            {disputes.map(d => {
-                              const date = new Date(d.created_at).toLocaleDateString('ko-KR', {
-                                month: 'numeric', day: 'numeric',
-                              })
-                              return (
-                                <div key={d.id} className="rounded-xl border border-red-100 bg-red-50/30 p-3">
-                                  <div className="flex items-center justify-between gap-2 mb-1.5">
-                                    <div className="flex items-center gap-1 min-w-0">
-                                      <span className="text-xs text-gray-400 truncate shrink-0 max-w-[60px]">
-                                        {d.reviewer?.name ?? '?'}
-                                      </span>
-                                      <svg className="w-3 h-3 text-gray-300 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
-                                        <path d="M5 12h14M12 5l7 7-7 7" strokeLinecap="round" strokeLinejoin="round" />
-                                      </svg>
-                                      {d.reviewee ? (
-                                        <Link
-                                          href={`/profiles/${d.reviewee.id}`}
-                                          className="text-xs font-bold text-slate-800 hover:text-blue-600 transition-colors underline underline-offset-1 truncate"
-                                        >
-                                          {d.reviewee.name}
-                                        </Link>
-                                      ) : (
-                                        <span className="text-xs font-bold text-slate-800">?</span>
-                                      )}
-                                    </div>
-                                    <div className="flex items-center gap-2 shrink-0">
-                                      <div className="flex items-center gap-0.5">
-                                        <Star className="w-3 h-3 fill-red-500 text-red-500" />
-                                        <span className="text-xs font-bold text-red-600">{d.rating}</span>
-                                      </div>
-                                      <span className="text-[11px] text-gray-400">{date}</span>
-                                    </div>
+                  {/* 고정 높이 콘텐츠 영역 — 내부 독립 스크롤 */}
+                  <div className="h-[520px] overflow-y-auto p-5">
+
+                    {adminTab === 'certs' ? (
+                      /* 인증 서류 목록 */
+                      drivers.length === 0 ? (
+                        <div className="h-full flex flex-col items-center justify-center gap-3 text-gray-400">
+                          <FileText className="w-10 h-10 text-gray-200" />
+                          <p className="text-sm font-medium">대기 중인 서류가 없습니다.</p>
+                        </div>
+                      ) : (
+                        <CertDriverList drivers={drivers} />
+                      )
+                    ) : (
+                      /* 분쟁 평판 모니터링 목록 */
+                      disputes.length === 0 ? (
+                        <div className="h-full flex flex-col items-center justify-center gap-3 text-gray-400">
+                          <ShieldAlert className="w-10 h-10 text-gray-200" />
+                          <p className="text-sm font-medium">저평점 리뷰가 없습니다.</p>
+                        </div>
+                      ) : (
+                        <div className="space-y-3">
+                          {disputes.map(d => {
+                            const date = new Date(d.created_at).toLocaleDateString('ko-KR', {
+                              year: 'numeric', month: 'long', day: 'numeric',
+                            })
+                            return (
+                              <div key={d.id} className="bg-white rounded-xl border border-red-100 px-4 py-3.5">
+                                <div className="flex flex-wrap items-start justify-between gap-2 mb-2">
+                                  <div className="flex items-center gap-1.5 min-w-0 flex-wrap">
+                                    <span className="text-sm text-gray-400 shrink-0">
+                                      {d.reviewer?.name ?? '(알 수 없음)'}
+                                    </span>
+                                    <svg className="w-3.5 h-3.5 text-gray-300 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+                                      <path d="M5 12h14M12 5l7 7-7 7" strokeLinecap="round" strokeLinejoin="round" />
+                                    </svg>
+                                    {d.reviewee ? (
+                                      <Link
+                                        href={`/profiles/${d.reviewee.id}`}
+                                        className="text-sm font-bold text-slate-900 hover:text-blue-600 transition-colors underline underline-offset-2 shrink-0"
+                                      >
+                                        {d.reviewee.name}
+                                      </Link>
+                                    ) : (
+                                      <span className="text-sm font-bold text-slate-900 shrink-0">(알 수 없음)</span>
+                                    )}
+                                    {d.job && (
+                                      <span className="text-xs text-gray-400 truncate">· {d.job.title}</span>
+                                    )}
                                   </div>
-                                  {d.job && (
-                                    <p className="text-[11px] text-gray-400 mb-1 truncate">· {d.job.title}</p>
-                                  )}
-                                  {d.comment && (
-                                    <p className="text-xs text-gray-600 leading-relaxed line-clamp-2">
-                                      {d.comment}
-                                    </p>
-                                  )}
+                                  <div className="flex items-center gap-2.5 shrink-0">
+                                    <div className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-red-50 border border-red-200">
+                                      <Star className="w-3 h-3 fill-red-500 text-red-500" />
+                                      <span className="text-xs font-bold text-red-600">{d.rating}</span>
+                                    </div>
+                                    <span className="text-xs text-gray-400">{date}</span>
+                                  </div>
                                 </div>
-                              )
-                            })}
-                          </div>
-                        )}
-                      </div>
-                    </div>
+                                {d.comment ? (
+                                  <p className="text-sm text-gray-600 leading-relaxed bg-gray-50 rounded-lg px-3 py-2">
+                                    {d.comment}
+                                  </p>
+                                ) : (
+                                  <p className="text-xs text-gray-400 italic">내용 없음</p>
+                                )}
+                              </div>
+                            )
+                          })}
+                        </div>
+                      )
+                    )}
 
                   </div>
                 </div>
+
               ) : (
+
                 /* ── 일반 유저 활동 카드 ── */
                 <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden divide-y divide-gray-100">
                   <p className="px-5 pt-4 pb-2 text-sm font-bold text-slate-800">활동</p>
@@ -358,6 +384,7 @@ export default async function MypagePage() {
                     </>
                   )}
                 </div>
+
               )}
             </div>
 
