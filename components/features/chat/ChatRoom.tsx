@@ -194,15 +194,15 @@ export default function ChatRoom({ room, initialMessages, currentUserId }: Props
           event: 'UPDATE',
           schema: 'public',
           table: 'chat_messages',
-          // filter 제거: REPLICA IDENTITY FULL 없이도 UPDATE 이벤트를 수신하기 위해
-          // room_id 체크를 코드에서 직접 처리
         },
         (payload) => {
           const updated = payload.new as ChatMessage
-          if (updated.room_id !== room.id) return
-          setMessages((prev) =>
-            prev.map((m) => (m.id === updated.id ? { ...m, ...updated } : m))
-          )
+          // REPLICA IDENTITY DEFAULT 환경에서 payload.new는 PK(id)와 변경된 컬럼만 포함
+          // room_id가 payload에 없을 수 있으므로 메시지 존재 여부로 귀속 판단
+          setMessages((prev) => {
+            if (!prev.some((m) => m.id === updated.id)) return prev
+            return prev.map((m) => (m.id === updated.id ? { ...m, ...updated } : m))
+          })
         }
       )
       .subscribe()
@@ -460,10 +460,11 @@ export default function ChatRoom({ room, initialMessages, currentUserId }: Props
                 return (
                   <div key={msg.id} className={`flex items-end justify-end gap-1.5 ${marginTop}`}>
 
-                    {/* [안 읽음 1 + 시간] — 말풍선 왼쪽 바로 옆 밀착 */}
-                    {(showTime || (!msg.is_read && !isTemp)) && (
+                    {/* [안 읽음 1 + 시간] — 말풍선 왼쪽 바로 옆 밀착
+                        삭제된 메시지는 is_read 여부와 무관하게 1 표시 안 함 */}
+                    {(showTime || (!msg.is_read && !isTemp && !isDeletedMsg)) && (
                       <div className="flex flex-col items-end justify-end select-none shrink-0 pb-0.5 gap-0.5">
-                        {!msg.is_read && !isTemp && (
+                        {!msg.is_read && !isTemp && !isDeletedMsg && (
                           <span className="text-[10px] font-bold text-yellow-400 leading-none">1</span>
                         )}
                         {showTime && (
@@ -478,7 +479,7 @@ export default function ChatRoom({ room, initialMessages, currentUserId }: Props
                     <div className={`flex items-end gap-1.5 max-w-[70%] min-w-0 ${!isTemp && !isDeletedMsg ? 'group' : ''}`}>
                       <div className={`min-w-[50px] ${isTemp ? 'opacity-60' : ''} ${
                         isDeletedMsg
-                          ? `px-3.5 py-2.5 text-sm italic whitespace-pre-wrap break-words ${bubbleRadius} bg-blue-100 text-blue-300`
+                          ? `px-3.5 py-2.5 text-sm italic whitespace-pre-wrap break-words ${bubbleRadius} bg-gray-100 text-gray-400`
                           : isImg
                             ? `overflow-hidden ${bubbleRadius}`
                             : `px-3.5 py-2.5 text-sm leading-relaxed whitespace-pre-wrap break-words ${bubbleRadius} bg-blue-500 text-white`
