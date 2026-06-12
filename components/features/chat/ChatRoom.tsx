@@ -284,9 +284,9 @@ useEffect(() => {
       <header className="bg-white border-b border-gray-100 shrink-0 z-10">
         <div className="px-3 py-2.5 flex items-center gap-2.5">
 
-          {/* 뒤로가기 — 모바일 전용 */}
+          {/* 뒤로가기 — 모바일 전용: 채팅 목록으로 이동 */}
           <button
-            onClick={() => router.back()}
+            onClick={() => router.push('/chats')}
             className="md:hidden p-1.5 -ml-1 rounded-lg hover:bg-gray-100 transition-colors shrink-0"
             aria-label="뒤로가기"
           >

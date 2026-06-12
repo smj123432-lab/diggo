@@ -59,7 +59,7 @@ export default function ChatList({ rooms, currentUserId, currentUserName }: Prop
         {/* 뒤로가기 + 이름 */}
         <div className="flex items-center gap-1 px-3 pt-5 pb-2">
           <button
-            onClick={() => router.back()}
+            onClick={() => router.push('/mypage/applications')}
             className="p-1.5 rounded-lg hover:bg-gray-100 transition-colors text-gray-500 hover:text-gray-800"
             aria-label="뒤로가기"
           >

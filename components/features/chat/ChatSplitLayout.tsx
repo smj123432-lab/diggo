@@ -236,7 +236,7 @@ export default function ChatSplitLayout({ rooms, currentUserId, currentUserName,
           {/* 헤더: 뒤로가기 + 내 계정명 */}
           <div className="flex items-center gap-1 px-3 pt-5 pb-3 border-b border-gray-100">
             <button
-              onClick={() => router.back()}
+              onClick={() => router.push('/mypage/applications')}
               className="p-1.5 rounded-lg hover:bg-gray-100 transition-colors text-gray-500 hover:text-gray-800"
               aria-label="뒤로가기"
             >
