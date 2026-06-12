@@ -137,8 +137,8 @@ export default async function MypagePage() {
             </Link>
           )}
 
-          {/* 바로가기 그리드 */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {/* 바로가기 그리드 — 관리자는 일반 유저 메뉴 숨김 */}
+          {profile.role !== 'admin' && <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
 
             {/* 활동 */}
             <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden divide-y divide-gray-100">
@@ -242,7 +242,7 @@ export default async function MypagePage() {
               <DeleteAccountButton />
             </div>
 
-          </div>
+          </div>}
         </div>
       </div>
     </div>
