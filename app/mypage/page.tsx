@@ -221,7 +221,7 @@ export default async function MypagePage({
                       className={`flex items-center justify-center gap-2 py-3.5 text-sm font-bold transition-colors ${
                         adminTab === 'certs'
                           ? 'bg-slate-900 text-white'
-                          : 'bg-gray-50 text-gray-500 hover:bg-gray-100 hover:text-gray-700'
+                          : 'bg-white text-gray-500 hover:bg-gray-50 hover:text-gray-700'
                       }`}
                     >
                       <FileText className="w-4 h-4 shrink-0" />
@@ -239,7 +239,7 @@ export default async function MypagePage({
                       className={`flex items-center justify-center gap-2 py-3.5 text-sm font-bold transition-colors border-l border-gray-100 ${
                         adminTab === 'disputes'
                           ? 'bg-red-600 text-white'
-                          : 'bg-gray-50 text-gray-500 hover:bg-gray-100 hover:text-gray-700'
+                          : 'bg-white text-gray-500 hover:bg-gray-50 hover:text-gray-700'
                       }`}
                     >
                       <ShieldAlert className="w-4 h-4 shrink-0" />
@@ -256,7 +256,7 @@ export default async function MypagePage({
 
                   {/* 인증 서류 상태 필터 — certs 탭 활성 시만, 스크롤 영역 밖 */}
                   {adminTab === 'certs' && (
-                    <div className="flex gap-1.5 px-4 py-2.5 border-b border-gray-50 bg-gray-50/60 flex-wrap">
+                    <div className="flex gap-1.5 px-4 py-2.5 border-b border-gray-100 bg-white flex-wrap">
                       {CERT_STATUS_TABS.map(t => (
                         <Link
                           key={t.value}
