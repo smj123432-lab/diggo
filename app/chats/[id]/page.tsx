@@ -1,4 +1,5 @@
 // 채팅방 페이지 (서버 컴포넌트 래퍼)
+import { Suspense } from 'react'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import ChatRoomComponent from '@/components/features/chat/ChatRoom'
@@ -8,7 +9,15 @@ interface Props {
   params: Promise<{ id: string }>
 }
 
-export default async function ChatRoomPage({ params }: Props) {
+export default function ChatRoomPage({ params }: Props) {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-white" />}>
+      <ChatRoomContent params={params} />
+    </Suspense>
+  )
+}
+
+async function ChatRoomContent({ params }: Props) {
   const { id } = await params
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()

@@ -1,22 +1,19 @@
 'use client'
 
-import { useEffect, useRef } from 'react'
-import { usePathname } from 'next/navigation'
+import { useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useAuthStore } from '@/store/auth'
 import { useNotificationStore } from '@/store/notifications'
 import type { Notification } from '@/types'
 
+// usePathname() 대신 window.location.pathname 사용 — PPR 모드에서 usePathname이
+// Suspense 밖에서 동적 데이터로 인식되어 prerender 실패를 일으킴
+const isOnNotificationsPage = () =>
+  typeof window !== 'undefined' && window.location.pathname === '/notifications'
+
 export function useNotifications() {
   const { user } = useAuthStore()
   const { setUnreadCount, addNotification, setNotifications } = useNotificationStore()
-  const pathname = usePathname()
-
-  // 현재 경로를 ref로 유지 — Realtime 콜백 클로저에서 최신값 참조 (ChatSplitLayout의 activeRoomIdRef 패턴)
-  const pathnameRef = useRef(pathname)
-  useEffect(() => {
-    pathnameRef.current = pathname
-  }, [pathname])
 
   // 초기 알림 목록 + 미읽음 개수 로드
   useEffect(() => {
@@ -33,7 +30,7 @@ export function useNotifications() {
         setNotifications(data)
         // /notifications 페이지 열람 중이면 unreadCount 설정하지 않음
         // (페이지가 동시에 markAllAsRead + setUnreadCount(0)을 호출하므로 덮어쓰기 방지)
-        if (pathnameRef.current !== '/notifications') {
+        if (!isOnNotificationsPage()) {
           const unread = data.filter((n: Notification) => !n.is_read).length
           setUnreadCount(unread)
         }
@@ -61,7 +58,7 @@ export function useNotifications() {
           addNotification(newNotification)
           // /notifications 페이지를 보고 있으면 unreadCount 증가하지 않음
           // (페이지를 열고 있다는 것 자체가 이미 읽고 있다는 의미)
-          if (pathnameRef.current !== '/notifications') {
+          if (!isOnNotificationsPage()) {
             setUnreadCount(useNotificationStore.getState().unreadCount + 1)
           }
         }

@@ -96,6 +96,7 @@ function LoginForm() {
           <button
             type="button"
             onClick={() => setShowPw((v) => !v)}
+            aria-label={showPw ? '비밀번호 숨기기' : '비밀번호 보기'}
             className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition"
             tabIndex={-1}
           >

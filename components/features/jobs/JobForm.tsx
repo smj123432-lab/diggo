@@ -399,6 +399,7 @@ export function JobForm({
             <Label required>작업 일자</Label>
             <input
               type="date"
+              aria-label="작업 일자"
               value={form.work_date}
               min={
                 mode === "edit"

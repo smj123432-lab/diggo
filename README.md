@@ -102,9 +102,25 @@ flowchart LR
 - 월별 수입/지출/순수익 집계
 - 지급 완료 기준 정산 (미수금과 실수령 분리)
 
+### 채팅 (Supabase Realtime)
+- 소장이 지원 수락 시 자동으로 1:1 채팅방 생성
+- 실시간 메시지 송수신 + 이미지 전송 (Supabase Storage)
+- 낙관적 업데이트: 전송 중 임시 메시지 즉시 표시 후 서버 확인으로 교체
+- 읽음 처리: 방 진입 시 일괄 처리 + UPDATE Realtime으로 "1" 배지 실시간 소멸
+- 채팅방 배차 수락/거절 메뉴 (소장 전용)
+- 데스크톱 좌우 분할 레이아웃 · 모바일 단일 뷰
+- 채팅방 나가기 (soft-delete)
+
+### 알림
+- 지원자 발생, 수락/거절, 채팅 메시지 수신 시 실시간 알림
+- Supabase Realtime INSERT 구독으로 즉시 수신
+- 네비게이션 바 미읽음 배지 + 알림 페이지 진입 시 일괄 읽음 처리
+- Zustand 기반 전역 상태 관리 (`useNotificationStore`)
+
 ### 관리자 대시보드
 - 기사별 서류 목록 카드 UI + 모달 심사
 - 승인/거절 처리 및 대기 건수 실시간 표시
+- 분쟁 관제: 평점 1–2점 리뷰 집계 + 기사·소장별 신고 현황 모니터링
 
 ---
 
@@ -155,9 +171,10 @@ Supabase (BaaS)
 | 페이지 | 방식 | 이유 |
 |--------|------|------|
 | 일감 목록 | SSR + "use cache" | SEO + 30초 캐싱 |
-| 일감 상세 | Partial Prerender | SEO, 공유 링크 미리보기 |
+| 일감 상세 | Partial Prerender (◐) | SEO, 공유 링크 미리보기 |
+| 채팅방 | Partial Prerender (◐) | 초기 메시지 SSR, 이후 Realtime |
 | 장부 / 마이페이지 | Dynamic (no-store) | 개인 데이터 |
-| 채팅 | CSR + Realtime | 실시간 |
+| 채팅 목록 / 알림 | CSR + Realtime | 실시간 |
 
 ---
 
@@ -290,6 +307,13 @@ ALTER TABLE jobs ADD CONSTRAINT jobs_status_check
 - 인증 승인 처리 시 `Promise.all`로 관련 쿼리 병렬 실행
 - 독립적인 API 요청은 클라이언트에서도 `Promise.all`로 동시 처리
 
+### 코드 품질 리팩토링
+- `lib/supabase/admin.ts` 추출: 8개 API 라우트의 admin 클라이언트 생성 중복 제거
+- `Avatar.tsx` → Next.js `Image` 전환: lazy load, WebP 자동 변환, blur placeholder
+- `EmptyState`, `useHorizontalScroll` 공용 추상화: 5–6개 파일 중복 UI 로직 단일화
+- `/api/chats` N+1 제거: 각 room별 DB 호출 → 배치 조회 후 JS groupBy
+- `ChatRoom.tsx` 분리: ChatRoomMenu, ChatMessageBubble, ChatInput 3개 컴포넌트
+
 ---
 
 ## 10. 폴더 구조
@@ -324,7 +348,6 @@ diggo/
 ## 11. 개선 예정
 
 ### 기능
-- [ ] 알림 (지원·수락·거절·채팅 수신)
 - [ ] 장비 여러 대 운용 (담당 기사 지정)
 - [ ] 기사·소장 상호 평가 시스템
 - [ ] 노쇼 패널티 (취소 시 평점 감점 + 패널티 뱃지)

@@ -102,6 +102,7 @@ export default function NotificationsPage() {
         <div className="max-w-lg mx-auto px-4 py-3 flex items-center gap-3">
           <button
             onClick={() => router.back()}
+            aria-label="뒤로가기"
             className="p-1.5 -ml-1.5 rounded-lg hover:bg-gray-100 transition-colors"
           >
             <svg className="w-5 h-5 text-gray-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>

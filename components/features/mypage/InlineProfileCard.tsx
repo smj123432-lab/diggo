@@ -71,6 +71,7 @@ export function InlineProfileCard({ profile, jobCount = 0 }: Props) {
             <button
               onClick={() => fileInputRef.current?.click()}
               disabled={uploading}
+              aria-label="프로필 사진 변경"
               className="w-16 h-16 rounded-2xl overflow-hidden block focus:outline-none"
             >
               {avatarUrl ? (
@@ -109,6 +110,7 @@ export function InlineProfileCard({ profile, jobCount = 0 }: Props) {
               type="file"
               accept="image/jpeg,image/png,image/webp"
               className="hidden"
+              aria-hidden="true"
               onChange={handleFileChange}
             />
           </div>
