@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { revalidateTag } from 'next/cache'
 import { createClient } from '@/lib/supabase/server'
+import { createClient as createAdminClient } from '@supabase/supabase-js'
 import { checkAndTransitionJobStatus } from '@/lib/utils/dispatch'
 
 // PATCH /api/chats/[roomId]/dispatch — 소장이 채팅방에서 기사 배치 수락/거절
@@ -22,7 +23,7 @@ export async function PATCH(
     // 채팅방 확인 및 소장 권한 검증
     const { data: room } = await supabase
       .from('chat_rooms')
-      .select('job_id, driver_id, manager_id')
+      .select('job_id, driver_id, manager_id, jobs(title)')
       .eq('id', roomId)
       .single()
 
@@ -53,6 +54,22 @@ export async function PATCH(
     // 수락 시 — 모든 장비 슬롯이 배차됐을 때만 in_progress로 전환
     if (action === 'accept') {
       await checkAndTransitionJobStatus(supabase, room.job_id)
+    }
+
+    // 수락/거절 시 기사에게 알림 전송
+    const jobTitle = (room.jobs as unknown as { title: string } | null)?.title
+    if (jobTitle) {
+      const admin = createAdminClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.SUPABASE_SERVICE_ROLE_KEY!
+      )
+      await admin.from('notifications').insert({
+        user_id: room.driver_id,
+        type: action === 'accept' ? 'application_accepted' : 'application_rejected',
+        message: action === 'accept'
+          ? `"${jobTitle}"에 배치가 수락되었습니다.`
+          : `"${jobTitle}"에 배치가 거절되었습니다.`,
+      })
     }
 
     // 일감 상태 변경 시 캐시 무효화 (모집중 → 작업중 즉시 반영)

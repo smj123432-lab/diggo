@@ -7,7 +7,7 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { toast } from 'sonner'
 import { createClient } from '@/lib/supabase/client'
-import type { ChatMessage, ChatRoomWithDetails } from '@/types'
+import type { ChatMessage, ChatRoomWithDetails, ApplicationStatus } from '@/types'
 
 const IMG_PREFIX = '[img]'
 
@@ -37,6 +37,7 @@ interface Props {
   room: ChatRoomWithDetails
   initialMessages: ChatMessage[]
   currentUserId: string
+  initialApplicationStatus: ApplicationStatus | null
 }
 
 function formatTime(iso: string) {
@@ -60,7 +61,7 @@ function DefaultAvatar({ size }: { size: number }) {
   )
 }
 
-export default function ChatRoom({ room, initialMessages, currentUserId }: Props) {
+export default function ChatRoom({ room, initialMessages, currentUserId, initialApplicationStatus }: Props) {
   const router = useRouter()
   const [messages, setMessages] = useState<ChatMessage[]>(initialMessages)
   const [input, setInput] = useState('')
@@ -70,6 +71,7 @@ export default function ChatRoom({ room, initialMessages, currentUserId }: Props
   const [isDispatching, setIsDispatching] = useState(false)
   const [showLeaveConfirm, setShowLeaveConfirm] = useState(false)
   const [isLeaving, setIsLeaving] = useState(false)
+  const [appStatus, setAppStatus] = useState<ApplicationStatus | null>(initialApplicationStatus)
   const bottomRef = useRef<HTMLDivElement>(null)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
@@ -107,6 +109,7 @@ export default function ChatRoom({ room, initialMessages, currentUserId }: Props
       })
       const json = await res.json() as { error?: string }
       if (!res.ok) throw new Error(json.error ?? '처리 실패')
+      setAppStatus(action === 'accept' ? 'accepted' : 'rejected')
       toast.success(action === 'accept' ? '배치를 수락했습니다.' : '배치를 거절했습니다.')
     } catch (err) {
       toast.error(err instanceof Error ? err.message : '처리에 실패했습니다.')
@@ -340,24 +343,36 @@ useEffect(() => {
               >
                 {isManager ? (
                   <>
-                    <button
-                      onClick={() => handleDispatch('accept')}
-                      className="w-full flex items-center gap-2.5 px-4 py-3 text-sm text-emerald-600 font-semibold hover:bg-emerald-50 transition-colors"
-                    >
-                      <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5}>
-                        <path d="M20 6 9 17l-5-5" strokeLinecap="round" strokeLinejoin="round" />
-                      </svg>
-                      배치 수락
-                    </button>
-                    <button
-                      onClick={() => handleDispatch('reject')}
-                      className="w-full flex items-center gap-2.5 px-4 py-3 text-sm text-red-500 font-semibold hover:bg-red-50 transition-colors border-t border-gray-100"
-                    >
-                      <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5}>
-                        <path d="M18 6 6 18M6 6l12 12" strokeLinecap="round" />
-                      </svg>
-                      배치 거절
-                    </button>
+                    {appStatus === 'accepted' ? (
+                      <div className="px-4 py-3 text-sm text-emerald-600 font-semibold bg-emerald-50">
+                        ✓ 이미 수락한 기사입니다
+                      </div>
+                    ) : appStatus === 'rejected' ? (
+                      <div className="px-4 py-3 text-sm text-gray-400 font-semibold bg-gray-50">
+                        거절된 기사입니다
+                      </div>
+                    ) : (
+                      <>
+                        <button
+                          onClick={() => handleDispatch('accept')}
+                          className="w-full flex items-center gap-2.5 px-4 py-3 text-sm text-emerald-600 font-semibold hover:bg-emerald-50 transition-colors"
+                        >
+                          <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5}>
+                            <path d="M20 6 9 17l-5-5" strokeLinecap="round" strokeLinejoin="round" />
+                          </svg>
+                          배치 수락
+                        </button>
+                        <button
+                          onClick={() => handleDispatch('reject')}
+                          className="w-full flex items-center gap-2.5 px-4 py-3 text-sm text-red-500 font-semibold hover:bg-red-50 transition-colors border-t border-gray-100"
+                        >
+                          <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5}>
+                            <path d="M18 6 6 18M6 6l12 12" strokeLinecap="round" />
+                          </svg>
+                          배치 거절
+                        </button>
+                      </>
+                    )}
                     <Link
                       href={`/profiles/${room.driver_id}`}
                       onClick={() => setMenuOpen(false)}

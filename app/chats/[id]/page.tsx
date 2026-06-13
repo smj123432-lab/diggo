@@ -2,7 +2,7 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import ChatRoomComponent from '@/components/features/chat/ChatRoom'
-import type { ChatRoomWithDetails, ChatMessage } from '@/types'
+import type { ChatRoomWithDetails, ChatMessage, ApplicationStatus } from '@/types'
 
 interface Props {
   params: Promise<{ id: string }>
@@ -26,11 +26,12 @@ export default async function ChatRoomPage({ params }: Props) {
     redirect('/chats')
   }
 
-  // jobs, 프로필, 메시지 병렬 조회
+  // jobs, 프로필, 메시지, 지원서 상태 병렬 조회
   const [
     { data: job },
     { data: profiles },
     { data: messages },
+    { data: application },
   ] = await Promise.all([
     supabase
       .from('jobs')
@@ -47,6 +48,12 @@ export default async function ChatRoomPage({ params }: Props) {
       .eq('room_id', id)
       .order('created_at', { ascending: true })
       .limit(50),
+    supabase
+      .from('applications')
+      .select('status')
+      .eq('job_id', room.job_id)
+      .eq('driver_id', room.driver_id)
+      .maybeSingle(),
   ])
 
   // 상대방 메시지 읽음 처리 (비동기, 결과 기다리지 않음)
@@ -72,6 +79,7 @@ export default async function ChatRoomPage({ params }: Props) {
       room={normalizedRoom}
       initialMessages={(messages ?? []) as ChatMessage[]}
       currentUserId={user.id}
+      initialApplicationStatus={(application?.status ?? null) as ApplicationStatus | null}
     />
   )
 }
