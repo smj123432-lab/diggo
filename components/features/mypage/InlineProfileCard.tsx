@@ -120,12 +120,20 @@ export function InlineProfileCard({ profile, jobCount = 0 }: Props) {
               <span className="text-xs font-bold bg-blue-600 text-white px-2 py-0.5 rounded-full">
                 {ROLE_LABEL[profile.role]}
               </span>
-              {profile.is_certified && (
-                <span className="inline-flex items-center gap-1 text-xs font-bold border border-blue-200 text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full">
-                  <svg className="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={3}>
-                    <path d="M20 6L9 17l-5-5" strokeLinecap="round" strokeLinejoin="round" />
+              {profile.review_count >= 5 && (profile.rating_avg ?? 0) >= 4.5 && (
+                <span className="inline-flex items-center gap-1 text-xs font-bold border border-amber-300 text-amber-600 bg-amber-50 px-2 py-0.5 rounded-full">
+                  <svg className="w-3 h-3" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
                   </svg>
-                  인증
+                  우수 평점
+                </span>
+              )}
+              {profile.review_count >= 5 && (profile.rating_avg ?? 0) <= 2.0 && (
+                <span className="inline-flex items-center gap-1 text-xs font-bold border border-red-200 text-red-600 bg-red-50 px-2 py-0.5 rounded-full">
+                  <svg className="w-3 h-3" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z" />
+                  </svg>
+                  저평점
                 </span>
               )}
               {profile.role === 'driver' && (

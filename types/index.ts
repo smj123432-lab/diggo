@@ -69,7 +69,7 @@ export interface Job {
 }
 
 export interface JobWithManager extends Job {
-  profiles: Pick<Profile, 'id' | 'name' | 'rating_avg' | 'is_certified' | 'avatar_url'>
+  profiles: Pick<Profile, 'id' | 'name' | 'rating_avg' | 'review_count' | 'is_certified' | 'avatar_url'>
 }
 
 // equipment_codes 배열을 레이블 문자열로 변환
@@ -97,7 +97,7 @@ export interface Application {
 }
 
 export interface ApplicationWithDetails extends Application {
-  profiles: Pick<Profile, 'id' | 'name' | 'rating_avg' | 'is_certified' | 'experience_years'>
+  profiles: Pick<Profile, 'id' | 'name' | 'rating_avg' | 'review_count' | 'is_certified' | 'experience_years'>
   equipments: Pick<Equipment, 'id' | 'model_code' | 'license_number'> | null
   jobs: Pick<Job, 'id' | 'title' | 'work_date' | 'pay_amounts' | 'location'>
 }

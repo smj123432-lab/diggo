@@ -256,14 +256,14 @@ export default async function JobDetailPage({ params }: Props) {
                     <div>
                       <div className="flex items-center gap-1.5 flex-wrap">
                         <Link href={`/profiles/${job.profiles.id}`} className="text-sm font-semibold text-gray-800 hover:text-blue-500 transition-colors">{job.profiles.name} 소장</Link>
-                        {job.profiles.is_certified && (
-                          <span className="inline-flex items-center justify-center bg-blue-500 text-white w-4 h-4 rounded-full shrink-0">
-                            <svg className="w-2.5 h-2.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={3}>
-                              <path d="M20 6L9 17l-5-5" strokeLinecap="round" strokeLinejoin="round" />
+                        {job.profiles.review_count >= 5 && job.profiles.rating_avg >= 4.5 && (
+                          <span className="inline-flex items-center justify-center bg-amber-400 text-white w-4 h-4 rounded-full shrink-0">
+                            <svg className="w-2.5 h-2.5" viewBox="0 0 24 24" fill="currentColor">
+                              <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
                             </svg>
                           </span>
                         )}
-                        {job.profiles.rating_avg > 0 && job.profiles.rating_avg <= 2.0 && (
+                        {job.profiles.review_count >= 5 && job.profiles.rating_avg <= 2.0 && (
                           <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-red-100 text-red-600">주의</span>
                         )}
                       </div>
@@ -302,8 +302,9 @@ function ManagerAvatar({ name, avatarUrl, size }: { name: string; avatarUrl: str
   )
 }
 
-function ManagerBlock({ job }: { job: { profiles: { id: string; name: string; is_certified: boolean; rating_avg: number; avatar_url: string | null } } }) {
-  const isLowRating = job.profiles.rating_avg > 0 && job.profiles.rating_avg <= 2.0
+function ManagerBlock({ job }: { job: { profiles: { id: string; name: string; rating_avg: number; review_count: number; avatar_url: string | null } } }) {
+  const isTopRating = job.profiles.review_count >= 5 && job.profiles.rating_avg >= 4.5
+  const isLowRating = job.profiles.review_count >= 5 && job.profiles.rating_avg <= 2.0
   return (
     <>
       <p className="text-xs text-gray-400 font-medium mb-3">소장 정보</p>
@@ -312,10 +313,10 @@ function ManagerBlock({ job }: { job: { profiles: { id: string; name: string; is
         <div>
           <div className="flex items-center gap-1.5 flex-wrap">
             <Link href={`/profiles/${job.profiles.id}`} className="text-sm font-semibold text-gray-800 hover:text-blue-500 transition-colors">{job.profiles.name} 소장</Link>
-            {job.profiles.is_certified && (
-              <span className="inline-flex items-center justify-center bg-blue-500 text-white w-4 h-4 rounded-full shrink-0">
-                <svg className="w-2.5 h-2.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={3}>
-                  <path d="M20 6L9 17l-5-5" strokeLinecap="round" strokeLinejoin="round" />
+            {isTopRating && (
+              <span className="inline-flex items-center justify-center bg-amber-400 text-white w-4 h-4 rounded-full shrink-0">
+                <svg className="w-2.5 h-2.5" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
                 </svg>
               </span>
             )}
