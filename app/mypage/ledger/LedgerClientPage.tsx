@@ -228,7 +228,8 @@ export function LedgerClientPage({ role }: Props) {
                         : 'text-gray-400 bg-gray-200 cursor-not-allowed'
                     }`}
                   >
-                    + 내역 추가
+                    <span className="sm:hidden">+</span>
+                    <span className="hidden sm:inline">+ 내역 추가</span>
                   </button>
                 </div>
               </div>

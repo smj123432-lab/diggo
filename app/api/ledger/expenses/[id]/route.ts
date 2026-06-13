@@ -25,7 +25,7 @@ export async function DELETE(
 
     if (error) throw error
 
-    return NextResponse.json({ message: '삭제되었습니다.' })
+    return NextResponse.json({ data: { message: '삭제되었습니다.' } })
   } catch (error) {
     console.error('[DELETE /api/ledger/expenses/[id]]', error)
     return NextResponse.json({ error: '지출 삭제에 실패했습니다.' }, { status: 500 })

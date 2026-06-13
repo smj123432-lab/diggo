@@ -1,14 +1,17 @@
 'use client'
 
 // 소장 내 일감 목록 페이지
-import { useState, useEffect, useRef, Suspense } from 'react'
+import { useState, useEffect, Suspense } from 'react'
 import Link from 'next/link'
 import { useAuthStore } from '@/store/auth'
 import { useRouter, useSearchParams } from 'next/navigation'
+import { toast } from 'sonner'
 import { ExcavatorIcon } from '@/components/ui/ExcavatorIcon'
 import { NavButtons } from '@/components/features/home/NavButtons'
 import { NavRoleLink } from '@/components/features/home/NavRoleLink'
 import { ManagerJobCard } from '@/components/features/manager/ManagerJobCard'
+import { EmptyState } from '@/components/ui/EmptyState'
+import { useHorizontalScroll } from '@/hooks/useHorizontalScroll'
 import type { Job, JobStatus } from '@/types'
 
 type FilterValue = 'all' | JobStatus | 'reviewing'
@@ -47,21 +50,7 @@ function ManagerJobsContent() {
   })
   // "jobId:driverId" 형태로 저장 — 기사별 리뷰 완료 판단
   const [reviewedPairs, setReviewedPairs] = useState<Set<string>>(new Set())
-  const [tabScroll, setTabScroll] = useState({ canLeft: false, canRight: true })
-  const tabScrollRef = useRef<HTMLDivElement>(null)
-
-  function handleTabScroll() {
-    const el = tabScrollRef.current
-    if (!el) return
-    setTabScroll({
-      canLeft: el.scrollLeft > 0,
-      canRight: el.scrollLeft + el.clientWidth < el.scrollWidth - 1,
-    })
-  }
-
-  useEffect(() => {
-    requestAnimationFrame(handleTabScroll)
-  }, [])
+  const { ref: tabScrollRef, canLeft: tabCanLeft, canRight: tabCanRight, handleScroll: handleTabScroll } = useHorizontalScroll()
 
   useEffect(() => {
     if (!authLoading && role !== null && (!user || role !== 'manager')) {
@@ -86,6 +75,7 @@ function ManagerJobsContent() {
         )
         setReviewedPairs(pairs)
       })
+      .catch(() => toast.error('데이터를 불러오는데 실패했습니다.'))
       .finally(() => setIsLoading(false))
   }, [user, role])
 
@@ -180,7 +170,7 @@ function ManagerJobsContent() {
                   })}
                 </div>
               </div>
-              {tabScroll.canLeft && (
+              {tabCanLeft && (
                 <div className="absolute left-0 top-0 bottom-1 flex items-center bg-gradient-to-r from-gray-50 via-gray-50/90 to-transparent pr-6">
                   <button
                     onClick={() => tabScrollRef.current?.scrollBy({ left: -160, behavior: 'smooth' })}
@@ -193,7 +183,7 @@ function ManagerJobsContent() {
                   </button>
                 </div>
               )}
-              {tabScroll.canRight && (
+              {tabCanRight && (
                 <div className="absolute right-0 top-0 bottom-1 flex items-center bg-gradient-to-l from-gray-50 via-gray-50/90 to-transparent pl-6">
                   <button
                     onClick={() => tabScrollRef.current?.scrollBy({ left: 160, behavior: 'smooth' })}
@@ -222,19 +212,19 @@ function ManagerJobsContent() {
               ))}
             </div>
           ) : filtered.length === 0 ? (
-            <div className="text-center py-20">
-              <p className="text-gray-400 text-sm mb-4">
-                {filter === 'all' ? '등록한 일감이 없습니다.' : '해당 상태의 일감이 없습니다.'}
-              </p>
-              {filter === 'all' && (
-                <Link
-                  href="/jobs/new"
-                  className="inline-block bg-blue-500 text-white font-bold px-6 py-3 rounded-2xl text-sm hover:bg-blue-600 transition-colors"
-                >
-                  첫 일감 등록하기
-                </Link>
-              )}
-            </div>
+            <EmptyState
+              title={filter === 'all' ? '등록한 일감이 없습니다.' : '해당 상태의 일감이 없습니다.'}
+              action={
+                filter === 'all' ? (
+                  <Link
+                    href="/jobs/new"
+                    className="inline-block bg-blue-500 text-white font-bold px-6 py-3 rounded-2xl text-sm hover:bg-blue-600 transition-colors"
+                  >
+                    첫 일감 등록하기
+                  </Link>
+                ) : undefined
+              }
+            />
           ) : (
             <div className="flex flex-col gap-4">
               {filtered.map((job) => (

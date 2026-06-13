@@ -31,11 +31,26 @@ export async function checkAndTransitionJobStatus(
     .eq('job_id', jobId)
     .eq('status', 'accepted')
 
+  const acceptedList = acceptedApps ?? []
+
   const dispatchedCodes = new Set(
-    (acceptedApps ?? [])
+    acceptedList
       .map((a) => a.applied_equipment_code as string | null)
-      .filter(Boolean)
+      .filter(Boolean) as string[]
   )
+
+  // applied_equipment_code가 null인 채팅 배차 → 미배차 슬롯에 순서대로 채움
+  const chatDispatchCount = acceptedList.filter((a) => !a.applied_equipment_code).length
+  if (chatDispatchCount > 0) {
+    let remaining = chatDispatchCount
+    for (const code of requiredCodes) {
+      if (remaining <= 0) break
+      if (!dispatchedCodes.has(code)) {
+        dispatchedCodes.add(code)
+        remaining--
+      }
+    }
+  }
 
   // 모든 필요 장비 코드가 최소 1건씩 배차됐는지 확인
   const allDispatched = requiredCodes.every((code) => dispatchedCodes.has(code))

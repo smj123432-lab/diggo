@@ -52,7 +52,7 @@ export function ReviewModal({ jobId, revieweeId, revieweeRole, onClose, onSucces
         setRevieweeName(j.name ?? null)
         setExperienceYears(j.experience_years ?? null)
       })
-      .catch(() => {})
+      .catch((err) => console.error('[ReviewModal] 프로필 조회 실패:', err))
   }, [revieweeId])
 
   function toggleTag(id: string) {

@@ -262,10 +262,10 @@ export default async function MypagePage({
           )}
 
           {/* ── 2단 스플릿 그리드 ── */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8 items-start">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8 items-start">
 
             {/* 우측: 메인 콘텐츠 (모바일에서 먼저) */}
-            <div className="order-1 lg:order-2 lg:col-span-2">
+            <div className="order-1 lg:order-2">
               {profile.role === 'admin' ? (
 
                 /* ── 관리자 통합 관제 카드 ── */
@@ -513,7 +513,7 @@ export default async function MypagePage({
             </div>
 
             {/* 좌측: 계정 설정 (모바일에서 아래, 데스크톱에서 sticky) */}
-            <div className="order-2 lg:order-1 lg:col-span-1">
+            <div className="order-2 lg:order-1">
               <div className="lg:sticky lg:top-24">
                 <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden divide-y divide-gray-100">
                   <p className="px-5 pt-4 pb-2 text-sm font-bold text-slate-800">계정 설정</p>

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
-import { createClient as createAdminClient } from '@supabase/supabase-js'
+import { createAdminClient } from '@/lib/supabase/admin'
 
 // POST /api/profile/avatar — 프로필 사진 업로드
 export async function POST(request: NextRequest) {
@@ -21,10 +21,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: '파일 크기는 5MB 이하여야 합니다.' }, { status: 400 })
     }
 
-    const admin = createAdminClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.SUPABASE_SERVICE_ROLE_KEY!
-    )
+    const admin = createAdminClient()
 
     const path = `${user.id}/avatar.${ext}`
     const arrayBuffer = await file.arrayBuffer()

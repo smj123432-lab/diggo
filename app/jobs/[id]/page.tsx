@@ -1,4 +1,5 @@
 // 일감 상세 — Static ("use cache"), 사용자별 영역은 UserJobSection(클라이언트)으로 위임
+import { Suspense } from 'react'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { getCachedJobDetail } from '@/lib/utils/jobs-cache'
@@ -31,7 +32,15 @@ const JOB_TYPE_BADGE: Record<JobType, string> = {
   demolition: 'bg-orange-50 text-orange-700 border border-orange-200',
 }
 
-export default async function JobDetailPage({ params }: Props) {
+export default function JobDetailPage({ params }: Props) {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-gray-50" />}>
+      <JobDetailContent params={params} />
+    </Suspense>
+  )
+}
+
+async function JobDetailContent({ params }: Props) {
   const { id } = await params
   const job = await getCachedJobDetail(id)
   if (!job) notFound()
