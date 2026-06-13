@@ -5,6 +5,7 @@ import { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuthStore } from '@/store/auth'
 import { useNotificationStore } from '@/store/notifications'
+import { EmptyState } from '@/components/ui/EmptyState'
 import type { NotificationType } from '@/types'
 
 const TYPE_CONFIG: Record<NotificationType | string, { icon: React.ReactNode; bg: string }> = {
@@ -114,15 +115,18 @@ export default function NotificationsPage() {
       {/* 본문 */}
       <div className="max-w-lg mx-auto px-4 py-5">
         {notifications.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-24 gap-4">
-            <div className="w-16 h-16 bg-gray-100 rounded-2xl flex items-center justify-center">
-              <svg className="w-8 h-8 text-gray-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5}>
-                <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
-                <path d="M13.73 21a2 2 0 0 1-3.46 0" />
-              </svg>
-            </div>
-            <p className="text-sm text-gray-400">새로운 알림이 없습니다.</p>
-          </div>
+          <EmptyState
+            icon={
+              <div className="w-16 h-16 bg-gray-100 rounded-2xl flex items-center justify-center">
+                <svg className="w-8 h-8 text-gray-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5}>
+                  <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
+                  <path d="M13.73 21a2 2 0 0 1-3.46 0" />
+                </svg>
+              </div>
+            }
+            title="새로운 알림이 없습니다."
+            className="py-24"
+          />
         ) : (
           <div className="space-y-2">
             {notifications.map((n) => {

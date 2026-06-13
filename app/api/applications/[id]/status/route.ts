@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { revalidateTag } from 'next/cache'
 import { createClient } from '@/lib/supabase/server'
-import { createClient as createAdminClient } from '@supabase/supabase-js'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { checkAndTransitionJobStatus } from '@/lib/utils/dispatch'
 
 // PATCH /api/applications/[id]/status — 지원 상태 변경 (소장: 검토중/수락/거절)
@@ -25,17 +25,24 @@ export async function PATCH(
       return NextResponse.json({ error: '유효하지 않은 상태값입니다.' }, { status: 400 })
     }
 
+    interface ApplicationWithJob {
+      id: string
+      job_id: string
+      driver_id: string | null
+      jobs: { manager_id: string; title: string } | null
+    }
+
     const { data: application } = await supabase
       .from('applications')
       .select('id, job_id, driver_id, jobs(manager_id, title)')
       .eq('id', id)
-      .single()
+      .single() as { data: ApplicationWithJob | null; error: unknown }
 
     if (!application) {
       return NextResponse.json({ error: '지원 내역을 찾을 수 없습니다.' }, { status: 404 })
     }
 
-    const job = (application.jobs as unknown) as { manager_id: string; title: string } | null
+    const job = application.jobs
     if (job?.manager_id !== user.id) {
       return NextResponse.json({ error: '권한이 없습니다.' }, { status: 403 })
     }
@@ -65,10 +72,7 @@ export async function PATCH(
     // 수락/거절 시 기사에게 알림 전송 — 실패해도 메인 응답에 영향 없음
     if ((status === 'accepted' || status === 'rejected') && application.driver_id && job?.title) {
       try {
-        const admin = createAdminClient(
-          process.env.NEXT_PUBLIC_SUPABASE_URL!,
-          process.env.SUPABASE_SERVICE_ROLE_KEY!
-        )
+        const admin = createAdminClient()
         await admin.from('notifications').insert({
           user_id: application.driver_id,
           type: status === 'accepted' ? 'application_accepted' : 'application_rejected',

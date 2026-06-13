@@ -5,6 +5,7 @@ import { useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import type { ChatRoomWithDetails } from '@/types'
+import { EmptyState } from '@/components/ui/EmptyState'
 
 function timeAgo(iso: string) {
   const diff = Date.now() - new Date(iso).getTime()
@@ -102,17 +103,12 @@ export default function ChatList({ rooms, currentUserId, currentUserName }: Prop
 
       {/* ── 목록 ── */}
       {filtered.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-24 gap-3 text-center">
-          <p className="text-4xl">💬</p>
-          <p className="text-sm text-gray-400">
-            {searchQuery ? '검색 결과가 없습니다.' : '아직 채팅방이 없습니다.'}
-          </p>
-          {!searchQuery && (
-            <p className="text-xs text-gray-300">
-              일감 상세 또는 지원자 페이지에서 채팅을 시작하세요.
-            </p>
-          )}
-        </div>
+        <EmptyState
+          icon="💬"
+          title={searchQuery ? '검색 결과가 없습니다.' : '아직 채팅방이 없습니다.'}
+          description={!searchQuery ? '일감 상세 또는 지원자 페이지에서 채팅을 시작하세요.' : undefined}
+          className="py-24"
+        />
       ) : (
         <ul className="bg-white mt-2">
           {filtered.map((room) => {

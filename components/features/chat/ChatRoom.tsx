@@ -1,51 +1,22 @@
 'use client'
 
 // 실시간 채팅방 — Supabase Realtime 구독 + 낙관적 업데이트 + 이미지 전송
-// 기능: 메시지 읽음 처리, 메시지 삭제, 채팅방 나가기
 import { useEffect, useRef, useState, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
-import Link from 'next/link'
 import { toast } from 'sonner'
 import { createClient } from '@/lib/supabase/client'
+import { ChatRoomMenu } from './ChatRoomMenu'
+import { ChatMessageBubble } from './ChatMessageBubble'
+import { ChatInput } from './ChatInput'
 import type { ChatMessage, ChatRoomWithDetails, ApplicationStatus } from '@/types'
 
 const IMG_PREFIX = '[img]'
-
-// 같은 발신자 + 같은 분(minute) 단위면 연속 그룹으로 판단
-function isSameGroup(a: ChatMessage | null | undefined, b: ChatMessage | null | undefined): boolean {
-  if (!a || !b) return false
-  if (a.sender_id !== b.sender_id) return false
-  return a.created_at.slice(0, 16) === b.created_at.slice(0, 16)
-}
-
-// 발신자·위치(solo/first/middle/last)에 따라 말풍선 모서리 클래스 반환
-function getBubbleRadius(isMine: boolean, isPrevSame: boolean, isNextSame: boolean): string {
-  if (isMine) {
-    if (!isPrevSame && !isNextSame) return 'rounded-2xl rounded-br-sm'                  // 단독
-    if (!isPrevSame && isNextSame)  return 'rounded-2xl rounded-br-[5px]'               // 첫 번째
-    if (isPrevSame  && isNextSame)  return 'rounded-l-2xl rounded-r-[5px]'              // 중간
-    return 'rounded-l-2xl rounded-tr-[5px] rounded-br-sm'                              // 마지막
-  } else {
-    if (!isPrevSame && !isNextSame) return 'rounded-2xl rounded-bl-sm'                  // 단독
-    if (!isPrevSame && isNextSame)  return 'rounded-2xl rounded-bl-[5px]'               // 첫 번째
-    if (isPrevSame  && isNextSame)  return 'rounded-r-2xl rounded-l-[5px]'              // 중간
-    return 'rounded-r-2xl rounded-tl-[5px] rounded-bl-sm'                              // 마지막
-  }
-}
 
 interface Props {
   room: ChatRoomWithDetails
   initialMessages: ChatMessage[]
   currentUserId: string
   initialApplicationStatus: ApplicationStatus | null
-}
-
-function formatTime(iso: string) {
-  const d = new Date(iso)
-  const h = d.getHours()
-  const m = d.getMinutes().toString().padStart(2, '0')
-  const period = h < 12 ? '오전' : '오후'
-  return `${period} ${h % 12 === 0 ? 12 : h % 12}:${m}`
 }
 
 function DefaultAvatar({ size }: { size: number }) {
@@ -134,7 +105,7 @@ export default function ChatRoom({ room, initialMessages, currentUserId, initial
     }
   }
 
-useEffect(() => {
+  useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages])
 
@@ -147,19 +118,13 @@ useEffect(() => {
       .channel(channelName)
       .on(
         'postgres_changes',
-        {
-          event: 'INSERT',
-          schema: 'public',
-          table: 'chat_messages',
-          filter: `room_id=eq.${room.id}`,
-        },
+        { event: 'INSERT', schema: 'public', table: 'chat_messages', filter: `room_id=eq.${room.id}` },
         async (payload) => {
           const newMsg = payload.new as ChatMessage
           setMessages((prev) => {
             if (prev.some((m) => m.id === newMsg.id)) return prev
             return [...prev, newMsg]
           })
-          // 상대방 메시지라면 즉시 읽음 처리
           if (newMsg.sender_id !== currentUserId) {
             await supabase
               .from('chat_messages')
@@ -170,15 +135,9 @@ useEffect(() => {
       )
       .on(
         'postgres_changes',
-        {
-          event: 'UPDATE',
-          schema: 'public',
-          table: 'chat_messages',
-        },
+        { event: 'UPDATE', schema: 'public', table: 'chat_messages' },
         (payload) => {
           const updated = payload.new as ChatMessage
-          // REPLICA IDENTITY DEFAULT 환경에서 payload.new는 PK(id)와 변경된 컬럼만 포함
-          // room_id가 payload에 없을 수 있으므로 메시지 존재 여부로 귀속 판단
           setMessages((prev) => {
             if (!prev.some((m) => m.id === updated.id)) return prev
             return prev.map((m) => (m.id === updated.id ? { ...m, ...updated } : m))
@@ -187,9 +146,7 @@ useEffect(() => {
       )
       .subscribe()
 
-    return () => {
-      supabase.removeChannel(channel)
-    }
+    return () => { supabase.removeChannel(channel) }
   }, [room.id, currentUserId])
 
   // 메시지 API 전송 공용 헬퍼
@@ -287,7 +244,6 @@ useEffect(() => {
       <header className="bg-white border-b border-gray-100 shrink-0 z-10">
         <div className="px-3 py-2.5 flex items-center gap-2.5">
 
-          {/* 뒤로가기 — 모바일 전용: 채팅 목록으로 이동 */}
           <button
             onClick={() => router.push('/chats')}
             className="md:hidden p-1.5 -ml-1 rounded-lg hover:bg-gray-100 transition-colors shrink-0"
@@ -298,7 +254,6 @@ useEffect(() => {
             </svg>
           </button>
 
-          {/* 상대방 아바타 */}
           <div className="shrink-0 w-9 h-9 rounded-full overflow-hidden ring-1 ring-gray-200">
             {opponent?.avatar_url ? (
               <img src={opponent.avatar_url} alt={opponent.name ?? ''} className="w-full h-full object-cover" />
@@ -307,7 +262,6 @@ useEffect(() => {
             )}
           </div>
 
-          {/* 이름 + 일감 정보 */}
           <div className="flex-1 min-w-0">
             <p className="text-[14px] font-bold text-slate-900 leading-tight truncate">
               {opponent?.name ?? '상대방'}
@@ -319,114 +273,22 @@ useEffect(() => {
             )}
           </div>
 
-          {/* 메뉴 버튼 + 드롭다운 */}
-          <div className="relative shrink-0">
-            <button
-              ref={menuBtnRef}
-              onClick={() => setMenuOpen((v) => !v)}
-              className="p-2 rounded-xl hover:bg-gray-100 transition-colors"
-              aria-label="메뉴"
-              disabled={isDispatching || isLeaving}
-            >
-              <svg className="w-5 h-5 text-slate-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
-                <circle cx="12" cy="5" r="1" fill="currentColor" stroke="none" />
-                <circle cx="12" cy="12" r="1" fill="currentColor" stroke="none" />
-                <circle cx="12" cy="19" r="1" fill="currentColor" stroke="none" />
-              </svg>
-            </button>
-
-            {/* 드롭다운 */}
-            {menuOpen && (
-              <div
-                ref={menuRef}
-                className="absolute right-0 top-full mt-1 w-44 bg-white border border-gray-200 rounded-xl shadow-lg overflow-hidden z-50"
-              >
-                {isManager ? (
-                  <>
-                    {appStatus === 'accepted' ? (
-                      <div className="px-4 py-3 text-sm text-emerald-600 font-semibold bg-emerald-50">
-                        ✓ 이미 수락한 기사입니다
-                      </div>
-                    ) : appStatus === 'rejected' ? (
-                      <div className="px-4 py-3 text-sm text-gray-400 font-semibold bg-gray-50">
-                        거절된 기사입니다
-                      </div>
-                    ) : (
-                      <>
-                        <button
-                          onClick={() => handleDispatch('accept')}
-                          className="w-full flex items-center gap-2.5 px-4 py-3 text-sm text-emerald-600 font-semibold hover:bg-emerald-50 transition-colors"
-                        >
-                          <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5}>
-                            <path d="M20 6 9 17l-5-5" strokeLinecap="round" strokeLinejoin="round" />
-                          </svg>
-                          배치 수락
-                        </button>
-                        <button
-                          onClick={() => handleDispatch('reject')}
-                          className="w-full flex items-center gap-2.5 px-4 py-3 text-sm text-red-500 font-semibold hover:bg-red-50 transition-colors border-t border-gray-100"
-                        >
-                          <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5}>
-                            <path d="M18 6 6 18M6 6l12 12" strokeLinecap="round" />
-                          </svg>
-                          배치 거절
-                        </button>
-                      </>
-                    )}
-                    <Link
-                      href={`/profiles/${room.driver_id}`}
-                      onClick={() => setMenuOpen(false)}
-                      className="flex items-center gap-2.5 px-4 py-3 text-sm text-slate-700 hover:bg-gray-50 transition-colors border-t border-gray-100"
-                    >
-                      <svg className="w-4 h-4 shrink-0 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
-                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-                        <circle cx="12" cy="7" r="4" />
-                      </svg>
-                      기사 프로필 보기
-                    </Link>
-                  </>
-                ) : (
-                  <>
-                    <Link
-                      href={`/jobs/${room.job_id}`}
-                      onClick={() => setMenuOpen(false)}
-                      className="flex items-center gap-2.5 px-4 py-3 text-sm text-slate-700 hover:bg-gray-50 transition-colors"
-                    >
-                      <svg className="w-4 h-4 shrink-0 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
-                        <rect x="3" y="3" width="18" height="18" rx="2" />
-                        <path d="M9 9h6M9 13h6M9 17h4" strokeLinecap="round" />
-                      </svg>
-                      게시물 확인
-                    </Link>
-                    <Link
-                      href={`/profiles/${room.manager_id}`}
-                      onClick={() => setMenuOpen(false)}
-                      className="flex items-center gap-2.5 px-4 py-3 text-sm text-slate-700 hover:bg-gray-50 transition-colors border-t border-gray-100"
-                    >
-                      <svg className="w-4 h-4 shrink-0 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
-                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-                        <circle cx="12" cy="7" r="4" />
-                      </svg>
-                      소장 프로필 보기
-                    </Link>
-                  </>
-                )}
-
-                {/* 공통: 채팅방 나가기 */}
-                <button
-                  onClick={() => { setMenuOpen(false); setShowLeaveConfirm(true) }}
-                  className="w-full flex items-center gap-2.5 px-4 py-3 text-sm text-red-500 font-semibold hover:bg-red-50 transition-colors border-t border-gray-100"
-                >
-                  <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
-                    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" strokeLinecap="round" strokeLinejoin="round" />
-                    <polyline points="16 17 21 12 16 7" strokeLinecap="round" strokeLinejoin="round" />
-                    <line x1="21" y1="12" x2="9" y2="12" strokeLinecap="round" strokeLinejoin="round" />
-                  </svg>
-                  채팅방 나가기
-                </button>
-              </div>
-            )}
-          </div>
+          <ChatRoomMenu
+            isManager={isManager}
+            appStatus={appStatus}
+            isDispatching={isDispatching}
+            isLeaving={isLeaving}
+            roomId={room.id}
+            jobId={room.job_id}
+            driverId={room.driver_id}
+            managerId={room.manager_id}
+            menuRef={menuRef}
+            menuBtnRef={menuBtnRef}
+            menuOpen={menuOpen}
+            onToggleMenu={() => setMenuOpen((v) => !v)}
+            onDispatch={handleDispatch}
+            onLeaveRequest={() => setShowLeaveConfirm(true)}
+          />
         </div>
       </header>
 
@@ -440,170 +302,33 @@ useEffect(() => {
             </div>
           )}
           <div className="flex flex-col">
-            {messages.map((msg, index) => {
-              const isMine = msg.sender_id === currentUserId
-              const isTemp = msg.id.startsWith('temp-')
-              const isImg = msg.message.startsWith(IMG_PREFIX)
-              const isDeletedMsg = msg.is_deleted
-
-              const prevMsg = index > 0 ? messages[index - 1] : null
-              const nextMsg = index < messages.length - 1 ? messages[index + 1] : null
-              const isPrevSame = isSameGroup(prevMsg, msg)
-              const isNextSame = isSameGroup(msg, nextMsg)
-
-              const marginTop = index === 0 ? '' : isPrevSame ? 'mt-0.5' : 'mt-2.5'
-              const showAvatar = !isMine && !isNextSame
-              const showTime = !isNextSame
-              const bubbleRadius = isImg ? 'rounded-2xl' : getBubbleRadius(isMine, isPrevSame, isNextSame)
-
-              if (isMine) {
-                // ── 내 메시지: justify-end + 일반 row 순서
-                // 시각 순서: [FREE SPACE] [1+시간] [말풍선] [삭제버튼(hover)]
-                // flex-row-reverse 제거 → 삭제버튼이 타임스탬프와 말풍선 사이에 끼는 버그 해소
-                return (
-                  <div key={msg.id} className={`flex items-end justify-end gap-1.5 ${marginTop}`}>
-
-                    {/* [안 읽음 1 + 시간] — 말풍선 왼쪽 바로 옆 밀착
-                        삭제된 메시지는 is_read 여부와 무관하게 1 표시 안 함 */}
-                    {(showTime || (!msg.is_read && !isTemp && !isDeletedMsg)) && (
-                      <div className="flex flex-col items-end justify-end select-none shrink-0 pb-0.5 gap-0.5">
-                        {!msg.is_read && !isTemp && !isDeletedMsg && (
-                          <span className="text-[10px] font-bold text-yellow-400 leading-none">1</span>
-                        )}
-                        {showTime && (
-                          <span className="text-[10px] text-gray-400 leading-tight">
-                            {isTemp ? '전송중' : formatTime(msg.created_at)}
-                          </span>
-                        )}
-                      </div>
-                    )}
-
-                    {/* 말풍선 */}
-                    <div className="max-w-[70%] min-w-0">
-                      <div className={`min-w-[50px] ${isTemp ? 'opacity-60' : ''} ${
-                        isDeletedMsg
-                          ? `px-3.5 py-2.5 text-sm italic whitespace-pre-wrap break-words ${bubbleRadius} bg-gray-100 text-gray-400`
-                          : isImg
-                            ? `overflow-hidden ${bubbleRadius}`
-                            : `px-3.5 py-2.5 text-sm leading-relaxed whitespace-pre-wrap break-words ${bubbleRadius} bg-blue-500 text-white`
-                      }`}>
-                        {isDeletedMsg
-                          ? '삭제된 메시지입니다.'
-                          : isImg
-                            ? <img src={msg.message.slice(IMG_PREFIX.length)} alt="이미지" className="max-w-full max-h-56 object-cover block" loading="lazy" />
-                            : msg.message
-                        }
-                      </div>
-                    </div>
-                  </div>
-                )
-              }
-
-              // ── 상대방 메시지: 기존 구조 유지
-              return (
-                <div key={msg.id} className={`flex items-end gap-2 ${marginTop}`}>
-                  {showAvatar ? (
-                    <div className="shrink-0 w-7 h-7 rounded-full overflow-hidden ring-1 ring-gray-200 self-end mb-0.5">
-                      {opponent?.avatar_url ? (
-                        <img src={opponent.avatar_url} alt={opponent.name ?? ''} className="w-full h-full object-cover" />
-                      ) : (
-                        <DefaultAvatar size={28} />
-                      )}
-                    </div>
-                  ) : (
-                    <div className="shrink-0 w-7" />
-                  )}
-
-                  <div className="flex items-end gap-1.5 max-w-[70%] min-w-0">
-                    <div className={`min-w-[50px] ${
-                      isDeletedMsg
-                        ? `px-3.5 py-2.5 text-sm italic whitespace-pre-wrap break-words ${bubbleRadius} bg-gray-100 text-gray-400`
-                        : isImg
-                          ? `overflow-hidden ${bubbleRadius}`
-                          : `px-3.5 py-2.5 text-sm leading-relaxed whitespace-pre-wrap break-words ${bubbleRadius} bg-gray-100 text-slate-800`
-                    }`}>
-                      {isDeletedMsg
-                        ? '삭제된 메시지입니다.'
-                        : isImg
-                          ? <img src={msg.message.slice(IMG_PREFIX.length)} alt="이미지" className="max-w-full max-h-56 object-cover block" loading="lazy" />
-                          : msg.message
-                      }
-                    </div>
-                  </div>
-
-                  {showTime && (
-                    <div className="flex flex-col items-start justify-end shrink-0 pb-0.5">
-                      <span className="text-[10px] text-gray-400 leading-tight">
-                        {formatTime(msg.created_at)}
-                      </span>
-                    </div>
-                  )}
-                </div>
-              )
-            })}
+            {messages.map((msg, index) => (
+              <ChatMessageBubble
+                key={msg.id}
+                msg={msg}
+                index={index}
+                messages={messages}
+                currentUserId={currentUserId}
+                opponentAvatarUrl={opponent?.avatar_url}
+                opponentName={opponent?.name}
+              />
+            ))}
             <div ref={bottomRef} />
           </div>
         </div>
       </main>
 
       {/* ── 하단 입력창 ── */}
-      <footer className="bg-white border-t border-gray-100 shrink-0">
-        <div className="max-w-2xl mx-auto px-3 py-2.5 flex items-center gap-2">
-
-          {/* 알약 입력 컨테이너 */}
-          <div className="flex-1 flex items-center border border-gray-200 rounded-full px-4 py-2 bg-white focus-within:border-gray-400 transition-colors min-h-[40px]">
-            <textarea
-              ref={textareaRef}
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              onKeyDown={handleKeyDown}
-              placeholder="메시지 보내기..."
-              rows={1}
-              className="flex-1 resize-none bg-transparent outline-none text-sm text-slate-800 placeholder-gray-400 max-h-24 overflow-y-auto leading-relaxed"
-              style={{ minHeight: '22px' }}
-            />
-          </div>
-
-          {/* 우측: 텍스트 있으면 전송, 없으면 이미지 버튼 */}
-          {input.trim() ? (
-            <button
-              onClick={handleSend}
-              disabled={isSending}
-              className="shrink-0 text-blue-500 font-bold text-sm disabled:opacity-40 hover:text-blue-600 transition-colors px-1"
-            >
-              전송
-            </button>
-          ) : (
-            <button
-              onClick={() => fileInputRef.current?.click()}
-              disabled={isUploading}
-              className="shrink-0 p-1.5 text-gray-400 hover:text-gray-600 disabled:opacity-40 transition-colors"
-              aria-label="이미지 첨부"
-            >
-              {isUploading ? (
-                <svg className="w-6 h-6 animate-spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5}>
-                  <circle cx="12" cy="12" r="10" strokeOpacity={0.25} />
-                  <path d="M12 2a10 10 0 0 1 10 10" strokeLinecap="round" />
-                </svg>
-              ) : (
-                <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5}>
-                  <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
-                  <circle cx="8.5" cy="8.5" r="1.5" />
-                  <polyline points="21 15 16 10 5 21" />
-                </svg>
-              )}
-            </button>
-          )}
-        </div>
-      </footer>
-
-      {/* 숨겨진 파일 입력 */}
-      <input
-        ref={fileInputRef}
-        type="file"
-        accept="image/*"
-        className="hidden"
-        onChange={handleImageSelect}
+      <ChatInput
+        input={input}
+        isSending={isSending}
+        isUploading={isUploading}
+        textareaRef={textareaRef}
+        fileInputRef={fileInputRef}
+        onChange={setInput}
+        onKeyDown={handleKeyDown}
+        onSend={handleSend}
+        onImageSelect={handleImageSelect}
       />
 
       {/* 채팅방 나가기 확인 모달 */}

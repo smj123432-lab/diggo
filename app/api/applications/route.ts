@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
-import { createClient as createAdminClient } from '@supabase/supabase-js'
+import { createAdminClient } from '@/lib/supabase/admin'
 
 // GET /api/applications — 내 지원 목록 (기사)
 export async function GET() {
@@ -93,10 +93,7 @@ export async function POST(request: NextRequest) {
         .single()
 
       if (jobInfo && profile?.name) {
-        const admin = createAdminClient(
-          process.env.NEXT_PUBLIC_SUPABASE_URL!,
-          process.env.SUPABASE_SERVICE_ROLE_KEY!
-        )
+        const admin = createAdminClient()
         await admin.from('notifications').insert({
           user_id: jobInfo.manager_id,
           type: 'new_application',

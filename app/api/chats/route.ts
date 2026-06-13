@@ -27,32 +27,43 @@ export async function GET() {
     const jobMap = new Map((jobs ?? []).map((j) => [j.id, j]))
     const profileMap = new Map((profiles ?? []).map((p) => [p.id, p]))
 
-    const enriched = await Promise.all(
-      rooms.map(async (room) => {
-        const [{ data: lastMsgs }, { count: unread }] = await Promise.all([
-          supabase
-            .from('chat_messages')
-            .select('id, message, sender_id, created_at')
-            .eq('room_id', room.id)
-            .order('created_at', { ascending: false })
-            .limit(1),
-          supabase
-            .from('chat_messages')
-            .select('*', { count: 'exact', head: true })
-            .eq('room_id', room.id)
-            .eq('is_read', false)
-            .neq('sender_id', user.id),
-        ])
-        return {
-          ...room,
-          jobs: jobMap.get(room.job_id) ?? null,
-          manager: profileMap.get(room.manager_id) ?? null,
-          driver: profileMap.get(room.driver_id) ?? null,
-          last_message: lastMsgs?.[0] ?? null,
-          unread_count: unread ?? 0,
-        }
-      })
-    )
+    // 모든 room의 마지막 메시지·미읽음 수를 한 번에 조회하여 N+1 제거
+    const roomIds = rooms.map((r) => r.id)
+    const [{ data: allMessages }, { data: allUnread }] = await Promise.all([
+      supabase
+        .from('chat_messages')
+        .select('id, room_id, message, sender_id, created_at, is_deleted')
+        .in('room_id', roomIds)
+        .order('created_at', { ascending: false }),
+      supabase
+        .from('chat_messages')
+        .select('room_id')
+        .in('room_id', roomIds)
+        .eq('is_read', false)
+        .neq('sender_id', user.id),
+    ])
+
+    // room_id별 마지막 메시지 Map (이미 created_at DESC 정렬 → 첫 번째가 최신)
+    type LastMsg = { id: string; room_id: string; message: string; sender_id: string; created_at: string; is_deleted: boolean }
+    const lastMsgMap = new Map<string, LastMsg>()
+    for (const msg of (allMessages ?? []) as LastMsg[]) {
+      if (!lastMsgMap.has(msg.room_id)) lastMsgMap.set(msg.room_id, msg)
+    }
+
+    // room_id별 미읽음 수 Map
+    const unreadMap = new Map<string, number>()
+    for (const msg of allUnread ?? []) {
+      unreadMap.set(msg.room_id, (unreadMap.get(msg.room_id) ?? 0) + 1)
+    }
+
+    const enriched = rooms.map((room) => ({
+      ...room,
+      jobs: jobMap.get(room.job_id) ?? null,
+      manager: profileMap.get(room.manager_id) ?? null,
+      driver: profileMap.get(room.driver_id) ?? null,
+      last_message: lastMsgMap.get(room.id) ?? null,
+      unread_count: unreadMap.get(room.id) ?? 0,
+    }))
 
     return NextResponse.json({ data: enriched })
   } catch (error) {

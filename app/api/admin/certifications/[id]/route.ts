@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
-import { createClient as createAdminClient } from '@supabase/supabase-js'
+import { createAdminClient } from '@/lib/supabase/admin'
 
 // PATCH /api/admin/certifications/[id] — 승인 또는 거절 (관리자 전용)
 export async function PATCH(
@@ -23,10 +23,7 @@ export async function PATCH(
 
     const { id } = await params
 
-    const admin = createAdminClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.SUPABASE_SERVICE_ROLE_KEY!
-    )
+    const admin = createAdminClient()
 
     const { data: cert, error: certErr } = await admin
       .from('certifications')

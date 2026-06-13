@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { revalidateTag } from 'next/cache'
 import { createClient } from '@/lib/supabase/server'
-import { createClient as createAdminClient } from '@supabase/supabase-js'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { checkAndTransitionJobStatus } from '@/lib/utils/dispatch'
 
 // PATCH /api/chats/[roomId]/dispatch — 소장이 채팅방에서 기사 배치 수락/거절
@@ -20,12 +20,19 @@ export async function PATCH(
       return NextResponse.json({ error: '유효하지 않은 액션입니다.' }, { status: 400 })
     }
 
+    interface ChatRoomWithJob {
+      job_id: string
+      driver_id: string
+      manager_id: string
+      jobs: { title: string } | null
+    }
+
     // 채팅방 확인 및 소장 권한 검증
     const { data: room } = await supabase
       .from('chat_rooms')
       .select('job_id, driver_id, manager_id, jobs(title)')
       .eq('id', roomId)
-      .single()
+      .single() as { data: ChatRoomWithJob | null; error: unknown }
 
     if (!room) return NextResponse.json({ error: '채팅방을 찾을 수 없습니다.' }, { status: 404 })
     if (room.manager_id !== user.id) return NextResponse.json({ error: '소장만 배치를 처리할 수 있습니다.' }, { status: 403 })
@@ -58,12 +65,9 @@ export async function PATCH(
 
     // 수락/거절 시 기사에게 알림 전송 — 실패해도 메인 응답에 영향 없음
     try {
-      const jobTitle = (room.jobs as unknown as { title: string } | null)?.title
+      const jobTitle = room.jobs?.title
       if (jobTitle) {
-        const admin = createAdminClient(
-          process.env.NEXT_PUBLIC_SUPABASE_URL!,
-          process.env.SUPABASE_SERVICE_ROLE_KEY!
-        )
+        const admin = createAdminClient()
         await admin.from('notifications').insert({
           user_id: room.driver_id,
           type: action === 'accept' ? 'application_accepted' : 'application_rejected',
