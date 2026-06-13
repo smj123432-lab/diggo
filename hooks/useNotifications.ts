@@ -31,9 +31,14 @@ export function useNotifications() {
       .then(({ data }) => {
         if (!Array.isArray(data)) return
         setNotifications(data)
-        const unread = data.filter((n: Notification) => !n.is_read).length
-        setUnreadCount(unread)
+        // /notifications 페이지 열람 중이면 unreadCount 설정하지 않음
+        // (페이지가 동시에 markAllAsRead + setUnreadCount(0)을 호출하므로 덮어쓰기 방지)
+        if (pathnameRef.current !== '/notifications') {
+          const unread = data.filter((n: Notification) => !n.is_read).length
+          setUnreadCount(unread)
+        }
       })
+      .catch(() => {})
   }, [user, setNotifications, setUnreadCount])
 
   // Realtime INSERT 구독 — 새 알림 실시간 수신

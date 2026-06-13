@@ -84,23 +84,27 @@ export async function POST(request: NextRequest) {
       throw error
     }
 
-    // 지원 성공 시 소장에게 알림 전송
-    const { data: jobInfo } = await supabase
-      .from('jobs')
-      .select('manager_id, title')
-      .eq('id', job_id)
-      .single()
+    // 지원 성공 시 소장에게 알림 전송 — 실패해도 메인 응답에 영향 없음
+    try {
+      const { data: jobInfo } = await supabase
+        .from('jobs')
+        .select('manager_id, title')
+        .eq('id', job_id)
+        .single()
 
-    if (jobInfo && profile?.name) {
-      const admin = createAdminClient(
-        process.env.NEXT_PUBLIC_SUPABASE_URL!,
-        process.env.SUPABASE_SERVICE_ROLE_KEY!
-      )
-      await admin.from('notifications').insert({
-        user_id: jobInfo.manager_id,
-        type: 'new_application',
-        message: `${profile.name}님이 "${jobInfo.title}"에 지원했습니다.`,
-      })
+      if (jobInfo && profile?.name) {
+        const admin = createAdminClient(
+          process.env.NEXT_PUBLIC_SUPABASE_URL!,
+          process.env.SUPABASE_SERVICE_ROLE_KEY!
+        )
+        await admin.from('notifications').insert({
+          user_id: jobInfo.manager_id,
+          type: 'new_application',
+          message: `${profile.name}님이 "${jobInfo.title}"에 지원했습니다.`,
+        })
+      }
+    } catch (notifErr) {
+      console.error('[POST /api/applications] 알림 전송 실패:', notifErr)
     }
 
     return NextResponse.json({ data }, { status: 201 })

@@ -62,19 +62,23 @@ export async function PATCH(
       await checkAndTransitionJobStatus(supabase, application.job_id)
     }
 
-    // 수락/거절 시 기사에게 알림 전송
+    // 수락/거절 시 기사에게 알림 전송 — 실패해도 메인 응답에 영향 없음
     if ((status === 'accepted' || status === 'rejected') && application.driver_id && job?.title) {
-      const admin = createAdminClient(
-        process.env.NEXT_PUBLIC_SUPABASE_URL!,
-        process.env.SUPABASE_SERVICE_ROLE_KEY!
-      )
-      await admin.from('notifications').insert({
-        user_id: application.driver_id,
-        type: status === 'accepted' ? 'application_accepted' : 'application_rejected',
-        message: status === 'accepted'
-          ? `"${job.title}"에 지원이 수락되었습니다.`
-          : `"${job.title}"에 지원이 거절되었습니다.`,
-      })
+      try {
+        const admin = createAdminClient(
+          process.env.NEXT_PUBLIC_SUPABASE_URL!,
+          process.env.SUPABASE_SERVICE_ROLE_KEY!
+        )
+        await admin.from('notifications').insert({
+          user_id: application.driver_id,
+          type: status === 'accepted' ? 'application_accepted' : 'application_rejected',
+          message: status === 'accepted'
+            ? `"${job.title}"에 지원이 수락되었습니다.`
+            : `"${job.title}"에 지원이 거절되었습니다.`,
+        })
+      } catch (notifErr) {
+        console.error('[PATCH /api/applications/[id]/status] 알림 전송 실패:', notifErr)
+      }
     }
 
     // 일감 상태 변경 시 캐시 무효화 (모집중 → 작업중 즉시 반영)

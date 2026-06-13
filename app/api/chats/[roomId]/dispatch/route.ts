@@ -56,20 +56,24 @@ export async function PATCH(
       await checkAndTransitionJobStatus(supabase, room.job_id)
     }
 
-    // 수락/거절 시 기사에게 알림 전송
-    const jobTitle = (room.jobs as unknown as { title: string } | null)?.title
-    if (jobTitle) {
-      const admin = createAdminClient(
-        process.env.NEXT_PUBLIC_SUPABASE_URL!,
-        process.env.SUPABASE_SERVICE_ROLE_KEY!
-      )
-      await admin.from('notifications').insert({
-        user_id: room.driver_id,
-        type: action === 'accept' ? 'application_accepted' : 'application_rejected',
-        message: action === 'accept'
-          ? `"${jobTitle}"에 배치가 수락되었습니다.`
-          : `"${jobTitle}"에 배치가 거절되었습니다.`,
-      })
+    // 수락/거절 시 기사에게 알림 전송 — 실패해도 메인 응답에 영향 없음
+    try {
+      const jobTitle = (room.jobs as unknown as { title: string } | null)?.title
+      if (jobTitle) {
+        const admin = createAdminClient(
+          process.env.NEXT_PUBLIC_SUPABASE_URL!,
+          process.env.SUPABASE_SERVICE_ROLE_KEY!
+        )
+        await admin.from('notifications').insert({
+          user_id: room.driver_id,
+          type: action === 'accept' ? 'application_accepted' : 'application_rejected',
+          message: action === 'accept'
+            ? `"${jobTitle}"에 배치가 수락되었습니다.`
+            : `"${jobTitle}"에 배치가 거절되었습니다.`,
+        })
+      }
+    } catch (notifErr) {
+      console.error('[PATCH /api/chats/[roomId]/dispatch] 알림 전송 실패:', notifErr)
     }
 
     // 일감 상태 변경 시 캐시 무효화 (모집중 → 작업중 즉시 반영)
