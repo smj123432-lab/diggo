@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 
 // GET /api/applications — 내 지원 목록 (기사)
 export async function GET() {
@@ -42,7 +43,7 @@ export async function POST(request: NextRequest) {
 
     const { data: profile } = await supabase
       .from('profiles')
-      .select('role, is_certified')
+      .select('role, is_certified, name')
       .eq('id', user.id)
       .single()
 
@@ -81,6 +82,26 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ error: '이미 지원한 일감입니다.' }, { status: 409 })
       }
       throw error
+    }
+
+    // 지원 성공 시 소장에게 알림 전송 — 실패해도 메인 응답에 영향 없음
+    try {
+      const { data: jobInfo } = await supabase
+        .from('jobs')
+        .select('manager_id, title')
+        .eq('id', job_id)
+        .single()
+
+      if (jobInfo && profile?.name) {
+        const admin = createAdminClient()
+        await admin.from('notifications').insert({
+          user_id: jobInfo.manager_id,
+          type: 'new_application',
+          message: `${profile.name}님이 "${jobInfo.title}"에 지원했습니다.`,
+        })
+      }
+    } catch (notifErr) {
+      console.error('[POST /api/applications] 알림 전송 실패:', notifErr)
     }
 
     return NextResponse.json({ data }, { status: 201 })

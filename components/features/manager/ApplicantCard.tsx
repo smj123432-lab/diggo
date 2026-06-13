@@ -17,6 +17,7 @@ interface ApplicantCardProps {
       id: string
       name: string
       rating_avg: number
+      review_count: number
       is_certified: boolean
       experience_years: number | null
       avatar_url: string | null
@@ -57,7 +58,8 @@ export function ApplicantCard({ jobId, application }: ApplicantCardProps) {
               {/* 이름 + 인증 */}
               <div className="flex items-center gap-1.5 mb-1">
                 <span className="text-sm font-bold text-gray-900">{driver.name}</span>
-                {driver.is_certified && <CertBadge />}
+                {driver.review_count >= 5 && driver.rating_avg >= 4.5 && <CertBadge variant="top" />}
+                {driver.review_count >= 5 && driver.rating_avg <= 2.0 && <CertBadge variant="low" />}
               </div>
 
               {/* 지원 장비 코드 강조 표시 */}

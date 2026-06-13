@@ -546,7 +546,7 @@ return (
 | 13   | 장부 UI (달력 + 지출 입력)            | ✅ 완료 |
 | 14   | 채팅 (Supabase Realtime)              | ✅ 완료 |
 | 15   | 공개 프로필 페이지 + 평가 자동화      | ✅ 완료 |
-| 16   | 알림                                  | ⬜ 미완료 |
+| 16   | 알림                                  | ✅ 완료 |
 
 ### 완료 상세 내역 (2026-05-28 기준)
 
@@ -640,10 +640,53 @@ return (
 - 채팅방 ⋮ 메뉴: 기사→소장 프로필 보기, 소장→기사 프로필 보기 추가
 - lucide-react 설치 (Star, Award, Briefcase, MapPin, Calendar, ChevronRight)
 
+**알림 시스템 (`/notifications`) — 2026-06-13**
+- Supabase Realtime INSERT 구독 → 실시간 알림 수신
+- 알림 종류: 지원자 발생(기사→소장), 수락/거절(소장→기사), 채팅 메시지 수신
+- Zustand 기반 전역 미읽음 카운트 관리 (`useNotificationStore`)
+- `useNotifications` 훅: 초기 목록 fetch + Realtime 구독 분리
+- `AuthInitializer`를 통해 앱 전체에서 1회만 구독 (중복 방지)
+- 네비게이션 바 알림 아이콘에 미읽음 배지 표시
+- 알림 페이지 진입 시 일괄 읽음 처리 (`PATCH /api/notifications`)
+- 현재 `/notifications` 페이지 감지: `usePathname()` → `window.location.pathname` (PPR 호환)
+
+**평점 기반 인증뱃지 시스템 — 2026-06-13**
+- `review_count >= 5 && rating_avg >= 4.5` → 우수 평점 배지 (amber 별 원형/pill)
+- `review_count >= 5 && rating_avg <= 2.0` → 저평점 주의 배지 (red 경고 원형/pill)
+- 기사/소장 구분 없이 동일 조건 적용
+- CertBadge 컴포넌트 `variant: 'top' | 'low'` 로 리팩토링
+- 서류 인증(is_certified)은 지원 게이트 유지, UI 배지는 평점 기반으로 전면 교체
+- review_count를 일감 목록/상세/지원자 관련 쿼리 전체에 추가
+
+**코드베이스 종합 리팩토링 — 2026-06-14**
+- `lib/supabase/admin.ts` 추출: 8개 API 라우트의 admin 클라이언트 생성 코드 단일화
+- `Avatar.tsx` → Next.js Image 전환: 프로필 이미지 최적화 (lazy load, WebP 변환, blur placeholder)
+- `EmptyState` 공용 컴포넌트 신규: JobList, ChatList, DriverApplicationsList 등 5개 파일 중복 제거
+- `useHorizontalScroll` 훅 추출: 3개 파일의 가로 스크롤 UI 로직 공통화
+- N+1 제거: `/api/chats/route.ts` 각 room별 DB 호출 → 배치 조회 후 JS groupBy
+- `Promise.all` 병렬화: `/api/ledger/monthly/route.ts` 직렬 쿼리 → 병렬 처리
+- `useMemo` 적용: DriverApplicationsList `withStage`, `counts`, `filtered` 메모이제이션
+- `ChatRoom.tsx` 분리: 635줄 → ChatRoomMenu, ChatMessageBubble, ChatInput 3개 컴포넌트 분리
+- 에러 처리 개선: `.catch(() => {})` → `console.error`, Promise.all catch 추가
+- API 응답 형식 통일: 성공 응답 `{ data: ... }` 패턴 일관 적용
+
+**전체 QA + 접근성 감사 (Python Playwright) — 2026-06-14**
+- 4개 역할(public/driver/manager/admin) × 모바일 뷰포트(390×844) 전수 검사
+- 콘솔 에러 감지: `page.on('console')` + `page.on('pageerror')`
+- 접근성(WCAG): 버튼 aria-label, 파일 input aria-hidden, 이미지 alt, 탭 인덱스 점검
+- UX 레이아웃: 가로 오버플로우 감지 (`scrollWidth > clientWidth`)
+- 수정된 접근성 이슈 5건: 로그인/회원가입 비밀번호 eye 버튼, 프로필 아바타 버튼, 날짜 input, 알림 뒤로가기 버튼
+
+**PPR 빌드 에러 수정 — 2026-06-14**
+- 원인: `useNotifications` 훅이 `usePathname()` 사용 → `NotificationInitializer`가 Providers 안에서 Suspense 밖에 렌더됨 → PPR 모드에서 "Uncached data outside Suspense" 빌드 실패
+- 수정: `usePathname()` 제거 → `window.location.pathname` 순수 클라이언트 헬퍼로 교체
+- `/jobs/[id]`, `/chats/[id]` Suspense 래퍼 패턴 적용 (sync 외부 컴포넌트 + async 내부 컴포넌트)
+- 빌드 결과: 두 동적 라우트 모두 `◐ (Partial Prerender)` 상태 확인
+
 ### v2 (MVP 이후)
 
 - 채팅 (Supabase Realtime) — 완료
-- 알림
+- 알림 — 완료
 - 장비 여러 대 운용 (담당 기사 지정)
 - 차고지 기준 거리 계산 (카카오맵 API — "내 차고지로부터 15km" 표시)
 - 장부 Excel/PDF 내보내기 (세금 신고용, 종합소득세 신고 시 활용)

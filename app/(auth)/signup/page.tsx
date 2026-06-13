@@ -353,6 +353,7 @@ function SignupPageInner() {
                       }`}
                     />
                     <button type="button" onClick={() => setShowPw((v) => !v)}
+                      aria-label={showPw ? '비밀번호 숨기기' : '비밀번호 보기'}
                       className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition" tabIndex={-1}>
                       <EyeIcon open={showPw} />
                     </button>
@@ -385,6 +386,7 @@ function SignupPageInner() {
                       }`}
                     />
                     <button type="button" onClick={() => setShowConfirmPw((v) => !v)}
+                      aria-label={showConfirmPw ? '비밀번호 확인 숨기기' : '비밀번호 확인 보기'}
                       className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition" tabIndex={-1}>
                       <EyeIcon open={showConfirmPw} />
                     </button>

@@ -738,3 +738,59 @@ const disputes = rawReviews.map(r => ({
 ```
 
 > 같은 테이블을 두 개 이상의 FK로 참조하는 경우 PostgREST join은 신뢰할 수 없다. 별도 쿼리 + JS 병합이 가장 안정적이다.
+
+### Next.js 16 cacheComponents + PPR — usePathname()이 Suspense 밖에서 prerender 실패
+
+**증상**: `cacheComponents: true` 빌드 시 `/chats/[id]` 또는 기타 동적 라우트에서 "Uncached data was accessed outside of <Suspense>" 에러. Suspense 래퍼를 페이지에 추가해도 실패 반복.
+
+**원인**: `usePathname()`은 Next.js 16 PPR 모드에서 "uncached dynamic data"로 분류됨. `usePathname()`을 사용하는 'use client' 컴포넌트(`NotificationInitializer` 등)가 `Providers`(루트 레이아웃) 안의 `{children}` 밖에 위치하면, Suspense 경계 없이 동적 데이터를 접근하는 것으로 인식되어 빌드 실패. `--debug-prerender` 플래그로 실제 원인 컴포넌트 확인 가능.
+
+**해결**: `usePathname()` 제거 → 순수 클라이언트 헬퍼 함수로 교체.
+
+```ts
+// 변경 전 (PPR 빌드 실패)
+import { usePathname } from 'next/navigation'
+const pathname = usePathname()
+if (pathname !== '/notifications') { ... }
+
+// 변경 후 (PPR 호환)
+const isOnNotificationsPage = () =>
+  typeof window !== 'undefined' && window.location.pathname === '/notifications'
+if (!isOnNotificationsPage()) { ... }
+```
+
+> `usePathname()`은 앱 전역 초기화 훅(`AuthInitializer`, `NotificationInitializer`)에서 사용하면 반드시 PPR 빌드 실패를 야기한다. 경로 감지가 클라이언트 전용이면 `window.location.pathname`으로 대체할 것.
+
+### Next.js 16 cacheComponents — 동적 [id] 라우트 Suspense 래퍼 패턴
+
+**증상**: `params`를 `await`하는 async 서버 컴포넌트(`/jobs/[id]`, `/chats/[id]` 등)가 PPR 빌드에서 "Uncached data outside Suspense" 에러.
+
+**원인**: `cacheComponents: true` 모드에서 `await params`(동적 라우트 파라미터 접근)는 uncached dynamic data로 분류됨. 페이지 컴포넌트 자체가 async이면 Suspense 경계 없이 동적 데이터를 접근한 것으로 판단.
+
+**해결**: 페이지를 sync 외부 컴포넌트(Suspense 래퍼) + async 내부 컴포넌트로 분리.
+
+```tsx
+// 변경 전 (PPR 빌드 실패)
+export default async function JobDetailPage({ params }: Props) {
+  const { id } = await params
+  const job = await getCachedJobDetail(id)
+  return <div>...</div>
+}
+
+// 변경 후 (PPR 성공 — ◐ Partial Prerender)
+export default function JobDetailPage({ params }: Props) {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-gray-50" />}>
+      <JobDetailContent params={params} />
+    </Suspense>
+  )
+}
+
+async function JobDetailContent({ params }: Props) {
+  const { id } = await params
+  const job = await getCachedJobDetail(id)
+  return <div>...</div>
+}
+```
+
+> `await params`가 있는 모든 동적 라우트 페이지는 이 패턴을 적용해야 한다. fallback에는 레이아웃 시프트를 방지할 동일 높이의 빈 div를 사용한다.

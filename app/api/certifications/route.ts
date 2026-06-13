@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
-import { createClient as createAdminClient } from '@supabase/supabase-js'
+import { createAdminClient } from '@/lib/supabase/admin'
 
 // POST /api/certifications — 면허·안전교육 서류 제출 (pending 상태로 등록)
 export async function POST(request: NextRequest) {
@@ -16,10 +16,7 @@ export async function POST(request: NextRequest) {
     const certType = (formData.get('cert_type') as string | null) ?? 'general'
 
     // Storage 업로드는 service role로 RLS 우회
-    const admin = createAdminClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.SUPABASE_SERVICE_ROLE_KEY!
-    )
+    const admin = createAdminClient()
 
     const ext = file.name.split('.').pop() ?? 'jpg'
     const path = `${user.id}/${certType}/${Date.now()}.${ext}`

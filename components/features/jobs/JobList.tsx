@@ -10,23 +10,15 @@ import type { EquipmentCode, JobType, JobWithManager } from '@/types'
 import { EQUIPMENT_LABELS, EQUIPMENT_CODES_LIST, JOB_TYPE_LABELS, JOB_TYPES_LIST } from '@/types'
 import { JobCard } from './JobCard'
 import { JobFilters as JobFiltersPanel } from './JobFilters'
+import { EmptyState } from '@/components/ui/EmptyState'
+import { useHorizontalScroll } from '@/hooks/useHorizontalScroll'
 
 export function JobList() {
   const { profile, role } = useAuthStore()
   const [filters, setFilters] = useState<JobFilters>(DEFAULT_FILTERS)
   const [searchInput, setSearchInput] = useState('')
-  const [chipScrollState, setChipScrollState] = useState({ canLeft: false, canRight: true })
   const loadMoreRef = useRef<HTMLDivElement>(null)
-  const chipScrollRef = useRef<HTMLDivElement>(null)
-
-  const handleChipScroll = () => {
-    const el = chipScrollRef.current
-    if (!el) return
-    setChipScrollState({
-      canLeft: el.scrollLeft > 0,
-      canRight: el.scrollLeft + el.clientWidth < el.scrollWidth - 1,
-    })
-  }
+  const { ref: chipScrollRef, canLeft: chipCanLeft, canRight: chipCanRight, handleScroll: handleChipScroll } = useHorizontalScroll()
 
   const handleSearch = () => {
     const keyword = searchInput.trim() || undefined
@@ -169,7 +161,7 @@ export function JobList() {
           </div>
         </div>
         {/* 왼쪽 스크롤 버튼 */}
-        {chipScrollState.canLeft && (
+        {chipCanLeft && (
           <div className="absolute left-0 top-0 bottom-1 flex items-center bg-gradient-to-r from-white via-white/90 to-transparent pl-2 pr-6">
             <button
               onClick={() => chipScrollRef.current?.scrollBy({ left: -160, behavior: 'smooth' })}
@@ -183,7 +175,7 @@ export function JobList() {
           </div>
         )}
         {/* 오른쪽 스크롤 버튼 */}
-        {chipScrollState.canRight && (
+        {chipCanRight && (
           <div className="absolute right-0 top-0 bottom-1 flex items-center bg-gradient-to-l from-white via-white/90 to-transparent pr-2 pl-6">
             <button
               onClick={() => chipScrollRef.current?.scrollBy({ left: 160, behavior: 'smooth' })}
@@ -298,28 +290,23 @@ export function JobList() {
 
           {/* 빈 목록 */}
           {!isLoading && !isRefetching && !isError && jobs.length === 0 && (
-            <div className="text-center py-20">
-              {filters.keyword ? (
-                <>
-                  <p className="text-2xl mb-3">🔍</p>
-                  <p className="text-gray-700 font-medium mb-1">
-                    앗, 현재 해당 지역에는 등록된 일감이 없습니다!
-                  </p>
-                  <p className="text-gray-400 text-sm">다른 지역을 검색해 보세요.</p>
-                  <button
-                    onClick={handleClearSearch}
-                    className="mt-4 text-blue-500 text-sm hover:underline"
-                  >
+            filters.keyword ? (
+              <EmptyState
+                icon="🔍"
+                title="앗, 현재 해당 지역에는 등록된 일감이 없습니다!"
+                description="다른 지역을 검색해 보세요."
+                action={
+                  <button onClick={handleClearSearch} className="text-blue-500 text-sm hover:underline">
                     전체 목록 보기
                   </button>
-                </>
-              ) : (
-                <>
-                  <p className="text-gray-700 font-medium mb-2">등록된 일감이 없습니다</p>
-                  <p className="text-gray-400 text-sm">필터를 변경하거나 나중에 다시 확인해보세요.</p>
-                </>
-              )}
-            </div>
+                }
+              />
+            ) : (
+              <EmptyState
+                title="등록된 일감이 없습니다"
+                description="필터를 변경하거나 나중에 다시 확인해보세요."
+              />
+            )
           )}
 
           {/* 카드 그리드 — 모바일 1열 / sm 이상 2열 */}

@@ -5,6 +5,7 @@
 import { AnimatePresence, motion } from 'framer-motion'
 import type { LedgerDayData, UserRole } from '@/types'
 import { LedgerDayItem } from './LedgerDayItem'
+import { EmptyState } from '@/components/ui/EmptyState'
 import { formatKRW } from '@/lib/utils/ledger'
 
 interface Props {
@@ -74,7 +75,7 @@ export function LedgerDayPanel({ dayData, role, onClose, onDelete, onAddExpense 
           {/* 내역 리스트 */}
           <div className="px-4 max-h-64 overflow-y-auto">
             {allEntries.length === 0 ? (
-              <p className="py-6 text-center text-sm text-gray-400">내역이 없습니다.</p>
+              <EmptyState title="내역이 없습니다." className="py-6" />
             ) : (
               allEntries.map((entry, idx) => (
                 <LedgerDayItem

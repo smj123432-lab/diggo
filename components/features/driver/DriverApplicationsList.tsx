@@ -1,13 +1,15 @@
 'use client'
 
 // 기사 — 지원한 일감 목록 + 4단계 필터
-import { useState, useRef, useEffect, useCallback } from 'react'
+import { useState, useCallback, useMemo } from 'react'
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { toast } from 'sonner'
 import type { EquipmentCode, JobStatus } from '@/types'
 import { EquipmentBadge } from '@/components/ui/EquipmentBadge'
 import { ReviewModal } from '@/components/features/mypage/ReviewModal'
+import { EmptyState } from '@/components/ui/EmptyState'
+import { useHorizontalScroll } from '@/hooks/useHorizontalScroll'
 import { useAuthStore } from '@/store/auth'
 
 export interface DriverApplication {
@@ -102,40 +104,26 @@ export function DriverApplicationsList({ applications }: Props) {
       setChattingJobId(null)
     }
   }, [router, currentUserId])
-  const [tabScrollState, setTabScrollState] = useState({ canLeft: false, canRight: true })
-  const tabScrollRef = useRef<HTMLDivElement>(null)
-
-  function handleTabScroll() {
-    const el = tabScrollRef.current
-    if (!el) return
-    setTabScrollState({
-      canLeft: el.scrollLeft > 0,
-      canRight: el.scrollLeft + el.clientWidth < el.scrollWidth - 1,
-    })
-  }
-
-  useEffect(() => {
-    requestAnimationFrame(handleTabScroll)
-  }, [])
+  const { ref: tabScrollRef, canLeft: tabCanLeft, canRight: tabCanRight, handleScroll: handleTabScroll } = useHorizontalScroll()
   const [reviewedIds, setReviewedIds] = useState<Set<string>>(
     () => new Set(applications.filter((a) => a.hasReview).map((a) => a.id))
   )
 
-  const withStage = applications.map((app) => ({
+  const withStage = useMemo(() => applications.map((app) => ({
     ...app,
     stage: app.status === 'rejected' ? null : getStage(app.status, app.job.status),
-  }))
+  })), [applications])
 
-  const counts: Record<StageFilter, number> = {
+  const counts: Record<StageFilter, number> = useMemo(() => ({
     all:                applications.filter((a) => a.status !== 'rejected').length,
     applying:           withStage.filter((a) => a.stage === 'applying').length,
     waiting:            withStage.filter((a) => a.stage === 'waiting').length,
     confirmed:          withStage.filter((a) => a.stage === 'confirmed').length,
     pending_settlement: withStage.filter((a) => a.stage === 'pending_settlement').length,
     settled:            withStage.filter((a) => a.stage === 'settled').length,
-  }
+  }), [withStage, applications])
 
-  const filtered = withStage
+  const filtered = useMemo(() => withStage
     .filter((app) => filter === 'all' || app.stage === filter)
     .sort((a, b) => {
       if (filter === 'all') {
@@ -145,7 +133,7 @@ export function DriverApplicationsList({ applications }: Props) {
         if (aBottom !== bBottom) return aBottom ? 1 : -1
       }
       return new Date(a.job.work_date).getTime() - new Date(b.job.work_date).getTime()
-    })
+    }), [withStage, filter])
 
   return (
     <>
@@ -181,7 +169,7 @@ export function DriverApplicationsList({ applications }: Props) {
             })}
           </div>
         </div>
-        {tabScrollState.canLeft && (
+        {tabCanLeft && (
           <div className="absolute left-0 top-0 bottom-1 flex items-center bg-gradient-to-r from-white via-white/90 to-transparent pr-6">
             <button
               onClick={() => tabScrollRef.current?.scrollBy({ left: -160, behavior: 'smooth' })}
@@ -194,7 +182,7 @@ export function DriverApplicationsList({ applications }: Props) {
             </button>
           </div>
         )}
-        {tabScrollState.canRight && (
+        {tabCanRight && (
           <div className="absolute right-0 top-0 bottom-1 flex items-center bg-gradient-to-l from-white via-white/90 to-transparent pl-6">
             <button
               onClick={() => tabScrollRef.current?.scrollBy({ left: 160, behavior: 'smooth' })}
@@ -212,19 +200,19 @@ export function DriverApplicationsList({ applications }: Props) {
       <p className="text-sm font-semibold text-gray-700 mb-4">{filtered.length}건</p>
 
       {filtered.length === 0 ? (
-        <div className="text-center py-20">
-          <p className="text-gray-400 text-sm mb-4">
-            {filter === 'all' ? '아직 지원한 일감이 없습니다.' : '해당 단계의 일감이 없습니다.'}
-          </p>
-          {filter === 'all' && (
-            <Link
-              href="/jobs"
-              className="inline-block bg-blue-500 text-white font-bold px-6 py-3 rounded-2xl text-sm hover:bg-blue-600 transition-colors"
-            >
-              일감 찾아보기
-            </Link>
-          )}
-        </div>
+        <EmptyState
+          title={filter === 'all' ? '아직 지원한 일감이 없습니다.' : '해당 단계의 일감이 없습니다.'}
+          action={
+            filter === 'all' ? (
+              <Link
+                href="/jobs"
+                className="inline-block bg-blue-500 text-white font-bold px-6 py-3 rounded-2xl text-sm hover:bg-blue-600 transition-colors"
+              >
+                일감 찾아보기
+              </Link>
+            ) : undefined
+          }
+        />
       ) : (
         <div className="flex flex-col gap-4">
           {filtered.map((app) => {

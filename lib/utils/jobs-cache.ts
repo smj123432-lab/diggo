@@ -11,7 +11,7 @@ export async function getCachedJobsFirstPage() {
   const today = new Date().toISOString().split('T')[0]
   const { data, count } = await supabase
     .from('jobs')
-    .select('*, profiles(id, name, rating_avg, is_certified, avatar_url)', { count: 'exact' })
+    .select('*, profiles(id, name, rating_avg, review_count, is_certified, avatar_url)', { count: 'exact' })
     .eq('status', 'open')
     .gte('work_date', today)
     .order('work_date', { ascending: true })
@@ -29,7 +29,7 @@ export async function getCachedJobDetail(id: string) {
   const supabase = createPublicClient()
   const { data, error } = await supabase
     .from('jobs')
-    .select('*, profiles(id, name, rating_avg, is_certified, avatar_url)')
+    .select('*, profiles(id, name, rating_avg, review_count, is_certified, avatar_url)')
     .eq('id', id)
     .single()
 

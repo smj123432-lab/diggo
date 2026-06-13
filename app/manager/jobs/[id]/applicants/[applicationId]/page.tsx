@@ -45,7 +45,7 @@ export default async function ApplicantDetailPage({ params }: Props) {
       supabase
         .from("profiles")
         .select(
-          "id, name, rating_avg, is_certified, experience_years, phone, preferred_equipment_codes, avatar_url, bio",
+          "id, name, rating_avg, review_count, is_certified, experience_years, phone, preferred_equipment_codes, avatar_url, bio",
         )
         .eq("id", application.driver_id)
         .single(),
@@ -65,6 +65,7 @@ export default async function ApplicantDetailPage({ params }: Props) {
     id: string;
     name: string;
     rating_avg: number;
+    review_count: number;
     is_certified: boolean;
     experience_years: number | null;
     phone: string | null;
@@ -149,22 +150,20 @@ export default async function ApplicantDetailPage({ params }: Props) {
                 <span className="text-base font-bold text-gray-900">
                   {driver.name}
                 </span>
-                {driver.is_certified && (
-                  <span className="inline-flex items-center gap-1 bg-blue-500 text-white text-xs font-bold px-2 py-0.5 rounded-full">
-                    <svg
-                      className="w-3 h-3"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth={3}
-                    >
-                      <path
-                        d="M20 6L9 17l-5-5"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      />
+                {driver.review_count >= 5 && driver.rating_avg >= 4.5 && (
+                  <span className="inline-flex items-center gap-1 bg-amber-400 text-white text-xs font-bold px-2 py-0.5 rounded-full">
+                    <svg className="w-3 h-3" viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
                     </svg>
-                    인증 기사
+                    우수 평점
+                  </span>
+                )}
+                {driver.review_count >= 5 && driver.rating_avg <= 2.0 && (
+                  <span className="inline-flex items-center gap-1 bg-red-500 text-white text-xs font-bold px-2 py-0.5 rounded-full">
+                    <svg className="w-3 h-3" viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z" />
+                    </svg>
+                    저평점 주의
                   </span>
                 )}
               </div>

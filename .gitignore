@@ -1,3 +1,6 @@
+# 테스트 결과 (영상, 스크린샷, 스크립트)
+test-results/
+
 # Logs
 logs
 *.log

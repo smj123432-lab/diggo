@@ -21,7 +21,7 @@ export async function GET(request: NextRequest) {
 
     let query = supabase
       .from('jobs')
-      .select('*, profiles(id, name, rating_avg, is_certified, avatar_url)', { count: 'exact' })
+      .select('*, profiles(id, name, rating_avg, review_count, is_certified, avatar_url)', { count: 'exact' })
       .range(from, to)
 
     if (sortBy === 'deadline') {

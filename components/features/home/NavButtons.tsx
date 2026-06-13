@@ -4,11 +4,13 @@ import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useAuthStore } from '@/store/auth'
+import { useNotificationStore } from '@/store/notifications'
 import { createClient } from '@/lib/supabase/client'
 
 // 헤더 우측 버튼 — 데스크톱: 텍스트 버튼 / 모바일: 햄버거 메뉴
 export function NavButtons() {
   const { user, role, isLoading } = useAuthStore()
+  const unreadCount = useNotificationStore((s) => s.unreadCount)
   const router = useRouter()
   const [menuOpen, setMenuOpen] = useState(false)
   const buttonRef = useRef<HTMLButtonElement>(null)
@@ -44,6 +46,18 @@ export function NavButtons() {
       {/* ── 데스크톱 ── */}
       {user ? (
         <div className="hidden md:flex items-center gap-3">
+          {/* 알림 벨 아이콘 */}
+          <Link href="/notifications" className="relative p-1.5 text-slate-300 hover:text-white transition-colors">
+            <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+              <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" strokeLinecap="round" strokeLinejoin="round" />
+              <path d="M13.73 21a2 2 0 0 1-3.46 0" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+            {unreadCount > 0 && (
+              <span className="absolute -top-0.5 -right-0.5 min-w-[16px] h-4 px-0.5 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center leading-none">
+                {unreadCount > 99 ? '99+' : unreadCount}
+              </span>
+            )}
+          </Link>
           <Link href="/mypage" className="text-sm text-slate-300 hover:text-white transition-colors">
             마이페이지
           </Link>
@@ -147,7 +161,20 @@ export function NavButtons() {
               </svg>
               채팅
             </Link>
-            {/* 5. 마이페이지 */}
+            {/* 5. 알림 */}
+            <Link href="/notifications" onClick={close} className="flex items-center gap-3 px-4 py-3.5 text-sm text-slate-200 hover:bg-white/10 transition-colors border-t border-white/5">
+              <svg className="w-4 h-4 text-slate-400 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+                <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" strokeLinecap="round" strokeLinejoin="round" />
+                <path d="M13.73 21a2 2 0 0 1-3.46 0" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+              알림
+              {unreadCount > 0 && (
+                <span className="ml-auto min-w-[18px] h-[18px] px-1 flex items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white leading-none">
+                  {unreadCount > 99 ? '99+' : unreadCount}
+                </span>
+              )}
+            </Link>
+            {/* 6. 마이페이지 */}
             <Link href="/mypage" onClick={close} className="flex items-center gap-3 px-4 py-3.5 text-sm text-slate-200 hover:bg-white/10 transition-colors border-t border-white/5">
               <svg className="w-4 h-4 text-slate-400 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
                 <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" />

@@ -115,7 +115,8 @@ export function JobCard({ job, isPreferred }: JobCardProps) {
             <span className="text-xs font-medium text-gray-700">
               {job.profiles.name} 소장
             </span>
-            {job.profiles.is_certified && <CertBadge />}
+            {job.profiles.review_count >= 5 && job.profiles.rating_avg >= 4.5 && <CertBadge variant="top" />}
+            {job.profiles.review_count >= 5 && job.profiles.rating_avg <= 2.0 && <CertBadge variant="low" />}
             <span className="text-gray-300 text-xs mx-0.5">|</span>
             <RatingDisplay value={job.profiles.rating_avg} className="text-xs text-gray-400" />
           </div>
