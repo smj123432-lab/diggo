@@ -236,10 +236,15 @@ export interface ChatMessage {
   created_at: string
 }
 
+export type NotificationType =
+  | 'new_application'       // 소장 → 새 지원자
+  | 'application_accepted'  // 기사 → 지원 수락
+  | 'application_rejected'  // 기사 → 지원 거절
+
 export interface Notification {
   id: string
   user_id: string
-  type: string
+  type: NotificationType | string
   message: string
   is_read: boolean
   created_at: string
