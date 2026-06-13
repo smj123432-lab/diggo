@@ -640,6 +640,14 @@ return (
 - 채팅방 ⋮ 메뉴: 기사→소장 프로필 보기, 소장→기사 프로필 보기 추가
 - lucide-react 설치 (Star, Award, Briefcase, MapPin, Calendar, ChevronRight)
 
+**평점 기반 인증뱃지 시스템 — 2026-06-13**
+- `review_count >= 5 && rating_avg >= 4.5` → 우수 평점 배지 (amber 별 원형/pill)
+- `review_count >= 5 && rating_avg <= 2.0` → 저평점 주의 배지 (red 경고 원형/pill)
+- 기사/소장 구분 없이 동일 조건 적용
+- CertBadge 컴포넌트 `variant: 'top' | 'low'` 로 리팩토링
+- 서류 인증(is_certified)은 지원 게이트 유지, UI 배지는 평점 기반으로 전면 교체
+- review_count를 일감 목록/상세/지원자 관련 쿼리 전체에 추가
+
 ### v2 (MVP 이후)
 
 - 채팅 (Supabase Realtime) — 완료
