@@ -34,10 +34,12 @@ interface ApplicantCardProps {
 }
 
 const STATUS_STYLE: Record<ApplicationStatus, string> = {
-  pending:   'bg-gray-100 text-gray-600',
-  reviewing: 'bg-blue-100 text-blue-700',
-  accepted:  'bg-emerald-100 text-emerald-700',
-  rejected:  'bg-red-100 text-red-500',
+  pending:                'bg-gray-100 text-gray-600',
+  reviewing:              'bg-blue-100 text-blue-700',
+  accepted:               'bg-emerald-100 text-emerald-700',
+  rejected:               'bg-red-100 text-red-500',
+  cancelled_by_driver:    'bg-orange-100 text-orange-600',
+  cancelled_by_manager:   'bg-orange-100 text-orange-600',
 }
 
 export function ApplicantCard({ jobId, application }: ApplicantCardProps) {

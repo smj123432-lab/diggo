@@ -1,6 +1,19 @@
 # 테스트 결과 (영상, 스크린샷, 스크립트)
 test-results/
 
+# 로컬 개발 도구 (Claude Code, Superpowers)
+.agents/
+.claude/
+.superpowers/
+skills-lock.json
+docs/superpowers/
+
+# TypeScript 빌드 캐시
+tsconfig.tsbuildinfo
+
+# 구 문서 (PLAN.md로 대체)
+PROJECT_STATUS.md
+
 # Logs
 logs
 *.log

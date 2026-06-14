@@ -6,7 +6,13 @@ export type JobType = 'civil' | 'demolition'
 
 export type JobStatus = 'open' | 'closed' | 'in_progress' | 'completed' | 'settled'
 
-export type ApplicationStatus = 'pending' | 'reviewing' | 'accepted' | 'rejected'
+export type ApplicationStatus =
+  | 'pending'
+  | 'reviewing'
+  | 'accepted'
+  | 'rejected'
+  | 'cancelled_by_driver'
+  | 'cancelled_by_manager'
 
 // 지급 예정일 유형
 export type PayDueType = 'same_day' | 'd3' | 'd7' | 'd14' | 'd30'
@@ -30,6 +36,7 @@ export interface Profile {
   rating_avg: number
   review_count: number
   is_certified: boolean
+  penalty_count: number
   preferred_job_types: JobType[]
   preferred_equipment_codes: EquipmentCode[]
   preferred_regions: string[]
@@ -237,9 +244,10 @@ export interface ChatMessage {
 }
 
 export type NotificationType =
-  | 'new_application'       // 소장 → 새 지원자
-  | 'application_accepted'  // 기사 → 지원 수락
-  | 'application_rejected'  // 기사 → 지원 거절
+  | 'new_application'           // 소장 → 새 지원자
+  | 'application_accepted'      // 기사 → 지원 수락
+  | 'application_rejected'      // 기사 → 지원 거절
+  | 'application_cancelled'     // 상대방이 배차 취소
 
 export interface Notification {
   id: string
@@ -311,7 +319,13 @@ export const APPLICATION_STATUS_LABELS: Record<ApplicationStatus, string> = {
   reviewing: '검토중',
   accepted: '수락',
   rejected: '거절',
+  cancelled_by_driver: '기사 취소',
+  cancelled_by_manager: '소장 취소',
 }
+
+// 평점 자동 인증 기준 (is_certified 자동 부여)
+export const CERT_AUTO_MIN_RATING = 4.5
+export const CERT_AUTO_MIN_REVIEWS = 5
 
 // 지출 카테고리 (기사·소장 공용)
 export const LEDGER_EXPENSE_CATEGORIES = [

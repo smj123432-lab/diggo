@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { CERT_AUTO_MIN_RATING, CERT_AUTO_MIN_REVIEWS } from '@/types'
 
 // GET /api/reviews?type=given|received
 // given → 내가 작성한 리뷰의 job_id 배열 (hasReview 체크용)
@@ -109,9 +110,16 @@ export async function POST(request: NextRequest) {
       ? Math.round((allRatings!.reduce((sum, r) => sum + r.rating, 0) / count) * 100) / 100
       : 0
 
+    // 평점 조건 충족 시 is_certified 자동 부여 (관리자 인증과 독립적으로 작동)
+    const shouldAutoCertify = avg >= CERT_AUTO_MIN_RATING && count >= CERT_AUTO_MIN_REVIEWS
+
     await supabase
       .from('profiles')
-      .update({ rating_avg: avg, review_count: count })
+      .update({
+        rating_avg: avg,
+        review_count: count,
+        ...(shouldAutoCertify ? { is_certified: true } : {}),
+      })
       .eq('id', reviewee_id)
 
     return NextResponse.json({ data }, { status: 201 })
