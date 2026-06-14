@@ -36,15 +36,53 @@
 
 **서비스 흐름**
 
+```mermaid
+flowchart TD
+    A["소장: 일감 등록\n장비 종류 · 작업일 · 금액 · 지급 예정일"] --> B["기사: 목록 조회 후 장비 선택하여 지원"]
+    B --> C["소장: 지원자를 검토중 전환\n채팅방 자동 생성"]
+    C --> D["채팅으로 현장 세부 협의"]
+    D --> E{"소장 결정"}
+    E -->|수락| F["배차 확정\nstatus = accepted"]
+    E -->|거절| G["지원 종료"]
+    F --> H["작업 완료 후 상호 평가"]
+    H --> I["평점 재집계"]
+    I --> J{"rating_avg >= 4.5\nreview_count >= 5"}
+    J -->|충족| K["is_certified = true\n우수 기사 뱃지 자동 부여"]
+    J -->|미충족| L["기존 상태 유지"]
+    K --> M["소장: 정산 완료 처리"]
+    L --> M
+    M --> N["기사 장부에 지급 완료 반영"]
 ```
-소장이 일감 등록 (장비 종류, 작업일, 지급 금액, 지급 예정일)
-  → 기사가 목록에서 조회 후 장비 선택하여 지원
-  → 소장이 지원자를 검토중 전환 → 채팅방 자동 생성
-  → 채팅으로 현장 세부 협의
-  → 소장 수락 → 배차 확정 (applications.status = accepted)
-  → 작업 완료 후 상호 평가
-  → 평점 재집계 → is_certified 조건 충족 시 자동 뱃지 부여
-  → 소장이 정산 완료 처리 → 기사 장부에 지급 완료 반영
+
+**시스템 아키텍처**
+
+```mermaid
+graph LR
+    subgraph Browser["브라우저"]
+        UI["Next.js App Router\nReact 19"]
+        TQ["TanStack Query v5\n서버 상태 · 캐시"]
+        ZU["Zustand\n유저 세션 · role"]
+    end
+
+    subgraph Vercel["Vercel Edge"]
+        API["API Routes\n인증 · 패널티 · 장부"]
+        CACHE["use cache\nSSR 정적 캐시"]
+    end
+
+    subgraph SupabaseBlock["Supabase"]
+        DB["PostgreSQL\nRLS 정책"]
+        AUTH["Auth\n세션 관리"]
+        RT["Realtime\n채팅 · 알림"]
+        STOR["Storage\n프로필 이미지"]
+    end
+
+    UI <-->|fetch| API
+    UI <-->|WebSocket| RT
+    TQ <-->|HydrationBoundary| CACHE
+    API <-->|service_role| DB
+    API <-->|검증| AUTH
+    CACHE -->|anon| DB
+    API --> STOR
 ```
 
 ---
@@ -255,6 +293,22 @@ if (banDays) {
 }
 
 await admin.from('profiles').update(updateData).eq('id', cancelUserId)
+```
+
+```mermaid
+flowchart TD
+    A["배차 확정\nstatus = accepted"] --> B{"취소 요청"}
+    B -->|기사 취소| C["cancelled_by_driver"]
+    B -->|소장 취소| D["cancelled_by_manager"]
+    C --> E["penalty_count + 1"]
+    D --> E
+    E --> F{"누적 횟수"}
+    F -->|5회| G["banned_until = 오늘 + 3일"]
+    F -->|10회| H["banned_until = 오늘 + 7일"]
+    F -->|그 외| I["패널티 누적만"]
+    G --> J["지원 · 등록 버튼 비활성화\n제한 해제일 표시"]
+    H --> J
+    I --> K["패널티 뱃지 노출\n일감 목록 · 지원자 카드"]
 ```
 
 `PENALTY_BAN_THRESHOLDS`는 `types/index.ts`에 단일 상수로 정의되어 서버(cancel API)와 클라이언트(ban UI) 양쪽에서 동일하게 씁니다. 임계값이 바뀌어도 한 곳만 수정하면 됩니다.
