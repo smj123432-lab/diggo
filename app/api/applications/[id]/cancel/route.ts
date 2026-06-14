@@ -66,7 +66,11 @@ export async function PATCH(
 
     const newStatus = isDriver ? 'cancelled_by_driver' : 'cancelled_by_manager'
 
-    const { data, error } = await supabase
+    // RLS: 기사는 applications UPDATE 권한이 없으므로 admin 클라이언트로 우회
+    // 권한 검증은 위에서 코드 레벨로 완료했으므로 안전
+    const admin = createAdminClient()
+
+    const { data, error } = await admin
       .from('applications')
       .update({ status: newStatus })
       .eq('id', id)
@@ -76,13 +80,13 @@ export async function PATCH(
     if (error) throw error
 
     // 취소한 사람의 패널티 카운터 증가
-    const { data: currentProfile } = await supabase
+    const { data: currentProfile } = await admin
       .from('profiles')
       .select('penalty_count')
       .eq('id', user.id)
       .single()
 
-    await supabase
+    await admin
       .from('profiles')
       .update({ penalty_count: (currentProfile?.penalty_count ?? 0) + 1 })
       .eq('id', user.id)
@@ -93,7 +97,6 @@ export async function PATCH(
       const recipientId = isDriver ? application.jobs?.manager_id : application.driver_id
 
       if (jobTitle && recipientId) {
-        const admin = createAdminClient()
         await admin.from('notifications').insert({
           user_id: recipientId,
           type: 'application_cancelled',
