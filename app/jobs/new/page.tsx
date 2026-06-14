@@ -15,11 +15,16 @@ export default async function NewJobPage() {
 
   const { data: profile } = await supabase
     .from('profiles')
-    .select('role')
+    .select('role, banned_until')
     .eq('id', user.id)
     .single()
 
   if (profile?.role !== 'manager' && profile?.role !== 'admin') redirect('/jobs')
+
+  const isBanned = profile?.banned_until && new Date(profile.banned_until) > new Date()
+  const bannedUntilStr = isBanned
+    ? new Date(profile.banned_until!).toLocaleDateString('ko-KR', { month: 'long', day: 'numeric' })
+    : null
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -63,7 +68,20 @@ export default async function NewJobPage() {
             <p className="text-sm text-gray-400 mt-1">필수 항목을 모두 입력하면 등록 버튼이 활성화됩니다.</p>
           </div>
 
-          <JobForm />
+          {isBanned ? (
+            <div className="flex items-start gap-4 bg-orange-50 border border-orange-200 rounded-2xl px-5 py-5">
+              <span className="text-2xl shrink-0">🚫</span>
+              <div>
+                <p className="text-base font-bold text-orange-700 mb-1">일감 등록 제한 중</p>
+                <p className="text-sm text-orange-600">패널티 누적으로 <strong>{bannedUntilStr}</strong>까지 일감 등록이 제한됩니다.</p>
+                <Link href="/mypage" className="inline-block mt-3 text-xs font-semibold text-orange-500 underline underline-offset-2">
+                  마이페이지에서 확인하기
+                </Link>
+              </div>
+            </div>
+          ) : (
+            <JobForm />
+          )}
         </div>
       </div>
     </div>

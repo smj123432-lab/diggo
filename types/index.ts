@@ -37,6 +37,7 @@ export interface Profile {
   review_count: number
   is_certified: boolean
   penalty_count: number
+  banned_until: string | null
   preferred_job_types: JobType[]
   preferred_equipment_codes: EquipmentCode[]
   preferred_regions: string[]
@@ -76,8 +77,11 @@ export interface Job {
 }
 
 export interface JobWithManager extends Job {
-  profiles: Pick<Profile, 'id' | 'name' | 'rating_avg' | 'review_count' | 'is_certified' | 'avatar_url'>
+  profiles: Pick<Profile, 'id' | 'name' | 'rating_avg' | 'review_count' | 'is_certified' | 'avatar_url' | 'penalty_count'>
 }
+
+// 패널티 횟수별 이용 제한 일수 (5회→3일, 10회→7일)
+export const PENALTY_BAN_THRESHOLDS: Record<number, number> = { 5: 3, 10: 7 }
 
 // equipment_codes 배열을 레이블 문자열로 변환
 export function formatEquipmentCodes(codes: EquipmentCode[]): string {

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { revalidateTag } from 'next/cache'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { PENALTY_BAN_THRESHOLDS } from '@/types'
 
 /**
  * PATCH /api/applications/[id]/cancel
@@ -79,17 +80,20 @@ export async function PATCH(
 
     if (error) throw error
 
-    // 취소한 사람의 패널티 카운터 증가
+    // 취소한 사람의 패널티 카운터 증가 + 임계값 도달 시 이용 제한
     const { data: currentProfile } = await admin
       .from('profiles')
       .select('penalty_count')
       .eq('id', user.id)
       .single()
 
-    await admin
-      .from('profiles')
-      .update({ penalty_count: (currentProfile?.penalty_count ?? 0) + 1 })
-      .eq('id', user.id)
+    const newCount = (currentProfile?.penalty_count ?? 0) + 1
+    const banDays = PENALTY_BAN_THRESHOLDS[newCount]
+    const updateData: Record<string, unknown> = { penalty_count: newCount }
+    if (banDays) {
+      updateData.banned_until = new Date(Date.now() + banDays * 86400000).toISOString()
+    }
+    await admin.from('profiles').update(updateData).eq('id', user.id)
 
     // 상대방에게 취소 알림 — 실패해도 취소 결과에 영향 없음
     try {

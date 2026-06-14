@@ -125,6 +125,11 @@ export function JobCard({ job, isPreferred }: JobCardProps) {
             </span>
             {job.profiles.review_count >= 5 && job.profiles.rating_avg >= 4.5 && <CertBadge variant="top" />}
             {job.profiles.review_count >= 5 && job.profiles.rating_avg <= 2.0 && <CertBadge variant="low" />}
+            {(job.profiles.penalty_count ?? 0) > 0 && (
+              <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-orange-100 text-orange-600">
+                패널티 {job.profiles.penalty_count}
+              </span>
+            )}
             <span className="text-gray-300 text-xs mx-0.5">|</span>
             <RatingDisplay value={job.profiles.rating_avg} className="text-xs text-gray-400" />
           </Link>

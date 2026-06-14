@@ -275,6 +275,9 @@ async function JobDetailContent({ params }: Props) {
                         {job.profiles.review_count >= 5 && job.profiles.rating_avg <= 2.0 && (
                           <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-red-100 text-red-600">주의</span>
                         )}
+                        {(job.profiles.penalty_count ?? 0) > 0 && (
+                          <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-orange-100 text-orange-600">패널티 {job.profiles.penalty_count}회</span>
+                        )}
                       </div>
                       <div className="flex items-center gap-1 mt-0.5">
                         <span className="text-yellow-400 text-xs">★</span>
@@ -311,9 +314,10 @@ function ManagerAvatar({ name, avatarUrl, size }: { name: string; avatarUrl: str
   )
 }
 
-function ManagerBlock({ job }: { job: { profiles: { id: string; name: string; rating_avg: number; review_count: number; avatar_url: string | null } } }) {
+function ManagerBlock({ job }: { job: { profiles: { id: string; name: string; rating_avg: number; review_count: number; avatar_url: string | null; penalty_count?: number } } }) {
   const isTopRating = job.profiles.review_count >= 5 && job.profiles.rating_avg >= 4.5
   const isLowRating = job.profiles.review_count >= 5 && job.profiles.rating_avg <= 2.0
+  const hasPenalty = (job.profiles.penalty_count ?? 0) > 0
   return (
     <>
       <p className="text-xs text-gray-400 font-medium mb-3">소장 정보</p>
@@ -331,6 +335,9 @@ function ManagerBlock({ job }: { job: { profiles: { id: string; name: string; ra
             )}
             {isLowRating && (
               <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-red-100 text-red-600">주의</span>
+            )}
+            {hasPenalty && (
+              <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-orange-100 text-orange-600">패널티 {job.profiles.penalty_count}회</span>
             )}
           </div>
           <div className="flex items-center gap-1 mt-0.5">

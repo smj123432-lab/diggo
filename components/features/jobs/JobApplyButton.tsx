@@ -13,6 +13,7 @@ interface Props {
   jobStatus: JobStatus
   userRole: string | null
   isCertified: boolean
+  bannedUntil: string | null
   existingApplication: { id: string; status: ApplicationStatus } | null
   equipmentCodes: EquipmentCode[]           // 이 일감에서 필요한 장비 코드 목록
   dispatchedCodes?: Record<string, boolean> // 각 코드의 배차 완료 여부
@@ -23,6 +24,7 @@ export function JobApplyButton({
   jobStatus,
   userRole,
   isCertified,
+  bannedUntil,
   existingApplication,
   equipmentCodes,
   dispatchedCodes = {},
@@ -52,6 +54,19 @@ export function JobApplyButton({
       >
         마감된 일감입니다
       </button>
+    )
+  }
+
+  if (bannedUntil && new Date(bannedUntil) > new Date()) {
+    const until = new Date(bannedUntil).toLocaleDateString('ko-KR', { month: 'long', day: 'numeric' })
+    return (
+      <div className="flex items-center gap-3 w-full bg-orange-50 border border-orange-200 rounded-2xl px-4 py-3">
+        <span className="shrink-0 text-base leading-none">🚫</span>
+        <div className="flex-1 min-w-0">
+          <p className="text-sm font-semibold text-orange-700">패널티 누적 — 지원 제한 중</p>
+          <p className="text-xs text-orange-500 mt-0.5">{until}까지 지원이 제한됩니다</p>
+        </div>
+      </div>
     )
   }
 
