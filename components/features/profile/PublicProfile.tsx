@@ -7,6 +7,7 @@ import Link from 'next/link'
 import { Star, Award, Briefcase, MapPin, Calendar, ChevronRight, AlertTriangle } from 'lucide-react'
 import type { Profile, Job, EquipmentCode } from '@/types'
 import { EQUIPMENT_LABELS, JOB_TYPE_LABELS } from '@/types'
+import { formatFullDate, formatWorkDate } from '@/lib/utils/date'
 
 interface ReviewItem {
   id: string
@@ -48,9 +49,7 @@ function DefaultAvatar({ name }: { name: string }) {
 }
 
 function ReviewCard({ review }: { review: ReviewItem }) {
-  const date = new Date(review.created_at).toLocaleDateString('ko-KR', {
-    year: 'numeric', month: 'long', day: 'numeric',
-  })
+  const date = formatFullDate(review.created_at)
 
   return (
     <div className="bg-white rounded-xl p-4 border border-gray-100">
@@ -74,9 +73,7 @@ function ReviewCard({ review }: { review: ReviewItem }) {
 }
 
 function JobCard({ job }: { job: Props['openJobs'][number] }) {
-  const workDate = new Date(job.work_date).toLocaleDateString('ko-KR', {
-    month: 'numeric', day: 'numeric', weekday: 'short',
-  })
+  const workDate = formatWorkDate(job.work_date)
   const eqLabels = (job.equipment_codes as EquipmentCode[])
     .map((c) => EQUIPMENT_LABELS[c])
     .join(' · ')

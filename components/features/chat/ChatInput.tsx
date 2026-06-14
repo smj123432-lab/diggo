@@ -31,7 +31,9 @@ export function ChatInput({
       <div className="max-w-2xl mx-auto px-3 py-2.5 flex items-center gap-2">
 
         <div className="flex-1 flex items-center border border-gray-200 rounded-full px-4 py-2 bg-white focus-within:border-gray-400 transition-colors min-h-[40px]">
+          <label htmlFor="chat-message-input" className="sr-only">메시지 입력</label>
           <textarea
+            id="chat-message-input"
             ref={textareaRef}
             value={input}
             onChange={(e) => onChange(e.target.value)}

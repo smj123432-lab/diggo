@@ -2,9 +2,7 @@
 
 // 일감 등록 폼 — 소장 전용
 import { useState } from "react";
-import { useRouter } from "next/navigation";
-import { toast } from "sonner";
-import type { EquipmentCode, JobType, PayDueType, WorkDuration } from "@/types";
+import type { JobType, WorkDuration, PayDueType } from "@/types";
 import {
   EQUIPMENT_LABELS,
   EQUIPMENT_CODES_LIST,
@@ -15,38 +13,7 @@ import {
   WORK_DURATION_LIST,
 } from "@/types";
 import { AddressSearch } from "./AddressSearch";
-
-interface FormState {
-  title: string;
-  job_type: JobType | "";
-  equipment_codes: EquipmentCode[];
-  payments: Partial<Record<EquipmentCode, { amount: string; days: string }>>;
-  description: string;
-  attachments: string;
-  caution: string;
-  location: string;
-  latitude: number | null;
-  longitude: number | null;
-  work_date: string;
-  work_duration: WorkDuration | "";
-  pay_due_type: PayDueType | "";
-}
-
-const INITIAL: FormState = {
-  title: "",
-  job_type: "",
-  equipment_codes: [],
-  payments: {},
-  description: "",
-  attachments: "",
-  caution: "",
-  location: "",
-  latitude: null,
-  longitude: null,
-  work_date: "",
-  work_duration: "",
-  pay_due_type: "",
-};
+import { useJobForm, type FormState } from "@/hooks/useJobForm";
 
 // 섹션 구분선
 function Divider() {
@@ -57,15 +24,17 @@ function Divider() {
 function Label({
   children,
   required,
+  htmlFor,
 }: {
   children: React.ReactNode;
   required?: boolean;
+  htmlFor?: string;
 }) {
   return (
-    <p className="text-sm font-bold text-gray-800 mb-3">
+    <label htmlFor={htmlFor} className="block text-sm font-bold text-gray-800 mb-3">
       {children}
       {required && <span className="text-blue-500 ml-0.5">*</span>}
-    </p>
+    </label>
   );
 }
 
@@ -84,134 +53,9 @@ export function JobForm({
   jobId,
   initialValues,
 }: JobFormProps) {
-  const router = useRouter();
-  const [form, setForm] = useState<FormState>(
-    initialValues ? { ...INITIAL, ...initialValues } : INITIAL,
-  );
+  const { form, set, toggleEquipment, setPayment, isValid, isSubmitting, handleSubmit, formatPayAmount } =
+    useJobForm({ mode, jobId, initialValues });
   const [showAddressSearch, setShowAddressSearch] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-
-  const set = (key: keyof FormState, value: FormState[keyof FormState]) =>
-    setForm((f) => ({ ...f, [key]: value }));
-
-  const toggleEquipment = (code: EquipmentCode) =>
-    setForm((f) => {
-      if (f.equipment_codes.includes(code)) {
-        const { [code]: _r, ...rest } = f.payments; // eslint-disable-line @typescript-eslint/no-unused-vars
-        return {
-          ...f,
-          equipment_codes: f.equipment_codes.filter((c) => c !== code),
-          payments: rest,
-        };
-      }
-      return {
-        ...f,
-        equipment_codes: [...f.equipment_codes, code],
-        payments: { ...f.payments, [code]: { amount: "", days: "" } },
-      };
-    });
-
-  const setPayment = (
-    code: EquipmentCode,
-    field: "amount" | "days",
-    value: string,
-  ) =>
-    setForm((f) => ({
-      ...f,
-      payments: {
-        ...f.payments,
-        [code]: {
-          ...f.payments[code],
-          [field]:
-            field === "amount"
-              ? formatPayAmount(value)
-              : value.replace(/[^0-9]/g, ""),
-        },
-      },
-    }));
-
-  const allAmountsFilled =
-    form.equipment_codes.length > 0 &&
-    form.equipment_codes.every((code) => Boolean(form.payments[code]?.amount));
-
-  const isValid = Boolean(
-    form.title.trim() &&
-    form.job_type &&
-    form.equipment_codes.length > 0 &&
-    allAmountsFilled &&
-    form.description.trim() &&
-    form.location &&
-    form.latitude !== null &&
-    form.work_date &&
-    form.pay_due_type,
-  );
-
-  const handleSubmit = async () => {
-    if (!isValid || isSubmitting) return;
-    setIsSubmitting(true);
-    const payload = {
-      title: form.title.trim(),
-      job_type: form.job_type,
-      equipment_codes: form.equipment_codes,
-      description: form.description.trim(),
-      attachments: form.attachments.trim() || null,
-      caution: form.caution.trim() || null,
-      location: form.location,
-      latitude: form.latitude,
-      longitude: form.longitude,
-      pay_amounts: Object.fromEntries(
-        form.equipment_codes.map((code) => [
-          code,
-          parseInt((form.payments[code]?.amount ?? "0").replace(/,/g, ""), 10),
-        ]),
-      ),
-      work_days: Object.fromEntries(
-        form.equipment_codes.map((code) => [
-          code,
-          parseInt(form.payments[code]?.days ?? "0", 10),
-        ]),
-      ),
-      work_date: form.work_date,
-      work_duration: form.work_duration || null,
-      pay_due_type: form.pay_due_type,
-    };
-    try {
-      const res = await fetch(
-        mode === "edit" ? `/api/jobs/${jobId}` : "/api/jobs",
-        {
-          method: mode === "edit" ? "PATCH" : "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload),
-        },
-      );
-      if (!res.ok) {
-        const err = await res.json();
-        throw new Error(
-          err.error ?? (mode === "edit" ? "수정 실패" : "등록 실패"),
-        );
-      }
-      toast.success(
-        mode === "edit" ? "일감이 수정되었습니다." : "일감이 등록되었습니다.",
-      );
-      router.push(mode === "edit" ? `/jobs/${jobId}` : "/jobs");
-      router.refresh();
-    } catch (e) {
-      toast.error(
-        e instanceof Error
-          ? e.message
-          : mode === "edit"
-            ? "일감 수정에 실패했습니다."
-            : "일감 등록에 실패했습니다.",
-      );
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  const formatPayAmount = (v: string) => {
-    const num = v.replace(/[^0-9]/g, "");
-    return num ? parseInt(num, 10).toLocaleString() : "";
-  };
 
   return (
     <>
@@ -271,8 +115,9 @@ export function JobForm({
 
         {/* ── 일감 제목 ── */}
         <div>
-          <Label required>일감 제목</Label>
+          <Label required htmlFor="job-title">일감 제목</Label>
           <input
+            id="job-title"
             type="text"
             value={form.title}
             onChange={(e) => set("title", e.target.value)}
@@ -286,8 +131,9 @@ export function JobForm({
 
         {/* ── 작업 내용 ── */}
         <div>
-          <Label required>작업 내용</Label>
+          <Label required htmlFor="job-description">작업 내용</Label>
           <textarea
+            id="job-description"
             value={form.description}
             onChange={(e) => set("description", e.target.value)}
             placeholder="작업 내용, 현장 상황, 진입로 등 기사에게 필요한 정보를 적어주세요."

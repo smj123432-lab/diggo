@@ -5,6 +5,21 @@ import { createClient } from '@/lib/supabase/server'
 import { ApplicantCard } from '@/components/features/manager/ApplicantCard'
 import type { ApplicationStatus, JobStatus, EquipmentCode } from '@/types'
 import { EQUIPMENT_LABELS, JOB_STATUS_LABELS } from '@/types'
+import { formatLongDate } from '@/lib/utils/date'
+
+interface MappedApplication {
+  id: string
+  status: ApplicationStatus
+  applied_at: string
+  applied_equipment_code: string | null
+  profiles: {
+    id: string; name: string; rating_avg: number; review_count: number
+    is_certified: boolean; experience_years: number | null
+    avatar_url: string | null; bio: string | null; penalty_count: number
+  } | null
+  equipments: { id: string; model_code: EquipmentCode; license_number: string | null } | null
+  driverEquipments: EquipmentCode[]
+}
 
 interface Props {
   params: Promise<{ id: string }>
@@ -64,7 +79,7 @@ export default async function ApplicantsPage({ params }: Props) {
     driverEquipmentMap.set(eq.owner_id, list)
   }
 
-  const applications = (rawApps ?? []).map((app) => ({
+  const applications: MappedApplication[] = (rawApps ?? []).map((app) => ({
     ...app,
     profiles: profileMap.get(app.driver_id) ?? null,
     equipments: app.equipment_id ? (equipmentMap.get(app.equipment_id) ?? null) : null,
@@ -72,9 +87,7 @@ export default async function ApplicantsPage({ params }: Props) {
     applied_equipment_code: (app.applied_equipment_code as string | null) ?? null,
   }))
 
-  const workDate = new Date(job.work_date).toLocaleDateString('ko-KR', {
-    month: 'long', day: 'numeric', weekday: 'short',
-  })
+  const workDate = formatLongDate(job.work_date)
 
   const today = new Date().toISOString().split('T')[0]
   const effectiveStatus: JobStatus =
@@ -124,18 +137,11 @@ export default async function ApplicantsPage({ params }: Props) {
           </div>
         ) : (
           <div className="space-y-3">
-            {(applications ?? []).map((app) => (
+            {applications.filter((app) => app.profiles !== null).map((app) => (
               <ApplicantCard
                 key={app.id}
                 jobId={id}
-                application={app as unknown as {
-                  id: string
-                  status: ApplicationStatus
-                  applied_at: string
-                  profiles: { id: string; name: string; rating_avg: number; review_count: number; is_certified: boolean; experience_years: number | null; avatar_url: string | null; bio: string | null; penalty_count: number }
-                  equipments: { id: string; model_code: EquipmentCode; license_number: string | null } | null
-                  driverEquipments: EquipmentCode[]
-                }}
+                application={app as MappedApplication & { profiles: NonNullable<MappedApplication['profiles']> }}
               />
             ))}
           </div>

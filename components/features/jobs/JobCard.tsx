@@ -5,6 +5,8 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import type { JobWithManager, JobType, JobStatus, EquipmentCode } from '@/types'
 import { EQUIPMENT_LABELS, JOB_TYPE_LABELS, PAY_DUE_LABELS, WORK_DURATION_LABELS } from '@/types'
+import { getTodayStr, formatWorkDate } from '@/lib/utils/date'
+import { formatKRW } from '@/lib/utils/ledger'
 import { Avatar } from '@/components/ui/Avatar'
 import { CertBadge } from '@/components/ui/CertBadge'
 import { EquipmentBadge } from '@/components/ui/EquipmentBadge'
@@ -32,14 +34,10 @@ const JOB_TYPE_BADGE: Record<JobType, string> = {
 
 export function JobCard({ job, isPreferred }: JobCardProps) {
   const router = useRouter()
-  const workDate = new Date(job.work_date).toLocaleDateString('ko-KR', {
-    month: 'numeric',
-    day: 'numeric',
-    weekday: 'short',
-  })
+  const workDate = formatWorkDate(job.work_date)
 
   // work_date가 오늘 이전이면 open → closed 처리
-  const today = new Date().toISOString().split('T')[0]
+  const today = getTodayStr()
   const effectiveStatus: JobStatus = job.status === 'open' && job.work_date < today ? 'closed' : job.status
   const status = STATUS_BADGE[effectiveStatus]
   const isClosed = effectiveStatus !== 'open'
@@ -138,7 +136,7 @@ export function JobCard({ job, isPreferred }: JobCardProps) {
               <div key={code} className="flex items-baseline gap-1">
                 <span className="text-xs text-gray-400">{EQUIPMENT_LABELS[code]}</span>
                 <span className="text-blue-600 font-black text-base leading-none">
-                  {(job.pay_amounts as Record<string, number>)[code]?.toLocaleString()}원
+                  {formatKRW((job.pay_amounts as Record<string, number>)[code] ?? 0)}
                 </span>
               </div>
             ))}

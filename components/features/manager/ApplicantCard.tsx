@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import type { ApplicationStatus, EquipmentCode } from '@/types'
 import { APPLICATION_STATUS_LABELS } from '@/types'
+import { formatMonthDay } from '@/lib/utils/date'
 import { Avatar } from '@/components/ui/Avatar'
 import { CertBadge } from '@/components/ui/CertBadge'
 import { EquipmentBadge } from '@/components/ui/EquipmentBadge'
@@ -49,9 +50,7 @@ const STATUS_STYLE: Record<ApplicationStatus, string> = {
 export function ApplicantCard({ jobId, application }: ApplicantCardProps) {
   const router = useRouter()
   const { profiles: driver, driverEquipments, applied_equipment_code } = application
-  const appliedAt = new Date(application.applied_at).toLocaleDateString('ko-KR', {
-    month: 'numeric', day: 'numeric',
-  })
+  const appliedAt = formatMonthDay(application.applied_at)
   const hasPenalty = (driver.penalty_count ?? 0) > 0
 
   return (

@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 import type { JobStatus, ApplicationStatus, EquipmentCode } from '@/types'
 import { APPLICATION_STATUS_LABELS, EQUIPMENT_LABELS } from '@/types'
+import { formatLongDate } from '@/lib/utils/date'
 
 interface Props {
   jobId: string
@@ -58,7 +59,7 @@ export function JobApplyButton({
   }
 
   if (bannedUntil && new Date(bannedUntil) > new Date()) {
-    const until = new Date(bannedUntil).toLocaleDateString('ko-KR', { month: 'long', day: 'numeric' })
+    const until = formatLongDate(bannedUntil)
     return (
       <div className="flex items-center gap-3 w-full bg-orange-50 border border-orange-200 rounded-2xl px-4 py-3">
         <span className="shrink-0 text-base leading-none">🚫</span>

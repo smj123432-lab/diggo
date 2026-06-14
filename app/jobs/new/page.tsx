@@ -2,6 +2,7 @@
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
+import { formatLongDate } from '@/lib/utils/date'
 import { ExcavatorIcon } from '@/components/ui/ExcavatorIcon'
 import { NavButtons } from '@/components/features/home/NavButtons'
 import { NavRoleLink } from '@/components/features/home/NavRoleLink'
@@ -22,9 +23,7 @@ export default async function NewJobPage() {
   if (profile?.role !== 'manager' && profile?.role !== 'admin') redirect('/jobs')
 
   const isBanned = profile?.banned_until && new Date(profile.banned_until) > new Date()
-  const bannedUntilStr = isBanned
-    ? new Date(profile.banned_until!).toLocaleDateString('ko-KR', { month: 'long', day: 'numeric' })
-    : null
+  const bannedUntilStr = isBanned ? formatLongDate(profile.banned_until!) : null
 
   return (
     <div className="min-h-screen bg-gray-50">

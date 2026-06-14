@@ -11,6 +11,8 @@ import { ReviewModal } from '@/components/features/mypage/ReviewModal'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { useHorizontalScroll } from '@/hooks/useHorizontalScroll'
 import { useAuthStore } from '@/store/auth'
+import { formatWorkDate } from '@/lib/utils/date'
+import { formatKRW } from '@/lib/utils/ledger'
 
 export interface DriverApplication {
   id: string
@@ -246,16 +248,14 @@ export function DriverApplicationsList({ applications }: Props) {
             const isCancelledApp = isCancelled(app.status)
             const alreadyReviewed = reviewedIds.has(app.id)
 
-            const workDate = new Date(job.work_date).toLocaleDateString('ko-KR', {
-              month: 'numeric', day: 'numeric', weekday: 'short',
-            })
+            const workDate = formatWorkDate(job.work_date)
 
             const payValues = Object.values(job.pay_amounts)
             const payMin = Math.min(...payValues)
             const payMax = Math.max(...payValues)
             const payText = payMin === payMax
-              ? `${payMin.toLocaleString()}원`
-              : `${payMin.toLocaleString()}~${payMax.toLocaleString()}원`
+              ? formatKRW(payMin)
+              : `${payMin.toLocaleString('ko-KR')}~${formatKRW(payMax)}`
 
             const stageLabel = STAGE_TABS.find((t) => t.value === effectiveStage)
 

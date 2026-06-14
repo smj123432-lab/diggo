@@ -2,6 +2,7 @@
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
+import { formatFullDate } from '@/lib/utils/date'
 
 interface ReviewItem {
   id: string
@@ -102,9 +103,7 @@ export default async function ReviewsPage() {
         ) : (
           <div className="flex flex-col gap-3">
             {reviews.map((review) => {
-              const date = new Date(review.created_at).toLocaleDateString('ko-KR', {
-                year: 'numeric', month: 'numeric', day: 'numeric',
-              })
+              const date = formatFullDate(review.created_at)
               return (
                 <div key={review.id} className="bg-white border border-gray-200 rounded-2xl p-4">
                   <div className="flex items-start justify-between gap-3 mb-2">

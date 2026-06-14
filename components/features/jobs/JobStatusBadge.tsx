@@ -95,6 +95,8 @@ export function JobStatusBadge({ jobId, effectiveStatus }: Props) {
         ref={btnRef}
         onClick={openDropdown}
         disabled={isLoading}
+        aria-expanded={isOpen}
+        aria-haspopup="listbox"
         className={`inline-flex items-center gap-1.5 px-2.5 py-1 border rounded-md text-xs font-semibold hover:opacity-80 transition-opacity disabled:opacity-50 ${
           current === 'open'
             ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
@@ -113,12 +115,15 @@ export function JobStatusBadge({ jobId, effectiveStatus }: Props) {
       {isOpen && createPortal(
         <div
           ref={dropdownRef}
+          role="listbox"
           style={{ position: 'absolute', top: dropdownPos.top, left: dropdownPos.left, zIndex: 9999 }}
           className="bg-white border border-gray-200 rounded-xl shadow-lg overflow-hidden min-w-[120px]"
         >
           {(['open', 'closed'] as JobStatus[]).map(s => (
             <button
               key={s}
+              role="option"
+              aria-selected={current === s}
               onClick={() => handleSelect(s)}
               className={`w-full text-left px-4 py-2.5 text-sm font-medium transition-colors hover:bg-gray-50 ${
                 current === s ? 'text-emerald-700 bg-emerald-50' : 'text-gray-700'

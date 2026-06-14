@@ -6,6 +6,7 @@ import { useState, useEffect, useRef } from 'react'
 import { createPortal } from 'react-dom'
 import { toast } from 'sonner'
 import { LEDGER_EXPENSE_CATEGORIES } from '@/types'
+import { getTodayStr } from '@/lib/utils/date'
 
 interface AddExpenseModalProps {
   defaultDate?: string // YYYY-MM-DD
@@ -21,13 +22,15 @@ export function AddExpenseModal({
   onSaved,
 }: AddExpenseModalProps) {
   const [entryType, setEntryType] = useState<EntryType>('expense')
-  const [date, setDate] = useState(defaultDate ?? new Date().toISOString().split('T')[0])
+  const [date, setDate] = useState(defaultDate ?? getTodayStr())
   const [category, setCategory] = useState('')
   const [amountDisplay, setAmountDisplay] = useState('') // 화면에 표시되는 콤마 포맷 문자열
   const [memo, setMemo] = useState('')
   const [isSaving, setIsSaving] = useState(false)
   const closeRef = useRef(onClose)
   closeRef.current = onClose
+  const amountInputRef = useRef<HTMLInputElement>(null)
+  const prevFocusRef = useRef<Element | null>(null)
 
   // 탭 전환 시 카테고리 초기화
   function handleTypeChange(type: EntryType) {
@@ -43,6 +46,15 @@ export function AddExpenseModal({
     const clamped = num > 999_999_999 ? 999_999_999 : num
     setAmountDisplay(clamped > 0 ? clamped.toLocaleString('ko-KR') : '')
   }
+
+  // 모달 열릴 때: 이전 포커스 저장 + 금액 input 자동 포커스
+  useEffect(() => {
+    prevFocusRef.current = document.activeElement
+    amountInputRef.current?.focus()
+    return () => {
+      (prevFocusRef.current as HTMLElement | null)?.focus()
+    }
+  }, [])
 
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
@@ -173,6 +185,7 @@ export function AddExpenseModal({
             <label className="block text-xs font-semibold text-gray-500 mb-1">금액 (원)</label>
             <div className="relative">
               <input
+                ref={amountInputRef}
                 type="text"
                 inputMode="numeric"
                 value={amountDisplay}

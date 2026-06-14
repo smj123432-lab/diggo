@@ -10,6 +10,7 @@ import type { Job, JobStatus, EquipmentCode } from '@/types'
 import { JOB_STATUS_LABELS, PAY_DUE_LABELS, EQUIPMENT_LABELS } from '@/types'
 import { EquipmentBadge } from '@/components/ui/EquipmentBadge'
 import { ReviewModal } from '@/components/features/mypage/ReviewModal'
+import { getTodayStr, formatWorkDate } from '@/lib/utils/date'
 
 interface AcceptedDriver {
   driver_id: string
@@ -139,11 +140,9 @@ export function ManagerJobCard({ job, reviewedPairs = new Set() }: ManagerJobCar
     }
   }
 
-  const workDate = new Date(job.work_date).toLocaleDateString('ko-KR', {
-    month: 'numeric', day: 'numeric', weekday: 'short',
-  })
+  const workDate = formatWorkDate(job.work_date)
 
-  const today = new Date().toISOString().split('T')[0]
+  const today = getTodayStr()
   const effectiveStatus: JobStatus =
     job.status === 'open' && job.work_date < today ? 'closed' : job.status
 
