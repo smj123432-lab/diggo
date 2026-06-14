@@ -43,7 +43,7 @@ export async function POST(request: NextRequest) {
 
     const { data: profile } = await supabase
       .from('profiles')
-      .select('role, is_certified, name')
+      .select('role, is_certified, name, banned_until')
       .eq('id', user.id)
       .single()
 
@@ -53,6 +53,11 @@ export async function POST(request: NextRequest) {
 
     if (!profile?.is_certified) {
       return NextResponse.json({ error: '면허증과 안전교육 이수증 인증을 완료해야 지원할 수 있습니다.' }, { status: 403 })
+    }
+
+    if (profile.banned_until && new Date(profile.banned_until) > new Date()) {
+      const until = new Date(profile.banned_until).toLocaleDateString('ko-KR', { month: 'long', day: 'numeric' })
+      return NextResponse.json({ error: `패널티 누적으로 ${until}까지 지원이 제한됩니다.`, banned_until: profile.banned_until }, { status: 403 })
     }
 
     const { job_id, equipment_id, applied_equipment_code } = await request.json()

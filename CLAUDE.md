@@ -794,3 +794,40 @@ async function JobDetailContent({ params }: Props) {
 ```
 
 > `await params`가 있는 모든 동적 라우트 페이지는 이 패턴을 적용해야 한다. fallback에는 레이아웃 시프트를 방지할 동일 높이의 빈 div를 사용한다.
+
+### 카드 컴포넌트 — 중첩 Link(nested anchor) + 내부 프로필 링크 패턴
+
+**증상**: 카드 전체를 클릭하면 이동하고, 카드 내부에 별도 링크(예: 소장/기사 프로필)도 있어야 하는 경우 nested `<a>` 태그 HTML 에러 발생
+
+**원인**: Next.js `<Link>`는 `<a>` 태그로 렌더링된다. 외부 `<Link>`(카드 전체) 안에 내부 `<Link>`(프로필)를 넣으면 `<a>` 안에 `<a>`가 생겨 HTML 규격 위반 → 브라우저가 DOM을 잘못 파싱, 클릭 이벤트 버블링 오동작.
+
+**해결**: 외부 `<Link>`를 `'use client'` + `useRouter` + `<div onClick>`으로 교체. 내부 링크에는 `onClick={(e) => e.stopPropagation()}` 추가.
+
+```tsx
+'use client'
+import { useRouter } from 'next/navigation'
+import Link from 'next/link'
+
+export function JobCard({ job }: Props) {
+  const router = useRouter()
+
+  return (
+    // 외부: div + useRouter (Link 아님)
+    <div
+      onClick={() => router.push(`/jobs/${job.id}`)}
+      className="cursor-pointer ..."
+    >
+      {/* 내부: 프로필 링크 — stopPropagation으로 카드 클릭 차단 */}
+      <Link
+        href={`/profiles/${job.profiles.id}`}
+        onClick={(e) => e.stopPropagation()}
+        className="..."
+      >
+        {job.profiles.name}
+      </Link>
+    </div>
+  )
+}
+```
+
+> 카드 전체 클릭 + 내부 링크가 공존하는 패턴에서는 항상 이 방식을 사용한다. `'use client'`와 `useRouter`가 필요하므로, 해당 컴포넌트가 서버 컴포넌트였다면 클라이언트 컴포넌트로 전환이 필요하다.

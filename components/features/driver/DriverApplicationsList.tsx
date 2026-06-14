@@ -11,6 +11,8 @@ import { ReviewModal } from '@/components/features/mypage/ReviewModal'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { useHorizontalScroll } from '@/hooks/useHorizontalScroll'
 import { useAuthStore } from '@/store/auth'
+import { formatWorkDate } from '@/lib/utils/date'
+import { formatKRW } from '@/lib/utils/ledger'
 
 export interface DriverApplication {
   id: string
@@ -71,6 +73,10 @@ function getStage(appStatus: string, jobStatus: JobStatus): StageFilter {
   return 'applying'
 }
 
+function isCancelled(status: string): boolean {
+  return status === 'cancelled_by_driver' || status === 'cancelled_by_manager'
+}
+
 interface Props {
   applications: DriverApplication[]
 }
@@ -85,6 +91,8 @@ export function DriverApplicationsList({ applications }: Props) {
   })
   const [reviewTarget, setReviewTarget] = useState<{ jobId: string; managerId: string } | null>(null)
   const [chattingJobId, setChattingJobId] = useState<string | null>(null)
+  const [cancelTargetId, setCancelTargetId] = useState<string | null>(null)
+  const [isCancelling, setIsCancelling] = useState(false)
 
   const handleOpenChat = useCallback(async (jobId: string) => {
     if (!currentUserId) return
@@ -104,6 +112,22 @@ export function DriverApplicationsList({ applications }: Props) {
       setChattingJobId(null)
     }
   }, [router, currentUserId])
+  const handleCancelConfirm = useCallback(async (applicationId: string) => {
+    setIsCancelling(true)
+    try {
+      const res = await fetch(`/api/applications/${applicationId}/cancel`, { method: 'PATCH' })
+      const json = await res.json() as { error?: string }
+      if (!res.ok) throw new Error(json.error)
+      toast.success('배차가 취소되었습니다.')
+      router.refresh()
+    } catch {
+      toast.error('취소 처리에 실패했습니다.')
+    } finally {
+      setIsCancelling(false)
+      setCancelTargetId(null)
+    }
+  }, [router])
+
   const { ref: tabScrollRef, canLeft: tabCanLeft, canRight: tabCanRight, handleScroll: handleTabScroll } = useHorizontalScroll()
   const [reviewedIds, setReviewedIds] = useState<Set<string>>(
     () => new Set(applications.filter((a) => a.hasReview).map((a) => a.id))
@@ -111,11 +135,11 @@ export function DriverApplicationsList({ applications }: Props) {
 
   const withStage = useMemo(() => applications.map((app) => ({
     ...app,
-    stage: app.status === 'rejected' ? null : getStage(app.status, app.job.status),
+    stage: (app.status === 'rejected' || isCancelled(app.status)) ? null : getStage(app.status, app.job.status),
   })), [applications])
 
   const counts: Record<StageFilter, number> = useMemo(() => ({
-    all:                applications.filter((a) => a.status !== 'rejected').length,
+    all:                applications.filter((a) => a.status !== 'rejected' && !isCancelled(a.status)).length,
     applying:           withStage.filter((a) => a.stage === 'applying').length,
     waiting:            withStage.filter((a) => a.stage === 'waiting').length,
     confirmed:          withStage.filter((a) => a.stage === 'confirmed').length,
@@ -221,29 +245,28 @@ export function DriverApplicationsList({ applications }: Props) {
             const effectiveStage = stage ?? 'applying'
             const isSettled = effectiveStage === 'settled'
             const isRejected = app.status === 'rejected'
+            const isCancelledApp = isCancelled(app.status)
             const alreadyReviewed = reviewedIds.has(app.id)
 
-            const workDate = new Date(job.work_date).toLocaleDateString('ko-KR', {
-              month: 'numeric', day: 'numeric', weekday: 'short',
-            })
+            const workDate = formatWorkDate(job.work_date)
 
             const payValues = Object.values(job.pay_amounts)
             const payMin = Math.min(...payValues)
             const payMax = Math.max(...payValues)
             const payText = payMin === payMax
-              ? `${payMin.toLocaleString()}원`
-              : `${payMin.toLocaleString()}~${payMax.toLocaleString()}원`
+              ? formatKRW(payMin)
+              : `${payMin.toLocaleString('ko-KR')}~${formatKRW(payMax)}`
 
             const stageLabel = STAGE_TABS.find((t) => t.value === effectiveStage)
 
             const cardContent = (
               <div className={`bg-white border rounded-2xl overflow-hidden flex transition-all ${
-                isRejected ? 'border-gray-100 opacity-60' :
+                (isRejected || isCancelledApp) ? 'border-gray-100 opacity-60' :
                 isSettled ? 'border-gray-200' :
                 'border-gray-200 hover:border-blue-300 hover:shadow-md'
               }`}>
                 {/* 좌측 컬러 바 */}
-                {!isRejected && (
+                {!isRejected && !isCancelledApp && (
                   <div className={`w-1.5 shrink-0 ${STAGE_BAR[effectiveStage]}`} />
                 )}
 
@@ -251,7 +274,11 @@ export function DriverApplicationsList({ applications }: Props) {
                   {/* 좌측: 뱃지·제목·위치 */}
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-1.5 flex-wrap mb-2">
-                      {isRejected ? (
+                      {isCancelledApp ? (
+                        <span className="bg-orange-50 text-orange-500 text-xs font-semibold px-2 py-0.5 rounded-md">
+                          {app.status === 'cancelled_by_driver' ? '내가 취소' : '소장 취소'}
+                        </span>
+                      ) : isRejected ? (
                         <span className="bg-red-50 text-red-400 text-xs font-semibold px-2 py-0.5 rounded-md">
                           거절됨
                         </span>
@@ -308,13 +335,22 @@ export function DriverApplicationsList({ applications }: Props) {
                         {chattingJobId === job.id ? '연결중' : '채팅'}
                       </button>
                     )}
+                    {/* 배차확정(accepted) 카드에 취소 버튼 */}
+                    {app.status === 'accepted' && effectiveStage === 'confirmed' && (
+                      <button
+                        onClick={(e) => { e.preventDefault(); setCancelTargetId(app.id) }}
+                        className="text-xs text-red-400 hover:text-red-600 transition-colors"
+                      >
+                        취소 신청
+                      </button>
+                    )}
                   </div>
                 </div>
               </div>
             )
 
-            // 정산완료 항목은 Link 없이 렌더링 (리뷰 버튼 클릭 시 이동 방지)
-            if (isSettled) {
+            // 정산완료 · 취소 항목은 Link 없이 렌더링
+            if (isSettled || isCancelledApp) {
               return <div key={app.id}>{cardContent}</div>
             }
 
@@ -335,12 +371,38 @@ export function DriverApplicationsList({ applications }: Props) {
           revieweeRole="manager"
           onClose={() => setReviewTarget(null)}
           onSuccess={() => {
-            // 해당 app.id를 찾아서 완료 처리
             const appId = applications.find((a) => a.job.id === reviewTarget.jobId)?.id
             if (appId) setReviewedIds((prev) => { const next = new Set(prev); next.add(appId); return next })
             setReviewTarget(null)
           }}
         />
+      )}
+
+      {/* 배차 취소 확인 모달 */}
+      {cancelTargetId && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40">
+          <div className="bg-white rounded-2xl p-6 w-full max-w-sm shadow-xl">
+            <h3 className="text-base font-bold text-gray-900 mb-2">배차 취소 신청</h3>
+            <p className="text-sm text-gray-500 mb-1">배차 확정 후 취소 시 <span className="text-orange-500 font-semibold">패널티</span>가 부여됩니다.</p>
+            <p className="text-sm text-gray-500 mb-6">패널티는 프로필에 표시되어 향후 지원에 영향을 줄 수 있습니다.</p>
+            <div className="flex gap-2">
+              <button
+                onClick={() => setCancelTargetId(null)}
+                disabled={isCancelling}
+                className="flex-1 py-2.5 rounded-xl border border-gray-200 text-sm font-semibold text-gray-600 hover:bg-gray-50 transition-colors"
+              >
+                취소
+              </button>
+              <button
+                onClick={() => handleCancelConfirm(cancelTargetId)}
+                disabled={isCancelling}
+                className="flex-1 py-2.5 rounded-xl bg-red-500 text-white text-sm font-semibold hover:bg-red-600 transition-colors disabled:opacity-50"
+              >
+                {isCancelling ? '처리중...' : '취소 신청'}
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </>
   )

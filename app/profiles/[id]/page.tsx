@@ -15,7 +15,7 @@ export default async function ProfilePage({ params }: Props) {
   // 1단계: 프로필 조회 (role 확인 필요)
   const { data: profile } = await supabase
     .from('profiles')
-    .select('id, name, role, bio, avatar_url, rating_avg, review_count, is_certified, experience_years')
+    .select('id, name, role, bio, avatar_url, rating_avg, review_count, is_certified, experience_years, penalty_count')
     .eq('id', id)
     .single()
 

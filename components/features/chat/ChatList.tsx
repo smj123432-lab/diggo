@@ -6,6 +6,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import type { ChatRoomWithDetails } from '@/types'
 import { EmptyState } from '@/components/ui/EmptyState'
+import { formatMonthDay } from '@/lib/utils/date'
 
 function timeAgo(iso: string) {
   const diff = Date.now() - new Date(iso).getTime()
@@ -16,7 +17,7 @@ function timeAgo(iso: string) {
   if (hour < 24) return `${hour}시간 전`
   const day = Math.floor(hour / 24)
   if (day < 7) return `${day}일 전`
-  return new Date(iso).toLocaleDateString('ko-KR', { month: 'numeric', day: 'numeric' })
+  return formatMonthDay(iso)
 }
 
 function DefaultAvatar() {

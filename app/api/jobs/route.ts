@@ -21,7 +21,7 @@ export async function GET(request: NextRequest) {
 
     let query = supabase
       .from('jobs')
-      .select('*, profiles(id, name, rating_avg, review_count, is_certified, avatar_url)', { count: 'exact' })
+      .select('*, profiles(id, name, rating_avg, review_count, is_certified, avatar_url, penalty_count)', { count: 'exact' })
       .range(from, to)
 
     if (sortBy === 'deadline') {
@@ -67,12 +67,17 @@ export async function POST(request: NextRequest) {
 
     const { data: profile } = await supabase
       .from('profiles')
-      .select('role')
+      .select('role, banned_until')
       .eq('id', user.id)
       .single()
 
     if (profile?.role !== 'manager' && profile?.role !== 'admin') {
       return NextResponse.json({ error: '소장만 일감을 등록할 수 있습니다.' }, { status: 403 })
+    }
+
+    if (profile.banned_until && new Date(profile.banned_until) > new Date()) {
+      const until = new Date(profile.banned_until).toLocaleDateString('ko-KR', { month: 'long', day: 'numeric' })
+      return NextResponse.json({ error: `패널티 누적으로 ${until}까지 일감 등록이 제한됩니다.`, banned_until: profile.banned_until }, { status: 403 })
     }
 
     const body = await request.json()

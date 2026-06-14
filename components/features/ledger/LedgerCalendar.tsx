@@ -13,6 +13,7 @@ import type {
   LedgerIncomeEntry,
 } from '@/types'
 import { getCalendarWeeks, extractDistrict } from '@/lib/utils/ledger'
+import { getTodayStr } from '@/lib/utils/date'
 
 interface RibbonSegment {
   key: string
@@ -92,7 +93,7 @@ export function LedgerCalendar({
 }: Props) {
   const { year, month, days } = monthData
   const weeks = getCalendarWeeks(year, month)
-  const todayStr = new Date().toISOString().split('T')[0]
+  const todayStr = getTodayStr()
 
   // 모바일 감지 (SSR safe — 초기값 false로 hydration 안전)
   const [isMobile, setIsMobile] = useState(false)
@@ -193,7 +194,7 @@ export function LedgerCalendar({
           const isIncome = expense.category === '수입'
           const amtStr = expense.amount >= 10_000
             ? `${Math.round(expense.amount / 10_000)}만`
-            : expense.amount.toLocaleString()
+            : expense.amount.toLocaleString('ko-KR')
           const sign = isIncome ? '+' : '-'
           const label = `${expense.memo ?? expense.category} ${sign}${amtStr}`
           segments.push({
@@ -276,7 +277,7 @@ export function LedgerCalendar({
                     >
                       {/* 날짜 숫자 — 좌측 상단, 모바일에서 더 작게 */}
                       <span
-                        className={`flex items-center justify-center rounded-full font-bold shrink-0 w-6 h-6 text-[10px] md:w-7 md:h-7 md:text-xs ${
+                        className={`flex items-center justify-center rounded-full font-bold shrink-0 w-7 h-7 text-[10px] md:w-8 md:h-8 md:text-xs ${
                           isToday
                             ? 'bg-blue-500 text-white'
                             : isSelected
@@ -326,7 +327,7 @@ export function LedgerCalendar({
                             const sign      = role === 'manager' ? '-' : '+'
                             const amtStr    = totalCost >= 10_000
                               ? `${Math.round(totalCost / 10_000)}만`
-                              : totalCost.toLocaleString()
+                              : totalCost.toLocaleString('ko-KR')
                             const eqLabel   = seg.equipmentCode ?? '일감'
                             // 모바일: [008] -225만 / 데스크탑: [008 동작구] 총 -225만
                             if (isMobile) {

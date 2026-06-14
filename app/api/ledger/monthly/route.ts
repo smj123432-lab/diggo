@@ -1,4 +1,3 @@
-// app/api/ledger/monthly/route.ts
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import {
@@ -8,6 +7,16 @@ import {
   buildMonthData,
 } from '@/lib/utils/ledger'
 
+/**
+ * GET /api/ledger/monthly?year=&month=
+ *
+ * role에 따라 집계 방식이 달라진다.
+ * - driver: 수락된 지원서 기반 수입 + 개인 지출
+ * - manager: 등록한 일감의 수주 금액 + 경비 지출
+ *
+ * **룩백 전략**: 다중 작업일(work_days) 일감은 시작일이 전달이어도 이번 달까지 일자가 걸칠 수 있다.
+ * 31일 전부터 조회한 뒤 buildXxxEntries가 생성한 항목 중 이번 달 범위만 필터링한다.
+ */
 export async function GET(request: NextRequest) {
   try {
     const supabase = await createClient()
@@ -34,12 +43,10 @@ export async function GET(request: NextRequest) {
       .eq('id', user.id)
       .single()
 
-    // 이번 달 이전에 시작해 이번 달로 이어지는 일감도 포함하기 위한 룩백
     const lookbackDate = new Date(new Date(`${startDate}T00:00:00Z`).getTime() - 31 * 24 * 60 * 60 * 1000)
       .toISOString().split('T')[0]
 
     if (profile?.role === 'manager') {
-      // 소장: 일감 + 수동 지출 병렬 조회
       const [{ data: rawJobs }, { data: rawExpenses }] = await Promise.all([
         supabase
           .from('jobs')
@@ -56,7 +63,6 @@ export async function GET(request: NextRequest) {
       ])
 
       const allJobs = buildJobEntries(rawJobs ?? [])
-      // 생성된 entries 중 이번 달 범위 내 날짜만 포함
       const jobs = allJobs.filter(e => e.date >= startDate && e.date <= endDate)
       const expenses = buildExpenseEntries(rawExpenses ?? [])
       const monthData = buildMonthData({ year, month, incomes: [], expenses, jobs })
@@ -64,7 +70,6 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ data: monthData })
     }
 
-    // 기사: 1단계 — accepted application 조회 (applied_equipment_code 포함)
     const { data: rawApps } = await supabase
       .from('applications')
       .select('job_id, equipment_id, applied_equipment_code')
@@ -72,8 +77,6 @@ export async function GET(request: NextRequest) {
       .eq('status', 'accepted')
 
     const jobIds = (rawApps ?? []).map((a) => a.job_id as string).filter(Boolean)
-
-    // 기사: jobs + equipments + 지출을 가능한 범위에서 병렬 조회
     const equipmentIds = (rawApps ?? []).map((a) => a.equipment_id as string).filter(Boolean)
 
     const [{ data: rawJobs }, { data: rawEquipments }, { data: rawExpenses }] = await Promise.all([
@@ -100,8 +103,6 @@ export async function GET(request: NextRequest) {
     ])
 
     const equipmentMap = new Map((rawEquipments ?? []).map((e) => [e.id, e.model_code]))
-
-    // application과 job 매핑
     const jobMap = new Map((rawJobs ?? []).map((j) => [j.id, j]))
 
     const appsForMonth = (rawApps ?? []).filter((a) => jobMap.has(a.job_id))
@@ -114,7 +115,6 @@ export async function GET(request: NextRequest) {
     }))
 
     const allIncomes = buildIncomeEntries(incomeRaw as Parameters<typeof buildIncomeEntries>[0])
-    // 생성된 entries 중 이번 달 범위 내 날짜만 포함
     const incomes = allIncomes.filter(e => e.date >= startDate && e.date <= endDate)
     const expenses = buildExpenseEntries(rawExpenses ?? [])
     const monthData = buildMonthData({ year, month, incomes, expenses, jobs: [] })

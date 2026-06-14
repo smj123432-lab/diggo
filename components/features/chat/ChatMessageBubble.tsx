@@ -1,6 +1,7 @@
 'use client'
 
 // 채팅 메시지 버블 — 내 메시지(우측 파란색) / 상대방 메시지(좌측 회색) 분기 렌더링
+import Image from 'next/image'
 import type { ChatMessage } from '@/types'
 
 const IMG_PREFIX = '[img]'
@@ -119,9 +120,9 @@ export function ChatMessageBubble({
   return (
     <div className={`flex items-end gap-2 ${marginTop}`}>
       {showAvatar ? (
-        <div className="shrink-0 w-7 h-7 rounded-full overflow-hidden ring-1 ring-gray-200 self-end mb-0.5">
+        <div className="shrink-0 w-7 h-7 rounded-full overflow-hidden ring-1 ring-gray-200 self-end mb-0.5 relative">
           {opponentAvatarUrl ? (
-            <img src={opponentAvatarUrl} alt={opponentName ?? ''} className="w-full h-full object-cover" />
+            <Image src={opponentAvatarUrl} alt={opponentName ?? ''} fill className="object-cover" sizes="28px" />
           ) : (
             <DefaultAvatar size={28} />
           )}

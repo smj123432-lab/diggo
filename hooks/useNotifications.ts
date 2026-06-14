@@ -6,8 +6,7 @@ import { useAuthStore } from '@/store/auth'
 import { useNotificationStore } from '@/store/notifications'
 import type { Notification } from '@/types'
 
-// usePathname() 대신 window.location.pathname 사용 — PPR 모드에서 usePathname이
-// Suspense 밖에서 동적 데이터로 인식되어 prerender 실패를 일으킴
+// PPR 모드에서 usePathname()은 Suspense 밖의 uncached dynamic data로 처리되어 prerender 실패 → window.location.pathname으로 대체
 const isOnNotificationsPage = () =>
   typeof window !== 'undefined' && window.location.pathname === '/notifications'
 
@@ -15,7 +14,6 @@ export function useNotifications() {
   const { user } = useAuthStore()
   const { setUnreadCount, addNotification, setNotifications } = useNotificationStore()
 
-  // 초기 알림 목록 + 미읽음 개수 로드
   useEffect(() => {
     if (!user) {
       setNotifications([])
@@ -28,8 +26,8 @@ export function useNotifications() {
       .then(({ data }) => {
         if (!Array.isArray(data)) return
         setNotifications(data)
-        // /notifications 페이지 열람 중이면 unreadCount 설정하지 않음
-        // (페이지가 동시에 markAllAsRead + setUnreadCount(0)을 호출하므로 덮어쓰기 방지)
+        // /notifications 페이지가 markAllAsRead + setUnreadCount(0)을 동시에 호출하므로
+        // 이미 해당 페이지에 있을 때 unreadCount를 덮어쓰면 배지가 깜빡인다
         if (!isOnNotificationsPage()) {
           const unread = data.filter((n: Notification) => !n.is_read).length
           setUnreadCount(unread)
@@ -38,7 +36,6 @@ export function useNotifications() {
       .catch(() => {})
   }, [user, setNotifications, setUnreadCount])
 
-  // Realtime INSERT 구독 — 새 알림 실시간 수신
   useEffect(() => {
     if (!user) return
 
@@ -56,8 +53,7 @@ export function useNotifications() {
         (payload) => {
           const newNotification = payload.new as Notification
           addNotification(newNotification)
-          // /notifications 페이지를 보고 있으면 unreadCount 증가하지 않음
-          // (페이지를 열고 있다는 것 자체가 이미 읽고 있다는 의미)
+          // /notifications 페이지 열람 중이면 사용자가 이미 알림을 소비하고 있으므로 카운트 증가 불필요
           if (!isOnNotificationsPage()) {
             setUnreadCount(useNotificationStore.getState().unreadCount + 1)
           }

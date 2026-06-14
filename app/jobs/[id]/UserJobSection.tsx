@@ -88,6 +88,7 @@ export function UserJobSection({ job, effectiveStatus, payDueDate }: Props) {
               jobStatus={effectiveStatus}
               userRole={profile?.role ?? null}
               isCertified={profile?.is_certified ?? false}
+              bannedUntil={profile?.banned_until ?? null}
               existingApplication={existingApplication ?? null}
               equipmentCodes={job.equipment_codes}
               dispatchedCodes={dispatchedCodes}
@@ -101,6 +102,7 @@ export function UserJobSection({ job, effectiveStatus, payDueDate }: Props) {
                 jobStatus={effectiveStatus}
                 userRole={profile?.role ?? null}
                 isCertified={profile?.is_certified ?? false}
+                bannedUntil={profile?.banned_until ?? null}
                 existingApplication={existingApplication ?? null}
                 equipmentCodes={job.equipment_codes}
                 dispatchedCodes={dispatchedCodes}
