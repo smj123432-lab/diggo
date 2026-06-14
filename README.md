@@ -297,18 +297,21 @@ await admin.from('profiles').update(updateData).eq('id', cancelUserId)
 
 ```mermaid
 flowchart TD
-    A["배차 확정\nstatus = accepted"] --> B{"취소 요청"}
-    B -->|기사 취소| C["cancelled_by_driver"]
-    B -->|소장 취소| D["cancelled_by_manager"]
-    C --> E["penalty_count + 1"]
+    A["배차 확정 이후 일방적 취소"] --> B{"취소 주체"}
+    B -->|기사 취소| C["cancelled_by_driver\n기사 penalty_count + 1"]
+    B -->|소장 취소| D["cancelled_by_manager\n소장 penalty_count + 1"]
+    C --> E{"누적 횟수"}
     D --> E
-    E --> F{"누적 횟수"}
-    F -->|5회| G["banned_until = 오늘 + 3일"]
-    F -->|10회| H["banned_until = 오늘 + 7일"]
-    F -->|그 외| I["패널티 누적만"]
-    G --> J["지원 · 등록 버튼 비활성화\n제한 해제일 표시"]
-    H --> J
-    I --> K["패널티 뱃지 노출\n일감 목록 · 지원자 카드"]
+    E -->|"5회 도달"| F["banned_until = 오늘 + 3일"]
+    E -->|"10회 도달"| G["banned_until = 오늘 + 7일"]
+    E -->|"그 외"| H["패널티 카운트 누적"]
+    F --> I{"취소 주체"}
+    G --> I
+    I -->|기사| J["일감 지원 불가\n해제일 안내 표시"]
+    I -->|소장| K["일감 등록 불가\n해제일 안내 표시"]
+    J --> L["패널티 뱃지 노출\n일감 목록 · 지원자 카드"]
+    K --> L
+    H --> L
 ```
 
 `PENALTY_BAN_THRESHOLDS`는 `types/index.ts`에 단일 상수로 정의되어 서버(cancel API)와 클라이언트(ban UI) 양쪽에서 동일하게 씁니다. 임계값이 바뀌어도 한 곳만 수정하면 됩니다.
