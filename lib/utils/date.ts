@@ -1,0 +1,43 @@
+// 날짜 포맷 유틸 — toISOString()은 UTC 변환으로 KST 자정에 하루 차이가 발생하므로
+// 클라이언트 코드에서 오늘 날짜가 필요할 때는 getTodayStr()을 사용한다.
+
+/** KST 기준 오늘 날짜 (YYYY-MM-DD) */
+export function getTodayStr(): string {
+  const d = new Date()
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+}
+
+/** 작업일: "6/15(일)" */
+export function formatWorkDate(dateStr: string): string {
+  return new Date(dateStr).toLocaleDateString('ko-KR', {
+    month: 'numeric', day: 'numeric', weekday: 'short',
+  })
+}
+
+/** 월/일: "6/15" */
+export function formatMonthDay(dateStr: string): string {
+  return new Date(dateStr).toLocaleDateString('ko-KR', {
+    month: 'numeric', day: 'numeric',
+  })
+}
+
+/** 긴 월/일: "6월 15일" */
+export function formatLongDate(dateStr: string): string {
+  return new Date(dateStr).toLocaleDateString('ko-KR', {
+    month: 'long', day: 'numeric',
+  })
+}
+
+/** 전체 날짜: "2026년 6월 15일" */
+export function formatFullDate(date: string | Date): string {
+  return (typeof date === 'string' ? new Date(date) : date).toLocaleDateString('ko-KR', {
+    year: 'numeric', month: 'long', day: 'numeric',
+  })
+}
+
+/** 연도 포함 작업일: "2026년 6월 15일(일)" */
+export function formatWorkDateFull(dateStr: string): string {
+  return new Date(dateStr).toLocaleDateString('ko-KR', {
+    year: 'numeric', month: 'long', day: 'numeric', weekday: 'short',
+  })
+}

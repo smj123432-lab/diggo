@@ -13,10 +13,10 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: '로그인이 필요합니다.' }, { status: 401 })
     }
 
-    const body = await request.json()
+    const { category, amount, expense_date, memo } = await request.json()
     const { data, error } = await supabase
       .from('ledger_expenses')
-      .insert({ ...body, driver_id: user.id })
+      .insert({ category, amount, expense_date, memo, driver_id: user.id })
       .select()
       .single()
 

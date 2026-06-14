@@ -84,7 +84,7 @@ export function buildIncomeEntries(
   rawApplications: Array<{
     equipment_id: string | null
     applied_equipment_code?: string | null
-    equipments: { model_code: EquipmentCode } | null
+    equipments: { model_code: string } | null
     jobs: {
       id: string
       title: string
@@ -104,7 +104,7 @@ export function buildIncomeEntries(
     const job = a.jobs
     // applied_equipment_code → equipment model_code → job의 첫 번째 장비코드 순으로 fallback
     const eqCode = (a.applied_equipment_code as EquipmentCode | null)
-      ?? a.equipments?.model_code
+      ?? (a.equipments?.model_code as EquipmentCode | undefined)
       ?? (job.equipment_codes?.[0] as EquipmentCode | undefined)
       ?? null
     const amount = eqCode

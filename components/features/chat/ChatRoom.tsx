@@ -9,6 +9,8 @@ import { ChatRoomMenu } from './ChatRoomMenu'
 import { ChatMessageBubble } from './ChatMessageBubble'
 import { ChatInput } from './ChatInput'
 import type { ChatMessage, ChatRoomWithDetails, ApplicationStatus } from '@/types'
+import Image from 'next/image'
+import { formatLongDate } from '@/lib/utils/date'
 
 const IMG_PREFIX = '[img]'
 
@@ -52,9 +54,7 @@ export default function ChatRoom({ room, initialMessages, currentUserId, initial
   const isManager = currentUserId === room.manager_id
   const opponent = isManager ? room.driver : room.manager
   const jobInfo = room.jobs
-  const dateStr = jobInfo?.work_date
-    ? new Date(jobInfo.work_date).toLocaleDateString('ko-KR', { month: 'long', day: 'numeric' })
-    : ''
+  const dateStr = jobInfo?.work_date ? formatLongDate(jobInfo.work_date) : ''
 
   // 메뉴 바깥 클릭 시 닫기
   useEffect(() => {
@@ -254,9 +254,9 @@ export default function ChatRoom({ room, initialMessages, currentUserId, initial
             </svg>
           </button>
 
-          <div className="shrink-0 w-9 h-9 rounded-full overflow-hidden ring-1 ring-gray-200">
+          <div className="shrink-0 w-9 h-9 rounded-full overflow-hidden ring-1 ring-gray-200 relative">
             {opponent?.avatar_url ? (
-              <img src={opponent.avatar_url} alt={opponent.name ?? ''} className="w-full h-full object-cover" />
+              <Image src={opponent.avatar_url} alt={opponent.name ?? ''} fill className="object-cover" sizes="36px" />
             ) : (
               <DefaultAvatar size={36} />
             )}

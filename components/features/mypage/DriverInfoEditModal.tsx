@@ -64,20 +64,19 @@ export function DriverInfoEditModal({ experienceYears, equipmentCodes, onClose, 
         return
       }
 
-      const [profileRes, equipRes] = await Promise.all([
-        fetch('/api/profile', {
-          method: 'PATCH',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ experience_years: parsedYears }),
-        }),
-        fetch('/api/equipments', {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ codes: selectedCodes }),
-        }),
-      ])
-
+      // 순차 처리: 첫 번째 실패 시 두 번째 요청을 보내지 않아 부분 저장 방지
+      const profileRes = await fetch('/api/profile', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ experience_years: parsedYears }),
+      })
       if (!profileRes.ok) throw new Error((await profileRes.json()).error ?? '저장 실패')
+
+      const equipRes = await fetch('/api/equipments', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ codes: selectedCodes }),
+      })
       if (!equipRes.ok) throw new Error((await equipRes.json()).error ?? '장비 저장 실패')
 
       toast.success('기사 정보가 저장되었습니다.')

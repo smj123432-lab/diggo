@@ -7,6 +7,7 @@ import { useAuthStore } from '@/store/auth'
 import { useNotificationStore } from '@/store/notifications'
 import { EmptyState } from '@/components/ui/EmptyState'
 import type { NotificationType } from '@/types'
+import { formatLongDate } from '@/lib/utils/date'
 
 const TYPE_CONFIG: Record<NotificationType | string, { icon: React.ReactNode; bg: string }> = {
   new_application: {
@@ -59,7 +60,7 @@ function timeAgo(dateStr: string): string {
   if (hours < 24) return `${hours}시간 전`
   const days = Math.floor(hours / 24)
   if (days < 30) return `${days}일 전`
-  return new Date(dateStr).toLocaleDateString('ko-KR', { month: 'long', day: 'numeric' })
+  return formatLongDate(dateStr)
 }
 
 export default function NotificationsPage() {

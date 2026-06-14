@@ -12,6 +12,7 @@ import { DriverInfoCard } from '@/components/features/mypage/DriverInfoCard'
 import { CertDriverList, type DriverEntry } from '@/components/features/admin/CertDriverList'
 import { FileText, ShieldAlert, Star } from 'lucide-react'
 import type { EquipmentCode } from '@/types'
+import { formatFullDate } from '@/lib/utils/date'
 
 interface DisputeRow {
   id: string
@@ -364,9 +365,7 @@ export default async function MypagePage({
                       ) : (
                         <div className="space-y-2.5">
                           {disputes.map(d => {
-                            const date = new Date(d.created_at).toLocaleDateString('ko-KR', {
-                              year: 'numeric', month: 'long', day: 'numeric',
-                            })
+                            const date = formatFullDate(d.created_at)
                             return (
                               <div key={d.id} className="bg-white rounded-xl border border-red-100 px-4 py-3.5">
                                 <div className="flex flex-wrap items-start justify-between gap-2 mb-2">

@@ -5,8 +5,10 @@
 import { useState, useEffect, useRef } from 'react'
 import { usePathname, useRouter } from 'next/navigation'
 import Link from 'next/link'
+import Image from 'next/image'
 import { createClient } from '@/lib/supabase/client'
 import type { ChatMessage, ChatRoomWithDetails } from '@/types'
+import { formatMonthDay } from '@/lib/utils/date'
 import ChatList from './ChatList'
 
 interface Props {
@@ -25,7 +27,7 @@ function timeAgo(iso: string) {
   if (hour < 24) return `${hour}시간 전`
   const day = Math.floor(hour / 24)
   if (day < 7) return `${day}일 전`
-  return new Date(iso).toLocaleDateString('ko-KR', { month: 'numeric', day: 'numeric' })
+  return formatMonthDay(iso)
 }
 
 function DefaultAvatar() {
@@ -99,9 +101,9 @@ function DesktopRoomList({ rooms, currentUserId, activeRoomId }: DesktopRoomList
                 isActive ? 'bg-gray-100' : 'hover:bg-gray-50'
               }`}
             >
-              <div className="shrink-0 w-11 h-11 rounded-full overflow-hidden ring-1 ring-gray-100">
+              <div className="shrink-0 w-11 h-11 rounded-full overflow-hidden ring-1 ring-gray-100 relative">
                 {opponent?.avatar_url ? (
-                  <img src={opponent.avatar_url} alt={opponent.name ?? ''} className="w-full h-full object-cover" />
+                  <Image src={opponent.avatar_url} alt={opponent.name ?? ''} fill className="object-cover" sizes="44px" />
                 ) : (
                   <DefaultAvatar />
                 )}

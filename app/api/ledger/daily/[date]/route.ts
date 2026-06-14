@@ -55,7 +55,7 @@ export async function GET(
     // 기사
     const { data: rawApps } = await supabase
       .from('applications')
-      .select('job_id, equipment_id, equipments(model_code), jobs(id, title, location, work_date, pay_amounts, pay_due_type, status)')
+      .select('job_id, equipment_id, applied_equipment_code, equipments(model_code), jobs(id, title, location, work_date, pay_amounts, pay_due_type, status, equipment_codes)')
       .eq('driver_id', user.id)
       .eq('status', 'accepted')
       .eq('jobs.work_date', date)
@@ -66,11 +66,19 @@ export async function GET(
       .eq('driver_id', user.id)
       .eq('expense_date', date)
 
+    type IncomeInput = Parameters<typeof buildIncomeEntries>[0][number]
+    const incomeApps: IncomeInput[] = (rawApps ?? [])
+      .filter((a) => a.jobs !== null)
+      .map((a) => ({
+        equipment_id: a.equipment_id as string | null,
+        applied_equipment_code: a.applied_equipment_code as string | null,
+        equipments: (Array.isArray(a.equipments) ? a.equipments[0] ?? null : a.equipments) as { model_code: string } | null,
+        jobs: (Array.isArray(a.jobs) ? a.jobs[0] ?? null : a.jobs) as IncomeInput['jobs'],
+      }))
+
     return NextResponse.json({
       data: {
-        incomes: buildIncomeEntries(
-          ((rawApps ?? []).filter((a) => a.jobs !== null) as unknown) as Parameters<typeof buildIncomeEntries>[0]
-        ),
+        incomes: buildIncomeEntries(incomeApps),
         expenses: buildExpenseEntries(rawExpenses ?? []),
         jobs: [],
       },

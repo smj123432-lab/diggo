@@ -36,7 +36,7 @@ export function NavButtons() {
       <div className="flex items-center gap-3">
         <div className="hidden md:block w-20 h-8 rounded-lg bg-white/10 animate-pulse" />
         <div className="hidden md:block w-24 h-8 rounded-lg bg-white/20 animate-pulse" />
-        <div className="md:hidden w-8 h-8 rounded-lg bg-white/10 animate-pulse" />
+        <div className="md:hidden w-11 h-11 rounded-lg bg-white/10 animate-pulse" />
       </div>
     )
   }
@@ -83,8 +83,10 @@ export function NavButtons() {
       <button
         ref={buttonRef}
         onClick={() => setMenuOpen((v) => !v)}
-        className="md:hidden flex flex-col justify-center items-center w-9 h-9 gap-1.5 text-white"
+        className="md:hidden flex flex-col justify-center items-center w-11 h-11 gap-1.5 text-white"
         aria-label="메뉴"
+        aria-expanded={menuOpen}
+        aria-haspopup="menu"
       >
         <span className={`block w-5 h-0.5 bg-white rounded-full transition-all duration-200 origin-center ${menuOpen ? 'rotate-45 translate-y-2' : ''}`} />
         <span className={`block w-5 h-0.5 bg-white rounded-full transition-all duration-200 ${menuOpen ? 'opacity-0 scale-x-0' : ''}`} />

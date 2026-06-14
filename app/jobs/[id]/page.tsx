@@ -14,6 +14,7 @@ import {
   WORK_DURATION_LABELS,
 } from '@/types'
 import type { JobType, JobStatus, EquipmentCode, WorkDuration, PayDueType } from '@/types'
+import { formatWorkDateFull, formatFullDate } from '@/lib/utils/date'
 
 interface Props {
   params: Promise<{ id: string }>
@@ -32,6 +33,8 @@ const JOB_TYPE_BADGE: Record<JobType, string> = {
   demolition: 'bg-orange-50 text-orange-700 border border-orange-200',
 }
 
+const PAY_DUE_DAYS: Record<string, number> = { same_day: 0, d3: 3, d7: 7, d14: 14, d30: 30 }
+
 export default function JobDetailPage({ params }: Props) {
   return (
     <Suspense fallback={<div className="min-h-screen bg-gray-50" />}>
@@ -45,9 +48,7 @@ async function JobDetailContent({ params }: Props) {
   const job = await getCachedJobDetail(id)
   if (!job) notFound()
 
-  const workDate = new Date(job.work_date).toLocaleDateString('ko-KR', {
-    year: 'numeric', month: 'long', day: 'numeric', weekday: 'short',
-  })
+  const workDate = formatWorkDateFull(job.work_date as string)
 
   const today = new Date().toISOString().split('T')[0]
   const effectiveStatus: JobStatus = (job.status as JobStatus) === 'open' && (job.work_date as string) < today
@@ -55,11 +56,10 @@ async function JobDetailContent({ params }: Props) {
     : job.status as JobStatus
   const status = STATUS_BADGE[effectiveStatus]
 
-  const PAY_DUE_DAYS: Record<string, number> = { same_day: 0, d3: 3, d7: 7, d14: 14, d30: 30 }
   const payDueDays = PAY_DUE_DAYS[job.pay_due_type as string] ?? 0
   const payDueDateObj = new Date(job.work_date as string)
   payDueDateObj.setDate(payDueDateObj.getDate() + payDueDays)
-  const payDueDate = payDueDateObj.toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric' })
+  const payDueDate = formatFullDate(payDueDateObj)
 
   return (
     <main className="min-h-screen bg-gray-50 pb-24 lg:pb-8">
@@ -275,6 +275,9 @@ async function JobDetailContent({ params }: Props) {
                         {job.profiles.review_count >= 5 && job.profiles.rating_avg <= 2.0 && (
                           <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-red-100 text-red-600">주의</span>
                         )}
+                        {(job.profiles.penalty_count ?? 0) > 0 && (
+                          <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-orange-100 text-orange-600">패널티 {job.profiles.penalty_count}회</span>
+                        )}
                       </div>
                       <div className="flex items-center gap-1 mt-0.5">
                         <span className="text-yellow-400 text-xs">★</span>
@@ -311,9 +314,10 @@ function ManagerAvatar({ name, avatarUrl, size }: { name: string; avatarUrl: str
   )
 }
 
-function ManagerBlock({ job }: { job: { profiles: { id: string; name: string; rating_avg: number; review_count: number; avatar_url: string | null } } }) {
+function ManagerBlock({ job }: { job: { profiles: { id: string; name: string; rating_avg: number; review_count: number; avatar_url: string | null; penalty_count?: number } } }) {
   const isTopRating = job.profiles.review_count >= 5 && job.profiles.rating_avg >= 4.5
   const isLowRating = job.profiles.review_count >= 5 && job.profiles.rating_avg <= 2.0
+  const hasPenalty = (job.profiles.penalty_count ?? 0) > 0
   return (
     <>
       <p className="text-xs text-gray-400 font-medium mb-3">소장 정보</p>
@@ -331,6 +335,9 @@ function ManagerBlock({ job }: { job: { profiles: { id: string; name: string; ra
             )}
             {isLowRating && (
               <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-red-100 text-red-600">주의</span>
+            )}
+            {hasPenalty && (
+              <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-orange-100 text-orange-600">패널티 {job.profiles.penalty_count}회</span>
             )}
           </div>
           <div className="flex items-center gap-1 mt-0.5">

@@ -1,7 +1,12 @@
+'use client'
+
 // 일감 목록 카드 컴포넌트
+import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import type { JobWithManager, JobType, JobStatus, EquipmentCode } from '@/types'
 import { EQUIPMENT_LABELS, JOB_TYPE_LABELS, PAY_DUE_LABELS, WORK_DURATION_LABELS } from '@/types'
+import { getTodayStr, formatWorkDate } from '@/lib/utils/date'
+import { formatKRW } from '@/lib/utils/ledger'
 import { Avatar } from '@/components/ui/Avatar'
 import { CertBadge } from '@/components/ui/CertBadge'
 import { EquipmentBadge } from '@/components/ui/EquipmentBadge'
@@ -28,28 +33,24 @@ const JOB_TYPE_BADGE: Record<JobType, string> = {
 }
 
 export function JobCard({ job, isPreferred }: JobCardProps) {
-  const workDate = new Date(job.work_date).toLocaleDateString('ko-KR', {
-    month: 'numeric',
-    day: 'numeric',
-    weekday: 'short',
-  })
+  const router = useRouter()
+  const workDate = formatWorkDate(job.work_date)
 
   // work_date가 오늘 이전이면 open → closed 처리
-  const today = new Date().toISOString().split('T')[0]
+  const today = getTodayStr()
   const effectiveStatus: JobStatus = job.status === 'open' && job.work_date < today ? 'closed' : job.status
   const status = STATUS_BADGE[effectiveStatus]
   const isClosed = effectiveStatus !== 'open'
 
   return (
-    <Link
-      href={isClosed ? '#' : `/jobs/${job.id}`}
-      onClick={isClosed ? (e) => e.preventDefault() : undefined}
-      className={`block h-full ${isClosed ? 'cursor-not-allowed' : ''}`}
+    <div
+      className={`block h-full ${isClosed ? 'cursor-not-allowed' : 'cursor-pointer'}`}
+      onClick={isClosed ? undefined : () => router.push(`/jobs/${job.id}`)}
     >
       <div className={`bg-white border rounded-2xl p-5 transition-all h-full flex flex-col ${
         isClosed
           ? 'border-gray-100 opacity-60'
-          : 'border-gray-200 hover:border-blue-300 hover:shadow-md group cursor-pointer'
+          : 'border-gray-200 hover:border-blue-300 hover:shadow-md group'
       }`}>
 
         {/* 배지 행 */}
@@ -110,22 +111,32 @@ export function JobCard({ job, isPreferred }: JobCardProps) {
 
         {/* 소장 정보 + 가격 */}
         <div className="flex items-center justify-between mt-auto">
-          <div className="flex items-center gap-1.5">
+          {/* 소장 프로필 링크 — 카드 클릭과 독립적으로 동작 */}
+          <Link
+            href={`/profiles/${job.profiles.id}`}
+            className="flex items-center gap-1.5 hover:opacity-80 transition-opacity"
+            onClick={(e) => e.stopPropagation()}
+          >
             <Avatar src={job.profiles.avatar_url} name={job.profiles.name} size="sm" />
             <span className="text-xs font-medium text-gray-700">
               {job.profiles.name} 소장
             </span>
             {job.profiles.review_count >= 5 && job.profiles.rating_avg >= 4.5 && <CertBadge variant="top" />}
             {job.profiles.review_count >= 5 && job.profiles.rating_avg <= 2.0 && <CertBadge variant="low" />}
+            {(job.profiles.penalty_count ?? 0) > 0 && (
+              <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-orange-100 text-orange-600">
+                패널티 {job.profiles.penalty_count}
+              </span>
+            )}
             <span className="text-gray-300 text-xs mx-0.5">|</span>
             <RatingDisplay value={job.profiles.rating_avg} className="text-xs text-gray-400" />
-          </div>
+          </Link>
           <div className="flex flex-col items-end gap-0.5 shrink-0">
             {(job.equipment_codes as EquipmentCode[]).map(code => (
               <div key={code} className="flex items-baseline gap-1">
                 <span className="text-xs text-gray-400">{EQUIPMENT_LABELS[code]}</span>
                 <span className="text-blue-600 font-black text-base leading-none">
-                  {(job.pay_amounts as Record<string, number>)[code]?.toLocaleString()}원
+                  {formatKRW((job.pay_amounts as Record<string, number>)[code] ?? 0)}
                 </span>
               </div>
             ))}
@@ -133,6 +144,6 @@ export function JobCard({ job, isPreferred }: JobCardProps) {
         </div>
 
       </div>
-    </Link>
+    </div>
   )
 }

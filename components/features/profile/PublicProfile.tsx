@@ -7,6 +7,7 @@ import Link from 'next/link'
 import { Star, Award, Briefcase, MapPin, Calendar, ChevronRight, AlertTriangle } from 'lucide-react'
 import type { Profile, Job, EquipmentCode } from '@/types'
 import { EQUIPMENT_LABELS, JOB_TYPE_LABELS } from '@/types'
+import { formatFullDate, formatWorkDate } from '@/lib/utils/date'
 
 interface ReviewItem {
   id: string
@@ -18,7 +19,7 @@ interface ReviewItem {
 }
 
 interface Props {
-  profile: Pick<Profile, 'id' | 'name' | 'role' | 'bio' | 'avatar_url' | 'rating_avg' | 'review_count' | 'is_certified' | 'experience_years'>
+  profile: Pick<Profile, 'id' | 'name' | 'role' | 'bio' | 'avatar_url' | 'rating_avg' | 'review_count' | 'is_certified' | 'experience_years' | 'penalty_count'>
   reviews: ReviewItem[]
   openJobs: Pick<Job, 'id' | 'title' | 'work_date' | 'location' | 'equipment_codes' | 'job_type'>[]
   matchCount: number
@@ -48,9 +49,7 @@ function DefaultAvatar({ name }: { name: string }) {
 }
 
 function ReviewCard({ review }: { review: ReviewItem }) {
-  const date = new Date(review.created_at).toLocaleDateString('ko-KR', {
-    year: 'numeric', month: 'long', day: 'numeric',
-  })
+  const date = formatFullDate(review.created_at)
 
   return (
     <div className="bg-white rounded-xl p-4 border border-gray-100">
@@ -74,9 +73,7 @@ function ReviewCard({ review }: { review: ReviewItem }) {
 }
 
 function JobCard({ job }: { job: Props['openJobs'][number] }) {
-  const workDate = new Date(job.work_date).toLocaleDateString('ko-KR', {
-    month: 'numeric', day: 'numeric', weekday: 'short',
-  })
+  const workDate = formatWorkDate(job.work_date)
   const eqLabels = (job.equipment_codes as EquipmentCode[])
     .map((c) => EQUIPMENT_LABELS[c])
     .join(' · ')
@@ -118,6 +115,7 @@ export default function PublicProfile({ profile, reviews, openJobs, matchCount }
   const isManager = profile.role === 'manager'
   const isVeteran = profile.rating_avg >= 4.5 && profile.review_count >= 5
   const isLowRating = profile.review_count >= 5 && profile.rating_avg <= 2.0
+  const hasPenalty = (profile.penalty_count ?? 0) > 0
 
   return (
     <div className="min-h-screen bg-gray-50 pb-16">
@@ -170,6 +168,12 @@ export default function PublicProfile({ profile, reviews, openJobs, matchCount }
                   <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-bold bg-red-100 text-red-600 border border-red-200">
                     <AlertTriangle className="w-3 h-3" />
                     저평점 주의
+                  </span>
+                )}
+                {hasPenalty && (
+                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-bold bg-orange-100 text-orange-600 border border-orange-200">
+                    <AlertTriangle className="w-3 h-3" />
+                    패널티 {profile.penalty_count}회
                   </span>
                 )}
               </div>

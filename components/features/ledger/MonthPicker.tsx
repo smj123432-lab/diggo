@@ -64,14 +64,16 @@ export function MonthPicker({
       <div className="flex items-center justify-between mb-3">
         <button
           onClick={() => onPickerYearChange(pickerYear - 1)}
-          className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-gray-100 text-gray-600 transition-colors"
+          aria-label="이전 연도"
+          className="w-10 h-10 flex items-center justify-center rounded-lg hover:bg-gray-100 text-gray-600 transition-colors p-1"
         >
           ‹
         </button>
         <span className="text-sm font-black text-gray-900">{pickerYear}년</span>
         <button
           onClick={() => onPickerYearChange(pickerYear + 1)}
-          className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-gray-100 text-gray-600 transition-colors"
+          aria-label="다음 연도"
+          className="w-10 h-10 flex items-center justify-center rounded-lg hover:bg-gray-100 text-gray-600 transition-colors p-1"
         >
           ›
         </button>

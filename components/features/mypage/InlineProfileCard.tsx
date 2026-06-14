@@ -138,6 +138,14 @@ export function InlineProfileCard({ profile, jobCount = 0 }: Props) {
                   저평점
                 </span>
               )}
+              {(profile.penalty_count ?? 0) > 0 && (
+                <span className="inline-flex items-center gap-1 text-xs font-bold border border-orange-200 text-orange-600 bg-orange-50 px-2 py-0.5 rounded-full">
+                  <svg className="w-3 h-3" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z" />
+                  </svg>
+                  패널티 {profile.penalty_count}회
+                </span>
+              )}
               {profile.role === 'driver' && (
                 <span className="text-xs font-semibold text-gray-500">
                   <span className="text-yellow-400">★</span> {profile.rating_avg?.toFixed(1) ?? '0.0'}
