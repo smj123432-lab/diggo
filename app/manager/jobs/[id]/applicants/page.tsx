@@ -45,7 +45,7 @@ export default async function ApplicantsPage({ params }: Props) {
 
   const [{ data: profiles }, { data: equipments }, { data: driverEquipments }] = await Promise.all([
     driverIds.length > 0
-      ? supabase.from('profiles').select('id, name, rating_avg, review_count, is_certified, experience_years, avatar_url, bio').in('id', driverIds)
+      ? supabase.from('profiles').select('id, name, rating_avg, review_count, is_certified, experience_years, avatar_url, bio, penalty_count').in('id', driverIds)
       : Promise.resolve({ data: [] }),
     equipmentIds.length > 0
       ? supabase.from('equipments').select('id, model_code, license_number').in('id', equipmentIds)
@@ -132,7 +132,7 @@ export default async function ApplicantsPage({ params }: Props) {
                   id: string
                   status: ApplicationStatus
                   applied_at: string
-                  profiles: { id: string; name: string; rating_avg: number; review_count: number; is_certified: boolean; experience_years: number | null; avatar_url: string | null; bio: string | null }
+                  profiles: { id: string; name: string; rating_avg: number; review_count: number; is_certified: boolean; experience_years: number | null; avatar_url: string | null; bio: string | null; penalty_count: number }
                   equipments: { id: string; model_code: EquipmentCode; license_number: string | null } | null
                   driverEquipments: EquipmentCode[]
                 }}

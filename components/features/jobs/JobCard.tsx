@@ -1,4 +1,7 @@
+'use client'
+
 // 일감 목록 카드 컴포넌트
+import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import type { JobWithManager, JobType, JobStatus, EquipmentCode } from '@/types'
 import { EQUIPMENT_LABELS, JOB_TYPE_LABELS, PAY_DUE_LABELS, WORK_DURATION_LABELS } from '@/types'
@@ -28,6 +31,7 @@ const JOB_TYPE_BADGE: Record<JobType, string> = {
 }
 
 export function JobCard({ job, isPreferred }: JobCardProps) {
+  const router = useRouter()
   const workDate = new Date(job.work_date).toLocaleDateString('ko-KR', {
     month: 'numeric',
     day: 'numeric',
@@ -41,15 +45,14 @@ export function JobCard({ job, isPreferred }: JobCardProps) {
   const isClosed = effectiveStatus !== 'open'
 
   return (
-    <Link
-      href={isClosed ? '#' : `/jobs/${job.id}`}
-      onClick={isClosed ? (e) => e.preventDefault() : undefined}
-      className={`block h-full ${isClosed ? 'cursor-not-allowed' : ''}`}
+    <div
+      className={`block h-full ${isClosed ? 'cursor-not-allowed' : 'cursor-pointer'}`}
+      onClick={isClosed ? undefined : () => router.push(`/jobs/${job.id}`)}
     >
       <div className={`bg-white border rounded-2xl p-5 transition-all h-full flex flex-col ${
         isClosed
           ? 'border-gray-100 opacity-60'
-          : 'border-gray-200 hover:border-blue-300 hover:shadow-md group cursor-pointer'
+          : 'border-gray-200 hover:border-blue-300 hover:shadow-md group'
       }`}>
 
         {/* 배지 행 */}
@@ -110,7 +113,12 @@ export function JobCard({ job, isPreferred }: JobCardProps) {
 
         {/* 소장 정보 + 가격 */}
         <div className="flex items-center justify-between mt-auto">
-          <div className="flex items-center gap-1.5">
+          {/* 소장 프로필 링크 — 카드 클릭과 독립적으로 동작 */}
+          <Link
+            href={`/profiles/${job.profiles.id}`}
+            className="flex items-center gap-1.5 hover:opacity-80 transition-opacity"
+            onClick={(e) => e.stopPropagation()}
+          >
             <Avatar src={job.profiles.avatar_url} name={job.profiles.name} size="sm" />
             <span className="text-xs font-medium text-gray-700">
               {job.profiles.name} 소장
@@ -119,7 +127,7 @@ export function JobCard({ job, isPreferred }: JobCardProps) {
             {job.profiles.review_count >= 5 && job.profiles.rating_avg <= 2.0 && <CertBadge variant="low" />}
             <span className="text-gray-300 text-xs mx-0.5">|</span>
             <RatingDisplay value={job.profiles.rating_avg} className="text-xs text-gray-400" />
-          </div>
+          </Link>
           <div className="flex flex-col items-end gap-0.5 shrink-0">
             {(job.equipment_codes as EquipmentCode[]).map(code => (
               <div key={code} className="flex items-baseline gap-1">
@@ -133,6 +141,6 @@ export function JobCard({ job, isPreferred }: JobCardProps) {
         </div>
 
       </div>
-    </Link>
+    </div>
   )
 }
