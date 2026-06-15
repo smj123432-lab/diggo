@@ -1,6 +1,6 @@
 'use client'
 
-// 중앙 nav 역할 기반 링크 — 기사: 내 지원, 소장: 내 일감, 공통: 채팅
+// 중앙 nav 역할 기반 링크 — 로그인 시: 장부 + 역할별(내 지원/내 일감) + 채팅
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useAuthStore } from '@/store/auth'
@@ -10,6 +10,8 @@ export function NavRoleLink() {
   const pathname = usePathname()
 
   const chatActive = pathname === '/chats' || pathname.startsWith('/chats/')
+  const ledgerActive = pathname.startsWith('/mypage/ledger')
+
   const chatLink = user ? (
     <Link
       href="/chats"
@@ -21,10 +23,23 @@ export function NavRoleLink() {
     </Link>
   ) : null
 
+  // admin 제외, 로그인 시에만 장부 표시
+  const ledgerLink = user && role !== 'admin' ? (
+    <Link
+      href="/mypage/ledger"
+      className={`px-4 py-2 text-sm rounded-lg transition-colors ${
+        ledgerActive ? 'font-semibold text-white bg-white/10' : 'text-slate-400 hover:text-white hover:bg-white/5'
+      }`}
+    >
+      장부
+    </Link>
+  ) : null
+
   if (role === 'driver') {
     const active = pathname === '/mypage/applications'
     return (
       <>
+        {ledgerLink}
         <Link
           href="/mypage/applications"
           className={`px-4 py-2 text-sm rounded-lg transition-colors ${
@@ -42,6 +57,7 @@ export function NavRoleLink() {
     const active = pathname === '/manager/jobs' || pathname.startsWith('/manager/jobs/')
     return (
       <>
+        {ledgerLink}
         <Link
           href="/manager/jobs"
           className={`px-4 py-2 text-sm rounded-lg transition-colors ${

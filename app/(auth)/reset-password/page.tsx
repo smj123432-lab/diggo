@@ -47,26 +47,32 @@ export default function ResetPasswordPage() {
   useEffect(() => {
     const supabase = createClient()
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
-      if (event === 'PASSWORD_RECOVERY') {
-        setStatus('ready')
+    async function init() {
+      // URL 해시에서 복구 토큰 직접 파싱 (@supabase/ssr은 자동 감지 불안정)
+      const hash = window.location.hash.slice(1)
+      const params = new URLSearchParams(hash)
+      const accessToken = params.get('access_token')
+      const refreshToken = params.get('refresh_token')
+      const type = params.get('type')
+
+      if (accessToken && type === 'recovery') {
+        // 해시 URL 정리 (토큰 재노출 방지)
+        window.history.replaceState(null, '', window.location.pathname)
+
+        const { error } = await supabase.auth.setSession({
+          access_token: accessToken,
+          refresh_token: refreshToken ?? '',
+        })
+        setStatus(error ? 'invalid' : 'ready')
+        return
       }
-    })
 
-    // 이미 세션이 있는 경우(페이지 리로드 등) ready 처리
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session) setStatus('ready')
-    })
-
-    // 10초 내 이벤트 없으면 invalid
-    const timeout = setTimeout(() => {
-      setStatus(prev => prev === 'loading' ? 'invalid' : prev)
-    }, 10_000)
-
-    return () => {
-      subscription.unsubscribe()
-      clearTimeout(timeout)
+      // 해시 없음 — 이미 세션이 있는 경우(페이지 리로드)인지 확인
+      const { data: { session } } = await supabase.auth.getSession()
+      setStatus(session ? 'ready' : 'invalid')
     }
+
+    init()
   }, [])
 
   async function handleSubmit(e: React.FormEvent) {

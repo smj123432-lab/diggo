@@ -235,11 +235,6 @@ export default async function MypagePage({
             <Link href="/jobs" className="px-4 py-2 text-sm text-slate-400 hover:text-white hover:bg-white/5 rounded-lg transition-colors">
               일감 찾기
             </Link>
-            {profile.role !== 'admin' && (
-              <Link href="/mypage/ledger" className="px-4 py-2 text-sm text-slate-400 hover:text-white hover:bg-white/5 rounded-lg transition-colors">
-                장부
-              </Link>
-            )}
             <NavRoleLink />
           </div>
           <NavButtons />

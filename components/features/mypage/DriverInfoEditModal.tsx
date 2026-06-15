@@ -41,11 +41,31 @@ export function DriverInfoEditModal({ experienceYears, equipmentCodes, onClose, 
   async function uploadCert(file: File, certType: 'license' | 'safety_education', setStatus: (s: CertStatus) => void) {
     setStatus('uploading')
     try {
-      const body = new FormData()
-      body.append('file', file)
-      body.append('cert_type', certType)
-      const res = await fetch('/api/certifications', { method: 'POST', body })
-      if (!res.ok) throw new Error((await res.json()).error ?? '업로드 실패')
+      // 1단계: 서명된 업로드 URL 발급 (소용량 JSON — Vercel 제한 없음)
+      const urlRes = await fetch('/api/certifications/signed-url', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ cert_type: certType, file_name: file.name }),
+      })
+      if (!urlRes.ok) throw new Error((await urlRes.json()).error ?? '업로드 준비 실패')
+      const { signedUrl, path } = await urlRes.json()
+
+      // 2단계: 파일을 Supabase Storage에 직접 PUT (Vercel 완전 우회)
+      const uploadRes = await fetch(signedUrl, {
+        method: 'PUT',
+        headers: { 'Content-Type': file.type || 'application/octet-stream' },
+        body: file,
+      })
+      if (!uploadRes.ok) throw new Error('스토리지 업로드 실패')
+
+      // 3단계: DB 등록 (소용량 JSON — Vercel 제한 없음)
+      const dbRes = await fetch('/api/certifications', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ cert_type: certType, path }),
+      })
+      if (!dbRes.ok) throw new Error((await dbRes.json()).error ?? '업로드 실패')
+
       setStatus('done')
       toast.success('서류가 제출되었습니다. 검토 후 인증 처리됩니다.')
       router.refresh()
