@@ -1,4 +1,5 @@
 // 공개 프로필 페이지 — 소장/기사 역할별 분기, 서버 컴포넌트
+import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import PublicProfile from '@/components/features/profile/PublicProfile'
@@ -6,6 +7,35 @@ import type { Job } from '@/types'
 
 interface Props {
   params: Promise<{ id: string }>
+}
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { id } = await params
+  const supabase = await createClient()
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('name, role, rating_avg, review_count')
+    .eq('id', id)
+    .single()
+
+  if (!profile) return { title: '존재하지 않는 회원' }
+
+  const roleLabel = profile.role === 'driver' ? '굴착기 기사' : '소장'
+  const title = `${profile.name} ${roleLabel}`
+  const description = profile.review_count > 0
+    ? `${profile.name} ${roleLabel} · 평점 ${profile.rating_avg.toFixed(1)} (리뷰 ${profile.review_count}건) | Diggo`
+    : `${profile.name} ${roleLabel} 프로필 | Diggo`
+
+  return {
+    title,
+    description,
+    openGraph: {
+      title: `${title} | Diggo`,
+      description,
+      url: `/profiles/${id}`,
+      type: 'profile',
+    },
+  }
 }
 
 export default async function ProfilePage({ params }: Props) {

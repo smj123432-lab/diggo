@@ -19,8 +19,22 @@ const dmMono = DM_Mono({
 })
 
 export const metadata: Metadata = {
-  title: 'Diggo — 굴착기 배차 플랫폼',
-  description: '굴착기 기사와 소장을 연결하는 배차 플랫폼. 전자장부로 수입을 관리하세요.',
+  metadataBase: new URL('https://diggo-zr4b.vercel.app'),
+  title: {
+    default: 'Diggo — 굴착기 배차 플랫폼',
+    template: '%s | Diggo',
+  },
+  description: '굴착기 기사와 소장을 연결하는 배차 플랫폼. 일감을 등록하고 검증된 기사를 구하세요.',
+  keywords: ['굴착기', '배차', '굴착기 기사', '기사 구인', '토목', '철거', '008', '017', '035'],
+  openGraph: {
+    siteName: 'Diggo',
+    locale: 'ko_KR',
+    type: 'website',
+  },
+  robots: {
+    index: true,
+    follow: true,
+  },
 }
 
 export default function RootLayout({

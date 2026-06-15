@@ -1,4 +1,5 @@
 // 일감 상세 — Static ("use cache"), 사용자별 영역은 UserJobSection(클라이언트)으로 위임
+import type { Metadata } from 'next'
 import { Suspense } from 'react'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
@@ -18,6 +19,32 @@ import { formatWorkDateFull, formatFullDate } from '@/lib/utils/date'
 
 interface Props {
   params: Promise<{ id: string }>
+}
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { id } = await params
+  const job = await getCachedJobDetail(id)
+  if (!job) return { title: '존재하지 않는 일감' }
+
+  const equipments = (job.equipment_codes as EquipmentCode[])
+    .map(c => EQUIPMENT_LABELS[c])
+    .join(', ')
+  const pay = Object.values(job.pay_amounts as Record<string, number>)
+    .map(v => v.toLocaleString() + '원')
+    .join(' · ')
+  const title = job.title
+  const description = `${job.location} · ${equipments} · ${job.work_date} · ${pay}`
+
+  return {
+    title,
+    description,
+    openGraph: {
+      title: `${title} | Diggo`,
+      description,
+      url: `/jobs/${id}`,
+      type: 'article',
+    },
+  }
 }
 
 const STATUS_BADGE: Record<JobStatus, { label: string; className: string }> = {
