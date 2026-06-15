@@ -48,14 +48,15 @@ function LoginForm() {
         } else {
           setError('이메일 또는 비밀번호가 올바르지 않습니다.')
         }
+        setIsLoading(false)
         return
       }
 
+      // 성공 시 isLoading을 false로 돌리지 않음 — 페이지 이동 완료까지 버튼 비활성화 유지
       router.push(redirect)
       router.refresh()
     } catch {
       setError('로그인 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.')
-    } finally {
       setIsLoading(false)
     }
   }
