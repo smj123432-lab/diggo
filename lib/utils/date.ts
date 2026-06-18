@@ -8,10 +8,10 @@ export function getTodayStr(): string {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
 }
 
-/** KST 기준 오늘 날짜 (YYYY-MM-DD) — 서버용 (API Route, 서버 컴포넌트, 캐시 함수) */
+/** KST 기준 오늘 날짜 (YYYY-MM-DD) — 서버용 (API Route, 서버 컴포넌트, 캐시 함수). Vercel은 UTC 동작이므로 +9h 보정. */
 export function getServerTodayStr(): string {
-  const d = new Date()
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+  const kst = new Date(Date.now() + 9 * 60 * 60 * 1000)
+  return kst.toISOString().slice(0, 10)
 }
 
 /** 작업일: "6/15(일)" */
