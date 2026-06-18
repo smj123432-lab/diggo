@@ -2,6 +2,7 @@
 
 import { useInfiniteQuery } from '@tanstack/react-query'
 import type { EquipmentCode, JobType, JobWithManager } from '@/types'
+import { JOBS_FIRST_PAGE_LIMIT, JOBS_NEXT_PAGE_LIMIT, DEFAULT_STALE_TIME } from '@/lib/constants'
 
 export type SortBy = 'latest' | 'deadline' | 'preferred'
 
@@ -21,13 +22,10 @@ interface JobsPage {
   limit: number
 }
 
-// 첫 페이지 12개, 이후 8개씩
-const FIRST_LIMIT = 12
-const NEXT_LIMIT = 8
-
 async function fetchJobs({ pageParam, filters }: { pageParam: number; filters: JobFilters }): Promise<JobsPage> {
   const offset = pageParam
-  const limit = offset === 0 ? FIRST_LIMIT : NEXT_LIMIT
+  // 첫 페이지 JOBS_FIRST_PAGE_LIMIT개, 이후 JOBS_NEXT_PAGE_LIMIT개씩
+  const limit = offset === 0 ? JOBS_FIRST_PAGE_LIMIT : JOBS_NEXT_PAGE_LIMIT
   const params = new URLSearchParams({ offset: String(offset), limit: String(limit) })
   filters.equipment_codes.forEach((code) => params.append('equipment_code', code))
   filters.job_types.forEach((type) => params.append('job_type', type))
@@ -50,6 +48,6 @@ export function useJobs(filters: JobFilters = DEFAULT_FILTERS) {
       const { offset, count, limit } = lastPage
       return offset + limit < count ? offset + limit : undefined
     },
-    staleTime: 30 * 1000,
+    staleTime: DEFAULT_STALE_TIME,
   })
 }

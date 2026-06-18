@@ -11,6 +11,7 @@ import { ChatInput } from './ChatInput'
 import type { ChatMessage, ChatRoomWithDetails, ApplicationStatus } from '@/types'
 import Image from 'next/image'
 import { formatLongDate } from '@/lib/utils/date'
+import { CHAT_IMAGE_MAX_SIZE } from '@/lib/constants'
 
 const IMG_PREFIX = '[img]'
 
@@ -203,7 +204,7 @@ export default function ChatRoom({ room, initialMessages, currentUserId, initial
       toast.error('이미지 파일만 전송할 수 있습니다.')
       return
     }
-    if (file.size > 10 * 1024 * 1024) {
+    if (file.size > CHAT_IMAGE_MAX_SIZE) {
       toast.error('10MB 이하의 이미지만 전송할 수 있습니다.')
       return
     }

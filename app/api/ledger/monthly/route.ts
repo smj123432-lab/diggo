@@ -6,6 +6,7 @@ import {
   buildMonthData,
 } from '@/lib/utils/ledger'
 import { getAuthUserWithProfile } from '@/lib/api/auth'
+import { LEDGER_LOOKBACK_DAYS } from '@/lib/constants'
 
 /**
  * GET /api/ledger/monthly?year=&month=
@@ -33,7 +34,7 @@ export async function GET(request: NextRequest) {
     const lastDay = new Date(year, month, 0).getDate()
     const endDate = `${year}-${String(month).padStart(2, '0')}-${String(lastDay).padStart(2, '0')}`
 
-    const lookbackDate = new Date(new Date(`${startDate}T00:00:00Z`).getTime() - 31 * 24 * 60 * 60 * 1000)
+    const lookbackDate = new Date(new Date(`${startDate}T00:00:00Z`).getTime() - LEDGER_LOOKBACK_DAYS * 24 * 60 * 60 * 1000)
       .toISOString().split('T')[0]
 
     if (profile?.role === 'manager') {

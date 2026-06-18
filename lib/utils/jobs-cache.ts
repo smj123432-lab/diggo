@@ -1,6 +1,7 @@
 import { cacheLife, cacheTag } from 'next/cache'
 import { createPublicClient } from '@/lib/supabase/server'
 import { getServerTodayStr } from '@/lib/utils/date'
+import { JOBS_FIRST_PAGE_LIMIT } from '@/lib/constants'
 
 // 일감 목록 첫 페이지 — deadline(work_date ASC) 정렬, 공개 데이터
 export async function getCachedJobsFirstPage() {
@@ -16,9 +17,9 @@ export async function getCachedJobsFirstPage() {
     .eq('status', 'open')
     .gte('work_date', today)
     .order('work_date', { ascending: true })
-    .range(0, 11)
+    .range(0, JOBS_FIRST_PAGE_LIMIT - 1)
 
-  return { data: data ?? [], count: count ?? 0, offset: 0, limit: 12 }
+  return { data: data ?? [], count: count ?? 0, offset: 0, limit: JOBS_FIRST_PAGE_LIMIT }
 }
 
 // 일감 상세 — 공개 데이터만 (사용자 세션 없음)
