@@ -6,9 +6,7 @@ import Link from 'next/link'
 import { useAuthStore } from '@/store/auth'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { toast } from 'sonner'
-import { ExcavatorIcon } from '@/components/ui/ExcavatorIcon'
-import { NavButtons } from '@/components/features/home/NavButtons'
-import { NavRoleLink } from '@/components/features/home/NavRoleLink'
+import { AppNav } from '@/components/features/home/AppNav'
 import { ManagerJobCard } from '@/components/features/manager/ManagerJobCard'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { useHorizontalScroll } from '@/hooks/useHorizontalScroll'
@@ -114,26 +112,7 @@ function ManagerJobsContent() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <nav className="fixed top-0 inset-x-0 z-50 border-b border-white/10 bg-slate-900/90 backdrop-blur-md">
-        <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-2.5">
-            <ExcavatorIcon className="w-10 h-8 text-blue-400" />
-            <span className="text-lg font-black tracking-tight text-white">
-              Diggo<span className="text-blue-400">.</span>
-            </span>
-          </Link>
-          <div className="hidden md:flex items-center gap-1">
-            <Link href="/jobs" className="px-4 py-2 text-sm text-slate-400 hover:text-white hover:bg-white/5 rounded-lg transition-colors">
-              일감 찾기
-            </Link>
-            <Link href="/mypage/ledger" className="px-4 py-2 text-sm text-slate-400 hover:text-white hover:bg-white/5 rounded-lg transition-colors">
-              장부
-            </Link>
-            <NavRoleLink />
-          </div>
-          <NavButtons />
-        </div>
-      </nav>
+      <AppNav activeLink="role" />
 
       <div className="pt-16">
         <div className="max-w-3xl mx-auto px-4 py-6">
