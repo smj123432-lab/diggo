@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
+import { getAuthUser, unauthorizedResponse } from '@/lib/api/auth'
 
 // GET /api/jobs/[id]/accepted-drivers — 이 일감에서 수락된 기사 목록 (소장 전용)
 export async function GET(
@@ -8,9 +8,8 @@ export async function GET(
 ) {
   const { id } = await params
   try {
-    const supabase = await createClient()
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) return NextResponse.json({ error: '로그인이 필요합니다.' }, { status: 401 })
+    const { supabase, user } = await getAuthUser()
+    if (!user) return unauthorizedResponse()
 
     const { data: job } = await supabase
       .from('jobs')

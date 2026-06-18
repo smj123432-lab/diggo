@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
 import {
   buildIncomeEntries,
   buildExpenseEntries,
   buildJobEntries,
   buildMonthData,
 } from '@/lib/utils/ledger'
+import { getAuthUserWithProfile } from '@/lib/api/auth'
 
 /**
  * GET /api/ledger/monthly?year=&month=
@@ -19,14 +19,10 @@ import {
  */
 export async function GET(request: NextRequest) {
   try {
-    const supabase = await createClient()
-    const {
-      data: { user },
-    } = await supabase.auth.getUser()
+    const auth = await getAuthUserWithProfile()
+    if ('error' in auth) return auth.error
 
-    if (!user) {
-      return NextResponse.json({ error: '로그인이 필요합니다.' }, { status: 401 })
-    }
+    const { supabase, user, profile } = auth
 
     const { searchParams } = new URL(request.url)
     const year = parseInt(searchParams.get('year') ?? String(new Date().getFullYear()))
@@ -36,12 +32,6 @@ export async function GET(request: NextRequest) {
     // toISOString()은 UTC 변환으로 KST(+9)에서 하루 밀릴 수 있어 직접 문자열 조합
     const lastDay = new Date(year, month, 0).getDate()
     const endDate = `${year}-${String(month).padStart(2, '0')}-${String(lastDay).padStart(2, '0')}`
-
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('role')
-      .eq('id', user.id)
-      .single()
 
     const lookbackDate = new Date(new Date(`${startDate}T00:00:00Z`).getTime() - 31 * 24 * 60 * 60 * 1000)
       .toISOString().split('T')[0]

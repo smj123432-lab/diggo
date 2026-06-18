@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { revalidateTag } from 'next/cache'
-import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { checkAndTransitionJobStatus } from '@/lib/utils/dispatch'
+import { getAuthUser, unauthorizedResponse } from '@/lib/api/auth'
 
 /**
  * PATCH /api/chats/[roomId]/dispatch
@@ -22,9 +22,8 @@ export async function PATCH(
 ) {
   const { roomId } = await params
   try {
-    const supabase = await createClient()
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) return NextResponse.json({ error: '로그인이 필요합니다.' }, { status: 401 })
+    const { supabase, user } = await getAuthUser()
+    if (!user) return unauthorizedResponse()
 
     const { action } = await request.json() as { action: 'accept' | 'reject' }
     if (!['accept', 'reject'].includes(action)) {

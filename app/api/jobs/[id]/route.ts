@@ -1,12 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
 import { revalidatePath, revalidateTag } from 'next/cache'
+import { getAuthUser, unauthorizedResponse } from '@/lib/api/auth'
 
 // GET /api/jobs/[id] — 일감 상세
 export async function GET(_: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
   try {
-    const supabase = await createClient()
+    const { supabase } = await getAuthUser()
     const { data, error } = await supabase
       .from('jobs')
       .select('*, profiles(id, name, rating_avg, review_count, is_certified, phone)')
@@ -27,13 +27,10 @@ export async function GET(_: NextRequest, { params }: { params: Promise<{ id: st
 export async function PATCH(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
   try {
-    const supabase = await createClient()
-    const {
-      data: { user },
-    } = await supabase.auth.getUser()
+    const { supabase, user } = await getAuthUser()
 
     if (!user) {
-      return NextResponse.json({ error: '로그인이 필요합니다.' }, { status: 401 })
+      return unauthorizedResponse()
     }
 
     const body = await request.json()
@@ -70,11 +67,10 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
 export async function DELETE(_: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
   try {
-    const supabase = await createClient()
-    const { data: { user } } = await supabase.auth.getUser()
+    const { supabase, user } = await getAuthUser()
 
     if (!user) {
-      return NextResponse.json({ error: '로그인이 필요합니다.' }, { status: 401 })
+      return unauthorizedResponse()
     }
 
     // 소장 본인 + 작업중/완료 아닌 상태만 삭제 허용

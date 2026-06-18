@@ -1,17 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { getAuthUser, getAuthUserWithProfile, unauthorizedResponse, forbiddenResponse, isBanned } from '@/lib/api/auth'
 
 // GET /api/applications — 내 지원 목록 (기사)
 export async function GET() {
   try {
-    const supabase = await createClient()
-    const {
-      data: { user },
-    } = await supabase.auth.getUser()
+    const { supabase, user } = await getAuthUser()
 
     if (!user) {
-      return NextResponse.json({ error: '로그인이 필요합니다.' }, { status: 401 })
+      return unauthorizedResponse()
     }
 
     const { data, error } = await supabase
@@ -32,31 +29,21 @@ export async function GET() {
 // POST /api/applications — 지원 신청 (기사)
 export async function POST(request: NextRequest) {
   try {
-    const supabase = await createClient()
-    const {
-      data: { user },
-    } = await supabase.auth.getUser()
+    const auth = await getAuthUserWithProfile()
+    if ('error' in auth) return auth.error
 
-    if (!user) {
-      return NextResponse.json({ error: '로그인이 필요합니다.' }, { status: 401 })
-    }
-
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('role, is_certified, name, banned_until')
-      .eq('id', user.id)
-      .single()
+    const { supabase, user, profile } = auth
 
     if (profile?.role !== 'driver') {
-      return NextResponse.json({ error: '기사만 지원할 수 있습니다.' }, { status: 403 })
+      return forbiddenResponse('기사만 지원할 수 있습니다.')
     }
 
     if (!profile?.is_certified) {
-      return NextResponse.json({ error: '면허증과 안전교육 이수증 인증을 완료해야 지원할 수 있습니다.' }, { status: 403 })
+      return forbiddenResponse('면허증과 안전교육 이수증 인증을 완료해야 지원할 수 있습니다.')
     }
 
-    if (profile.banned_until && new Date(profile.banned_until) > new Date()) {
-      const until = new Date(profile.banned_until).toLocaleDateString('ko-KR', { month: 'long', day: 'numeric' })
+    if (profile && isBanned(profile)) {
+      const until = new Date(profile.banned_until!).toLocaleDateString('ko-KR', { month: 'long', day: 'numeric' })
       return NextResponse.json({ error: `패널티 누적으로 ${until}까지 지원이 제한됩니다.`, banned_until: profile.banned_until }, { status: 403 })
     }
 

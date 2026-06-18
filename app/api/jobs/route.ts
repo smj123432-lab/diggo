@@ -1,12 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
 import { revalidatePath, revalidateTag } from 'next/cache'
 import { getServerTodayStr } from '@/lib/utils/date'
+import { getAuthUser, getAuthUserWithProfile, unauthorizedResponse, forbiddenResponse, isBanned } from '@/lib/api/auth'
 
 // GET /api/jobs — 일감 목록 (필터, 페이지네이션)
 export async function GET(request: NextRequest) {
   try {
-    const supabase = await createClient()
+    const { supabase } = await getAuthUser()
     const { searchParams } = new URL(request.url)
 
     const offset = parseInt(searchParams.get('offset') ?? '0')
@@ -57,27 +57,17 @@ export async function GET(request: NextRequest) {
 // POST /api/jobs — 일감 등록 (소장 전용)
 export async function POST(request: NextRequest) {
   try {
-    const supabase = await createClient()
-    const {
-      data: { user },
-    } = await supabase.auth.getUser()
+    const auth = await getAuthUserWithProfile()
+    if ('error' in auth) return auth.error
 
-    if (!user) {
-      return NextResponse.json({ error: '로그인이 필요합니다.' }, { status: 401 })
-    }
-
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('role, banned_until')
-      .eq('id', user.id)
-      .single()
+    const { supabase, user, profile } = auth
 
     if (profile?.role !== 'manager' && profile?.role !== 'admin') {
-      return NextResponse.json({ error: '소장만 일감을 등록할 수 있습니다.' }, { status: 403 })
+      return forbiddenResponse('소장만 일감을 등록할 수 있습니다.')
     }
 
-    if (profile.banned_until && new Date(profile.banned_until) > new Date()) {
-      const until = new Date(profile.banned_until).toLocaleDateString('ko-KR', { month: 'long', day: 'numeric' })
+    if (profile && isBanned(profile)) {
+      const until = new Date(profile.banned_until!).toLocaleDateString('ko-KR', { month: 'long', day: 'numeric' })
       return NextResponse.json({ error: `패널티 누적으로 ${until}까지 일감 등록이 제한됩니다.`, banned_until: profile.banned_until }, { status: 403 })
     }
 

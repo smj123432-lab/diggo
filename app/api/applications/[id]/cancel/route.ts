@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { revalidateTag } from 'next/cache'
-import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { PENALTY_BAN_THRESHOLDS } from '@/types'
+import { getAuthUserWithProfile, unauthorizedResponse } from '@/lib/api/auth'
 
 /**
  * PATCH /api/applications/[id]/cancel
@@ -22,16 +22,10 @@ export async function PATCH(
 ) {
   const { id } = await params
   try {
-    const supabase = await createClient()
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) return NextResponse.json({ error: '로그인이 필요합니다.' }, { status: 401 })
+    const auth = await getAuthUserWithProfile()
+    if ('error' in auth) return auth.error
 
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('role')
-      .eq('id', user.id)
-      .single()
-
+    const { supabase, user, profile } = auth
     const role = profile?.role
 
     interface ApplicationWithJob {

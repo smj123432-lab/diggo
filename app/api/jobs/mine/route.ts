@@ -1,14 +1,13 @@
 import { NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
+import { getAuthUser, unauthorizedResponse } from '@/lib/api/auth'
 
 // GET /api/jobs/mine — 소장의 내 등록 일감 목록 (지원자 수 포함)
 export async function GET() {
   try {
-    const supabase = await createClient()
-    const { data: { user } } = await supabase.auth.getUser()
+    const { supabase, user } = await getAuthUser()
 
     if (!user) {
-      return NextResponse.json({ error: '로그인이 필요합니다.' }, { status: 401 })
+      return unauthorizedResponse()
     }
 
     // 1단계: 일감 목록 조회
