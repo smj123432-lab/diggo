@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { revalidatePath, revalidateTag } from 'next/cache'
 import { getAuthUser, unauthorizedResponse } from '@/lib/api/auth'
+import { MAX_PAY_AMOUNT } from '@/lib/constants'
 
 // GET /api/jobs/[id] — 일감 상세
 export async function GET(_: NextRequest, { params }: { params: Promise<{ id: string }> }) {
@@ -42,6 +43,18 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
     const update = Object.fromEntries(
       Object.entries(body).filter(([k]) => ALLOWED.includes(k as keyof typeof body))
     )
+
+    // pay_amounts 범위 검사 (int4 overflow 방지)
+    if (update.pay_amounts !== undefined) {
+      const amountValues = Object.values(update.pay_amounts as Record<string, unknown>)
+      if (amountValues.some((v) => typeof v !== 'number' || v < 0 || v > MAX_PAY_AMOUNT)) {
+        return NextResponse.json(
+          { error: `금액은 0원 이상 ${MAX_PAY_AMOUNT.toLocaleString()}원 이하로 입력해주세요.` },
+          { status: 400 }
+        )
+      }
+    }
+
     const { data, error } = await supabase
       .from('jobs')
       .update(update)

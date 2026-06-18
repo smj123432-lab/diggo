@@ -220,8 +220,8 @@ export default async function MypagePage({
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* NAV */}
-      <AppNav />
+      {/* NAV — admin은 장부/역할 링크 숨김 */}
+      <AppNav hideLinks={profile.role === 'admin' ? ['ledger', 'role'] : undefined} />
 
       <div className="pt-16">
         <div className="max-w-5xl mx-auto px-4 py-6 space-y-6">

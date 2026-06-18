@@ -1,7 +1,6 @@
 // API Route 공통 인증 헬퍼
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
-import type { UserRole } from '@/types'
 
 export async function getAuthUser() {
   const supabase = await createClient()
@@ -25,18 +24,12 @@ export async function getAuthUserWithProfile() {
     .eq('id', user.id)
     .single()
 
-  return { supabase, user, profile } as const
-}
-
-// 역할 미충족 시 forbiddenResponse() 반환, 충족 시 null 반환
-export function requireRole(
-  profile: { role: string } | null | undefined,
-  roles: UserRole[]
-): NextResponse | null {
-  if (!profile || !roles.includes(profile.role as UserRole)) {
-    return forbiddenResponse()
+  // 프로필이 없으면 인증 실패로 처리 — null profile은 optional chaining 시 권한 체크가 우회될 수 있음
+  if (!profile) {
+    return { error: unauthorizedResponse() } as const
   }
-  return null
+
+  return { supabase, user, profile } as const
 }
 
 export function unauthorizedResponse() {

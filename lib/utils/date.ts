@@ -14,6 +14,11 @@ export function getServerTodayStr(): string {
   return kst.toISOString().slice(0, 10)
 }
 
+/** 임의 Date 객체를 YYYY-MM-DD 문자열로 변환 — 서버용. toISOString()을 쓰지 않아 KST 오프셋 문제 없음. */
+export function getServerDateStr(date: Date): string {
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`
+}
+
 /** 작업일: "6/15(일)" */
 export function formatWorkDate(dateStr: string): string {
   return new Date(dateStr).toLocaleDateString('ko-KR', {
