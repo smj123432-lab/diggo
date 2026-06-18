@@ -29,8 +29,8 @@ export default async function DriverApplicationsPage() {
     .eq('driver_id', user.id)
     .order('applied_at', { ascending: false })
 
-  const jobIds = (rawApps ?? []).map((a) => a.job_id).filter(Boolean)
-  const equipmentIds = (rawApps ?? []).map((a) => a.equipment_id).filter(Boolean)
+  const jobIds = (rawApps ?? []).map((a) => a.job_id).filter((id): id is string => id !== null && id !== undefined)
+  const equipmentIds = (rawApps ?? []).map((a) => a.equipment_id).filter((id): id is string => id !== null && id !== undefined)
 
   const [{ data: jobs }, { data: equipments }, { data: givenReviews }] = await Promise.all([
     jobIds.length > 0

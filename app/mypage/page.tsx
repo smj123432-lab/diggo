@@ -128,9 +128,9 @@ export default async function MypagePage({
     const rawReviews = reviewResult.data ?? []
 
     // 리뷰에서 참조하는 profile ID·job ID 수집
-    const reviewerIds = [...new Set(rawReviews.map(r => r.reviewer_id).filter(Boolean))] as string[]
-    const revieweeIds = [...new Set(rawReviews.map(r => r.reviewee_id).filter(Boolean))] as string[]
-    const jobIdsForReview = [...new Set(rawReviews.map(r => r.job_id).filter(Boolean))] as string[]
+    const reviewerIds = [...new Set(rawReviews.map(r => r.reviewer_id).filter((id): id is string => id !== null && id !== undefined))]
+    const revieweeIds = [...new Set(rawReviews.map(r => r.reviewee_id).filter((id): id is string => id !== null && id !== undefined))]
+    const jobIdsForReview = [...new Set(rawReviews.map(r => r.job_id).filter((id): id is string => id !== null && id !== undefined))]
     const allProfileIds = [...new Set([...reviewerIds, ...revieweeIds])]
 
     // 관련 profiles, jobs 병렬 fetch

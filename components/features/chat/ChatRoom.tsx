@@ -8,6 +8,7 @@ import { createClient } from '@/lib/supabase/client'
 import { ChatRoomMenu } from './ChatRoomMenu'
 import { ChatMessageBubble } from './ChatMessageBubble'
 import { ChatInput } from './ChatInput'
+import { DefaultAvatar } from '@/components/ui/Avatar'
 import type { ChatMessage, ChatRoomWithDetails, ApplicationStatus } from '@/types'
 import Image from 'next/image'
 import { formatLongDate } from '@/lib/utils/date'
@@ -20,19 +21,6 @@ interface Props {
   initialMessages: ChatMessage[]
   currentUserId: string
   initialApplicationStatus: ApplicationStatus | null
-}
-
-function DefaultAvatar({ size }: { size: number }) {
-  return (
-    <div
-      className="flex items-center justify-center rounded-full bg-gray-200"
-      style={{ width: size, height: size }}
-    >
-      <svg className="text-gray-400" style={{ width: size * 0.55, height: size * 0.55 }} viewBox="0 0 24 24" fill="currentColor">
-        <path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z" />
-      </svg>
-    </div>
-  )
 }
 
 export default function ChatRoom({ room, initialMessages, currentUserId, initialApplicationStatus }: Props) {

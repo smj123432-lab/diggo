@@ -67,8 +67,8 @@ export async function GET(request: NextRequest) {
       .eq('driver_id', user.id)
       .eq('status', 'accepted')
 
-    const jobIds = (rawApps ?? []).map((a) => a.job_id as string).filter(Boolean)
-    const equipmentIds = (rawApps ?? []).map((a) => a.equipment_id as string).filter(Boolean)
+    const jobIds = (rawApps ?? []).map((a) => a.job_id).filter((id): id is string => id !== null && id !== undefined)
+    const equipmentIds = (rawApps ?? []).map((a) => a.equipment_id).filter((id): id is string => id !== null && id !== undefined)
 
     const [{ data: rawJobs }, { data: rawEquipments }, { data: rawExpenses }] = await Promise.all([
       jobIds.length
