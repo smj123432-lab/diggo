@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import PublicProfile from '@/components/features/profile/PublicProfile'
 import type { Job } from '@/types'
+import { getServerTodayStr } from '@/lib/utils/date'
 
 interface Props {
   params: Promise<{ id: string }>
@@ -47,7 +48,7 @@ export default async function ProfilePage({ params }: Props) {
           .select('id, title, work_date, location, equipment_codes, job_type')
           .eq('manager_id', id)
           .eq('status', 'open')
-          .gte('work_date', new Date().toISOString().split('T')[0])
+          .gte('work_date', getServerTodayStr())
           .order('work_date', { ascending: true })
       : Promise.resolve({ data: [] as Pick<Job, 'id' | 'title' | 'work_date' | 'location' | 'equipment_codes' | 'job_type'>[] | null }),
 

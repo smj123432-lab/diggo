@@ -1,15 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
 import { CERT_AUTO_MIN_RATING, CERT_AUTO_MIN_REVIEWS } from '@/types'
+import { getAuthUser, unauthorizedResponse } from '@/lib/api/auth'
 
 // GET /api/reviews?type=given|received
 // given → 내가 작성한 리뷰의 job_id 배열 (hasReview 체크용)
 // received → 내가 받은 리뷰 목록
 export async function GET(request: NextRequest) {
   try {
-    const supabase = await createClient()
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) return NextResponse.json({ error: '로그인이 필요합니다.' }, { status: 401 })
+    const { supabase, user } = await getAuthUser()
+    if (!user) return unauthorizedResponse()
 
     const { searchParams } = new URL(request.url)
     const type = searchParams.get('type') ?? 'received'
@@ -59,9 +58,8 @@ export async function GET(request: NextRequest) {
 // POST /api/reviews — 평가 작성 (정산완료 일감에만)
 export async function POST(request: NextRequest) {
   try {
-    const supabase = await createClient()
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) return NextResponse.json({ error: '로그인이 필요합니다.' }, { status: 401 })
+    const { supabase, user } = await getAuthUser()
+    if (!user) return unauthorizedResponse()
 
     const body = await request.json()
     const { job_id, reviewee_id, rating, comment } = body

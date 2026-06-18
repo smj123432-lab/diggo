@@ -7,6 +7,7 @@ import { createPortal } from 'react-dom'
 import { toast } from 'sonner'
 import { LEDGER_EXPENSE_CATEGORIES } from '@/types'
 import { getTodayStr } from '@/lib/utils/date'
+import { MAX_PAY_AMOUNT } from '@/lib/constants'
 
 interface AddExpenseModalProps {
   defaultDate?: string // YYYY-MM-DD
@@ -43,7 +44,7 @@ export function AddExpenseModal({
     const digits = e.target.value.replace(/[^0-9]/g, '')
     const num = Number(digits)
     // int4 한계 내 최대값으로 클램프
-    const clamped = num > 999_999_999 ? 999_999_999 : num
+    const clamped = num > MAX_PAY_AMOUNT ? MAX_PAY_AMOUNT : num
     setAmountDisplay(clamped > 0 ? clamped.toLocaleString('ko-KR') : '')
   }
 
@@ -76,7 +77,7 @@ export function AddExpenseModal({
       toast.error('금액을 입력해주세요.')
       return
     }
-    if (parsedAmount > 999_999_999) {
+    if (parsedAmount > MAX_PAY_AMOUNT) {
       toast.error('금액은 999,999,999원 이하로 입력해주세요.')
       return
     }

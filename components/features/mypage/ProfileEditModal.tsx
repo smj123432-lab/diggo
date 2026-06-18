@@ -5,6 +5,7 @@ import { useState } from 'react'
 import { toast } from 'sonner'
 import type { Profile } from '@/types'
 import { AddressSearch } from '@/components/features/jobs/AddressSearch'
+import { updateProfile } from '@/lib/api/profile'
 
 interface Updates {
   name: string
@@ -45,12 +46,7 @@ export function ProfileEditModal({ profile, onClose, onSaved }: Props) {
         body.latitude = lat
         body.longitude = lng
       }
-      const res = await fetch('/api/profile', {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body),
-      })
-      if (!res.ok) throw new Error((await res.json()).error ?? '저장 실패')
+      await updateProfile(body)
       toast.success('프로필이 저장되었습니다.')
       onSaved({
         name: name.trim(),

@@ -1,11 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
 import {
   buildIncomeEntries,
   buildExpenseEntries,
   buildJobEntries,
   buildMonthData,
 } from '@/lib/utils/ledger'
+import { getAuthUserWithProfile } from '@/lib/api/auth'
+import { LEDGER_LOOKBACK_DAYS } from '@/lib/constants'
+import { getServerDateStr } from '@/lib/utils/date'
 
 /**
  * GET /api/ledger/monthly?year=&month=
@@ -19,14 +21,10 @@ import {
  */
 export async function GET(request: NextRequest) {
   try {
-    const supabase = await createClient()
-    const {
-      data: { user },
-    } = await supabase.auth.getUser()
+    const auth = await getAuthUserWithProfile()
+    if ('error' in auth) return auth.error
 
-    if (!user) {
-      return NextResponse.json({ error: '로그인이 필요합니다.' }, { status: 401 })
-    }
+    const { supabase, user, profile } = auth
 
     const { searchParams } = new URL(request.url)
     const year = parseInt(searchParams.get('year') ?? String(new Date().getFullYear()))
@@ -37,14 +35,9 @@ export async function GET(request: NextRequest) {
     const lastDay = new Date(year, month, 0).getDate()
     const endDate = `${year}-${String(month).padStart(2, '0')}-${String(lastDay).padStart(2, '0')}`
 
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('role')
-      .eq('id', user.id)
-      .single()
-
-    const lookbackDate = new Date(new Date(`${startDate}T00:00:00Z`).getTime() - 31 * 24 * 60 * 60 * 1000)
-      .toISOString().split('T')[0]
+    const lookbackDate = getServerDateStr(
+      new Date(new Date(`${startDate}T00:00:00Z`).getTime() - LEDGER_LOOKBACK_DAYS * 24 * 60 * 60 * 1000)
+    )
 
     if (profile?.role === 'manager') {
       const [{ data: rawJobs }, { data: rawExpenses }] = await Promise.all([
@@ -76,8 +69,8 @@ export async function GET(request: NextRequest) {
       .eq('driver_id', user.id)
       .eq('status', 'accepted')
 
-    const jobIds = (rawApps ?? []).map((a) => a.job_id as string).filter(Boolean)
-    const equipmentIds = (rawApps ?? []).map((a) => a.equipment_id as string).filter(Boolean)
+    const jobIds = (rawApps ?? []).map((a) => a.job_id).filter((id): id is string => id !== null && id !== undefined)
+    const equipmentIds = (rawApps ?? []).map((a) => a.equipment_id).filter((id): id is string => id !== null && id !== undefined)
 
     const [{ data: rawJobs }, { data: rawEquipments }, { data: rawExpenses }] = await Promise.all([
       jobIds.length

@@ -1,11 +1,11 @@
 // 일별 장부 상세 API — 특정 날짜의 수입/지출/현장 항목 반환
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
 import {
   buildIncomeEntries,
   buildExpenseEntries,
   buildJobEntries,
 } from '@/lib/utils/ledger'
+import { getAuthUserWithProfile } from '@/lib/api/auth'
 
 export async function GET(
   _: NextRequest,
@@ -13,22 +13,10 @@ export async function GET(
 ) {
   const { date } = await params
   try {
-    const supabase = await createClient()
-    const {
-      data: { user },
-    } = await supabase.auth.getUser()
+    const auth = await getAuthUserWithProfile()
+    if ('error' in auth) return auth.error
 
-    if (!user) {
-      return NextResponse.json({ error: '로그인이 필요합니다.' }, { status: 401 })
-    }
-
-    // date는 함수 상단에서 await params로 이미 추출됨
-
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('role')
-      .eq('id', user.id)
-      .single()
+    const { supabase, user, profile } = auth
 
     if (profile?.role === 'manager') {
       const { data: rawJobs } = await supabase

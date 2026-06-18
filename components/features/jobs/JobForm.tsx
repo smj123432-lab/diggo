@@ -14,6 +14,7 @@ import {
 } from "@/types";
 import { AddressSearch } from "./AddressSearch";
 import { useJobForm, type FormState } from "@/hooks/useJobForm";
+import { getTodayStr } from "@/lib/utils/date";
 
 // 섹션 구분선
 function Divider() {
@@ -250,7 +251,7 @@ export function JobForm({
               min={
                 mode === "edit"
                   ? undefined
-                  : new Date().toISOString().split("T")[0]
+                  : getTodayStr()
               }
               onChange={(e) => set("work_date", e.target.value)}
               className={inputCls}

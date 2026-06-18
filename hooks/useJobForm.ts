@@ -5,6 +5,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 import type { EquipmentCode, JobType, PayDueType, WorkDuration } from '@/types'
+import { MAX_PAY_AMOUNT } from '@/lib/constants'
 
 export interface FormState {
   title: string
@@ -110,10 +111,10 @@ export function useJobForm({ mode = 'create', jobId, initialValues }: UseJobForm
       latitude: form.latitude,
       longitude: form.longitude,
       pay_amounts: Object.fromEntries(
-        form.equipment_codes.map((code) => [
-          code,
-          parseInt((form.payments[code]?.amount ?? '0').replace(/,/g, ''), 10),
-        ]),
+        form.equipment_codes.map((code) => {
+          const parsed = parseInt((form.payments[code]?.amount ?? '0').replace(/,/g, ''), 10)
+          return [code, Math.min(parsed, MAX_PAY_AMOUNT)]
+        }),
       ),
       work_days: Object.fromEntries(
         form.equipment_codes.map((code) => [code, parseInt(form.payments[code]?.days ?? '0', 10)]),

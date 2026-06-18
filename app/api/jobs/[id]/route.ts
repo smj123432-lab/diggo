@@ -1,12 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
 import { revalidatePath, revalidateTag } from 'next/cache'
+import { getAuthUser, unauthorizedResponse } from '@/lib/api/auth'
+import { MAX_PAY_AMOUNT } from '@/lib/constants'
 
 // GET /api/jobs/[id] — 일감 상세
 export async function GET(_: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
   try {
-    const supabase = await createClient()
+    const { supabase } = await getAuthUser()
     const { data, error } = await supabase
       .from('jobs')
       .select('*, profiles(id, name, rating_avg, review_count, is_certified, phone)')
@@ -27,13 +28,10 @@ export async function GET(_: NextRequest, { params }: { params: Promise<{ id: st
 export async function PATCH(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
   try {
-    const supabase = await createClient()
-    const {
-      data: { user },
-    } = await supabase.auth.getUser()
+    const { supabase, user } = await getAuthUser()
 
     if (!user) {
-      return NextResponse.json({ error: '로그인이 필요합니다.' }, { status: 401 })
+      return unauthorizedResponse()
     }
 
     const body = await request.json()
@@ -45,6 +43,18 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
     const update = Object.fromEntries(
       Object.entries(body).filter(([k]) => ALLOWED.includes(k as keyof typeof body))
     )
+
+    // pay_amounts 범위 검사 (int4 overflow 방지)
+    if (update.pay_amounts !== undefined) {
+      const amountValues = Object.values(update.pay_amounts as Record<string, unknown>)
+      if (amountValues.some((v) => typeof v !== 'number' || v < 0 || v > MAX_PAY_AMOUNT)) {
+        return NextResponse.json(
+          { error: `금액은 0원 이상 ${MAX_PAY_AMOUNT.toLocaleString()}원 이하로 입력해주세요.` },
+          { status: 400 }
+        )
+      }
+    }
+
     const { data, error } = await supabase
       .from('jobs')
       .update(update)
@@ -70,11 +80,10 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
 export async function DELETE(_: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
   try {
-    const supabase = await createClient()
-    const { data: { user } } = await supabase.auth.getUser()
+    const { supabase, user } = await getAuthUser()
 
     if (!user) {
-      return NextResponse.json({ error: '로그인이 필요합니다.' }, { status: 401 })
+      return unauthorizedResponse()
     }
 
     // 소장 본인 + 작업중/완료 아닌 상태만 삭제 허용

@@ -6,6 +6,7 @@ import { useState } from 'react'
 import { Toaster } from 'sonner'
 import { AuthInitializer } from '@/components/features/auth/AuthInitializer'
 import { NotificationInitializer } from '@/components/features/notifications/NotificationInitializer'
+import { DEFAULT_STALE_TIME } from '@/lib/constants'
 
 export default function Providers({ children }: { children: React.ReactNode }) {
   const [queryClient] = useState(
@@ -13,7 +14,7 @@ export default function Providers({ children }: { children: React.ReactNode }) {
       new QueryClient({
         defaultOptions: {
           queries: {
-            staleTime: 30 * 1000,
+            staleTime: DEFAULT_STALE_TIME,
             retry: 1,
           },
         },
