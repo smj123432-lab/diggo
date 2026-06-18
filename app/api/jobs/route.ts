@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { revalidatePath, revalidateTag } from 'next/cache'
 import { getServerTodayStr } from '@/lib/utils/date'
 import { getAuthUser, getAuthUserWithProfile, unauthorizedResponse, forbiddenResponse, isBanned } from '@/lib/api/auth'
+import { JOBS_FIRST_PAGE_LIMIT, MAX_PAY_AMOUNT } from '@/lib/constants'
 
 // GET /api/jobs — 일감 목록 (필터, 페이지네이션)
 export async function GET(request: NextRequest) {
@@ -10,7 +11,7 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url)
 
     const offset = parseInt(searchParams.get('offset') ?? '0')
-    const limit = parseInt(searchParams.get('limit') ?? '12')
+    const limit = parseInt(searchParams.get('limit') ?? String(JOBS_FIRST_PAGE_LIMIT))
     const equipment_codes = searchParams.getAll('equipment_code')
     const job_types = searchParams.getAll('job_type')
     const status = searchParams.get('status')
@@ -88,6 +89,12 @@ export async function POST(request: NextRequest) {
       equipment_codes.some((c: string) => !pay_amounts[c])
     ) {
       return NextResponse.json({ error: '필수 항목을 모두 입력해주세요.' }, { status: 400 })
+    }
+
+    // pay_amounts 각 값 범위 검사 (int4 overflow 방지)
+    const amountValues = Object.values(pay_amounts as Record<string, unknown>)
+    if (amountValues.some((v) => typeof v !== 'number' || v < 0 || v > MAX_PAY_AMOUNT)) {
+      return NextResponse.json({ error: `금액은 0원 이상 ${MAX_PAY_AMOUNT.toLocaleString()}원 이하로 입력해주세요.` }, { status: 400 })
     }
 
     const { data, error } = await supabase
