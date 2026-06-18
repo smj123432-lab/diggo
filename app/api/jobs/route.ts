@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath, revalidateTag } from 'next/cache'
+import { getServerTodayStr } from '@/lib/utils/date'
 
 // GET /api/jobs — 일감 목록 (필터, 페이지네이션)
 export async function GET(request: NextRequest) {
@@ -34,7 +35,7 @@ export async function GET(request: NextRequest) {
     if (status) {
       query = query.eq('status', status)
     } else {
-      const today = new Date().toISOString().split('T')[0]
+      const today = getServerTodayStr()
       query = query.eq('status', 'open').gte('work_date', today)
     }
 

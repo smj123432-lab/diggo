@@ -1,8 +1,15 @@
 // 날짜 포맷 유틸 — toISOString()은 UTC 변환으로 KST 자정에 하루 차이가 발생하므로
-// 클라이언트 코드에서 오늘 날짜가 필요할 때는 getTodayStr()을 사용한다.
+// 클라이언트 코드에서 오늘 날짜가 필요할 때는 getTodayStr()을,
+// 서버(API Route, 서버 컴포넌트, 캐시 함수)에서는 getServerTodayStr()을 사용한다.
 
-/** KST 기준 오늘 날짜 (YYYY-MM-DD) */
+/** KST 기준 오늘 날짜 (YYYY-MM-DD) — 클라이언트용 */
 export function getTodayStr(): string {
+  const d = new Date()
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+}
+
+/** KST 기준 오늘 날짜 (YYYY-MM-DD) — 서버용 (API Route, 서버 컴포넌트, 캐시 함수) */
+export function getServerTodayStr(): string {
   const d = new Date()
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
 }

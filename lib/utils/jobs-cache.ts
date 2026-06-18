@@ -1,5 +1,6 @@
 import { cacheLife, cacheTag } from 'next/cache'
 import { createPublicClient } from '@/lib/supabase/server'
+import { getServerTodayStr } from '@/lib/utils/date'
 
 // 일감 목록 첫 페이지 — deadline(work_date ASC) 정렬, 공개 데이터
 export async function getCachedJobsFirstPage() {
@@ -8,7 +9,7 @@ export async function getCachedJobsFirstPage() {
   cacheTag('jobs')
 
   const supabase = createPublicClient()
-  const today = new Date().toISOString().split('T')[0]
+  const today = getServerTodayStr()
   const { data, count } = await supabase
     .from('jobs')
     .select('*, profiles(id, name, rating_avg, review_count, is_certified, avatar_url, penalty_count)', { count: 'exact' })

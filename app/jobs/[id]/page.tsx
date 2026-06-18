@@ -14,7 +14,7 @@ import {
   WORK_DURATION_LABELS,
 } from '@/types'
 import type { JobType, JobStatus, EquipmentCode, WorkDuration, PayDueType } from '@/types'
-import { formatWorkDateFull, formatFullDate } from '@/lib/utils/date'
+import { formatWorkDateFull, formatFullDate, getServerTodayStr } from '@/lib/utils/date'
 
 interface Props {
   params: Promise<{ id: string }>
@@ -50,7 +50,7 @@ async function JobDetailContent({ params }: Props) {
 
   const workDate = formatWorkDateFull(job.work_date as string)
 
-  const today = new Date().toISOString().split('T')[0]
+  const today = getServerTodayStr()
   const effectiveStatus: JobStatus = (job.status as JobStatus) === 'open' && (job.work_date as string) < today
     ? 'closed'
     : job.status as JobStatus

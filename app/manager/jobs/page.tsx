@@ -13,6 +13,7 @@ import { ManagerJobCard } from '@/components/features/manager/ManagerJobCard'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { useHorizontalScroll } from '@/hooks/useHorizontalScroll'
 import type { Job, JobStatus } from '@/types'
+import { getTodayStr } from '@/lib/utils/date'
 
 type FilterValue = 'all' | JobStatus | 'reviewing'
 
@@ -79,7 +80,7 @@ function ManagerJobsContent() {
       .finally(() => setIsLoading(false))
   }, [user, role])
 
-  const today = new Date().toISOString().split('T')[0]
+  const today = getTodayStr()
 
   const effectiveStatus = (job: JobWithCount): JobStatus =>
     job.status === 'open' && job.work_date < today ? 'closed' : job.status
