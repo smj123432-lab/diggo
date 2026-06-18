@@ -7,6 +7,7 @@ import { toast } from 'sonner'
 import type { Profile, EquipmentCode, JobType } from '@/types'
 import { EQUIPMENT_CODES_LIST, EQUIPMENT_LABELS, JOB_TYPES_LIST, JOB_TYPE_LABELS } from '@/types'
 import { AddressSearch } from '@/components/features/jobs/AddressSearch'
+import { updateProfile } from '@/lib/api/profile'
 
 interface Props {
   profile: Profile
@@ -67,12 +68,7 @@ export function ProfileEditForm({ profile }: Props) {
         body.longitude = lng
       }
 
-      const res = await fetch('/api/profile', {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body),
-      })
-      if (!res.ok) throw new Error((await res.json()).error ?? '수정 실패')
+      await updateProfile(body)
       toast.success('프로필이 저장되었습니다.')
       router.push('/mypage')
       router.refresh()
