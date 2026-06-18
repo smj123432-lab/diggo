@@ -1,0 +1,219 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1500" height="860" viewBox="0 0 1500 860">
+  <defs>
+    <style>
+      text { font-family: -apple-system, "Segoe UI", sans-serif; }
+    </style>
+  </defs>
+  <rect x="0" y="0" width="1500" height="860" rx="0" fill="#F8FAFC" stroke="none" stroke-width="1.5"/>
+<line x1="0" y1="0" x2="0" y2="860" stroke="#E2E8F0" stroke-width="0.5"/>
+<line x1="40" y1="0" x2="40" y2="860" stroke="#E2E8F0" stroke-width="0.5"/>
+<line x1="80" y1="0" x2="80" y2="860" stroke="#E2E8F0" stroke-width="0.5"/>
+<line x1="120" y1="0" x2="120" y2="860" stroke="#E2E8F0" stroke-width="0.5"/>
+<line x1="160" y1="0" x2="160" y2="860" stroke="#E2E8F0" stroke-width="0.5"/>
+<line x1="200" y1="0" x2="200" y2="860" stroke="#E2E8F0" stroke-width="0.5"/>
+<line x1="240" y1="0" x2="240" y2="860" stroke="#E2E8F0" stroke-width="0.5"/>
+<line x1="280" y1="0" x2="280" y2="860" stroke="#E2E8F0" stroke-width="0.5"/>
+<line x1="320" y1="0" x2="320" y2="860" stroke="#E2E8F0" stroke-width="0.5"/>
+<line x1="360" y1="0" x2="360" y2="860" stroke="#E2E8F0" stroke-width="0.5"/>
+<line x1="400" y1="0" x2="400" y2="860" stroke="#E2E8F0" stroke-width="0.5"/>
+<line x1="440" y1="0" x2="440" y2="860" stroke="#E2E8F0" stroke-width="0.5"/>
+<line x1="480" y1="0" x2="480" y2="860" stroke="#E2E8F0" stroke-width="0.5"/>
+<line x1="520" y1="0" x2="520" y2="860" stroke="#E2E8F0" stroke-width="0.5"/>
+<line x1="560" y1="0" x2="560" y2="860" stroke="#E2E8F0" stroke-width="0.5"/>
+<line x1="600" y1="0" x2="600" y2="860" stroke="#E2E8F0" stroke-width="0.5"/>
+<line x1="640" y1="0" x2="640" y2="860" stroke="#E2E8F0" stroke-width="0.5"/>
+<line x1="680" y1="0" x2="680" y2="860" stroke="#E2E8F0" stroke-width="0.5"/>
+<line x1="720" y1="0" x2="720" y2="860" stroke="#E2E8F0" stroke-width="0.5"/>
+<line x1="760" y1="0" x2="760" y2="860" stroke="#E2E8F0" stroke-width="0.5"/>
+<line x1="800" y1="0" x2="800" y2="860" stroke="#E2E8F0" stroke-width="0.5"/>
+<line x1="840" y1="0" x2="840" y2="860" stroke="#E2E8F0" stroke-width="0.5"/>
+<line x1="880" y1="0" x2="880" y2="860" stroke="#E2E8F0" stroke-width="0.5"/>
+<line x1="920" y1="0" x2="920" y2="860" stroke="#E2E8F0" stroke-width="0.5"/>
+<line x1="960" y1="0" x2="960" y2="860" stroke="#E2E8F0" stroke-width="0.5"/>
+<line x1="1000" y1="0" x2="1000" y2="860" stroke="#E2E8F0" stroke-width="0.5"/>
+<line x1="1040" y1="0" x2="1040" y2="860" stroke="#E2E8F0" stroke-width="0.5"/>
+<line x1="1080" y1="0" x2="1080" y2="860" stroke="#E2E8F0" stroke-width="0.5"/>
+<line x1="1120" y1="0" x2="1120" y2="860" stroke="#E2E8F0" stroke-width="0.5"/>
+<line x1="1160" y1="0" x2="1160" y2="860" stroke="#E2E8F0" stroke-width="0.5"/>
+<line x1="1200" y1="0" x2="1200" y2="860" stroke="#E2E8F0" stroke-width="0.5"/>
+<line x1="1240" y1="0" x2="1240" y2="860" stroke="#E2E8F0" stroke-width="0.5"/>
+<line x1="1280" y1="0" x2="1280" y2="860" stroke="#E2E8F0" stroke-width="0.5"/>
+<line x1="1320" y1="0" x2="1320" y2="860" stroke="#E2E8F0" stroke-width="0.5"/>
+<line x1="1360" y1="0" x2="1360" y2="860" stroke="#E2E8F0" stroke-width="0.5"/>
+<line x1="1400" y1="0" x2="1400" y2="860" stroke="#E2E8F0" stroke-width="0.5"/>
+<line x1="1440" y1="0" x2="1440" y2="860" stroke="#E2E8F0" stroke-width="0.5"/>
+<line x1="1480" y1="0" x2="1480" y2="860" stroke="#E2E8F0" stroke-width="0.5"/>
+<line x1="0" y1="0" x2="1500" y2="0" stroke="#E2E8F0" stroke-width="0.5"/>
+<line x1="0" y1="40" x2="1500" y2="40" stroke="#E2E8F0" stroke-width="0.5"/>
+<line x1="0" y1="80" x2="1500" y2="80" stroke="#E2E8F0" stroke-width="0.5"/>
+<line x1="0" y1="120" x2="1500" y2="120" stroke="#E2E8F0" stroke-width="0.5"/>
+<line x1="0" y1="160" x2="1500" y2="160" stroke="#E2E8F0" stroke-width="0.5"/>
+<line x1="0" y1="200" x2="1500" y2="200" stroke="#E2E8F0" stroke-width="0.5"/>
+<line x1="0" y1="240" x2="1500" y2="240" stroke="#E2E8F0" stroke-width="0.5"/>
+<line x1="0" y1="280" x2="1500" y2="280" stroke="#E2E8F0" stroke-width="0.5"/>
+<line x1="0" y1="320" x2="1500" y2="320" stroke="#E2E8F0" stroke-width="0.5"/>
+<line x1="0" y1="360" x2="1500" y2="360" stroke="#E2E8F0" stroke-width="0.5"/>
+<line x1="0" y1="400" x2="1500" y2="400" stroke="#E2E8F0" stroke-width="0.5"/>
+<line x1="0" y1="440" x2="1500" y2="440" stroke="#E2E8F0" stroke-width="0.5"/>
+<line x1="0" y1="480" x2="1500" y2="480" stroke="#E2E8F0" stroke-width="0.5"/>
+<line x1="0" y1="520" x2="1500" y2="520" stroke="#E2E8F0" stroke-width="0.5"/>
+<line x1="0" y1="560" x2="1500" y2="560" stroke="#E2E8F0" stroke-width="0.5"/>
+<line x1="0" y1="600" x2="1500" y2="600" stroke="#E2E8F0" stroke-width="0.5"/>
+<line x1="0" y1="640" x2="1500" y2="640" stroke="#E2E8F0" stroke-width="0.5"/>
+<line x1="0" y1="680" x2="1500" y2="680" stroke="#E2E8F0" stroke-width="0.5"/>
+<line x1="0" y1="720" x2="1500" y2="720" stroke="#E2E8F0" stroke-width="0.5"/>
+<line x1="0" y1="760" x2="1500" y2="760" stroke="#E2E8F0" stroke-width="0.5"/>
+<line x1="0" y1="800" x2="1500" y2="800" stroke="#E2E8F0" stroke-width="0.5"/>
+<line x1="0" y1="840" x2="1500" y2="840" stroke="#E2E8F0" stroke-width="0.5"/>
+<rect x="0" y="0" width="1500" height="860" rx="0" fill="none" stroke="#CBD5E1" stroke-width="2"/>
+<text x="750" y="38" font-size="26" fill="#0F172A" text-anchor="middle" font-weight="900" font-family="inherit">DIGGO</text>
+<text x="750" y="60" font-size="13" fill="#64748B" text-anchor="middle" font-weight="normal" font-family="inherit">굴착기 배차 플랫폼  —  System Architecture</text>
+<line x1="60" y1="74" x2="1440" y2="74" stroke="#E2E8F0" stroke-width="1"/>
+<rect x="30" y="88" width="1440" height="190" rx="12" fill="#EFF6FF" stroke="#BFDBFE" stroke-width="1.5"/>
+<text x="750" y="106" font-size="11" fill="#1D4ED8" text-anchor="middle" font-weight="bold" font-family="inherit">CLIENT  (Browser)</text>
+<rect x="50" y="116" width="300" height="142" rx="10" fill="#EFF6FF" stroke="#3B82F6" stroke-width="1.5"/>
+<rect x="50" y="116" width="300" height="36" rx="10" fill="#3B82F6" stroke="#3B82F6" stroke-width="1.5"/>
+<rect x="50" y="142" width="300" height="14" rx="0" fill="#3B82F6" stroke="none" stroke-width="1.5"/>
+<text x="200" y="139" font-size="12" fill="#fff" text-anchor="middle" font-weight="bold" font-family="inherit">Next.js Pages</text>
+<text x="66" y="166" font-size="11" fill="#374151" text-anchor="start" font-weight="normal" font-family="inherit">·  App Router  (SSR / PPR)</text>
+<text x="66" y="188" font-size="11" fill="#374151" text-anchor="start" font-weight="normal" font-family="inherit">·  일감 목록 · 상세 · 등록</text>
+<text x="66" y="210" font-size="11" fill="#374151" text-anchor="start" font-weight="normal" font-family="inherit">·  소장 관리 · 마이페이지</text>
+<text x="66" y="232" font-size="11" fill="#374151" text-anchor="start" font-weight="normal" font-family="inherit">·  채팅 · 장부 · 관리자</text>
+<rect x="370" y="116" width="300" height="142" rx="10" fill="#EEF2FF" stroke="#6366F1" stroke-width="1.5"/>
+<rect x="370" y="116" width="300" height="36" rx="10" fill="#6366F1" stroke="#6366F1" stroke-width="1.5"/>
+<rect x="370" y="142" width="300" height="14" rx="0" fill="#6366F1" stroke="none" stroke-width="1.5"/>
+<text x="520" y="139" font-size="12" fill="#fff" text-anchor="middle" font-weight="bold" font-family="inherit">Client State</text>
+<text x="386" y="166" font-size="11" fill="#374151" text-anchor="start" font-weight="normal" font-family="inherit">·  Zustand  (Auth · Session · Role)</text>
+<text x="386" y="188" font-size="11" fill="#374151" text-anchor="start" font-weight="normal" font-family="inherit">·  TanStack Query v5</text>
+<text x="386" y="210" font-size="11" fill="#374151" text-anchor="start" font-weight="normal" font-family="inherit">·  무한스크롤 · prefetch</text>
+<text x="386" y="232" font-size="11" fill="#374151" text-anchor="start" font-weight="normal" font-family="inherit">·  staleTime / 낙관적 업데이트</text>
+<rect x="690" y="116" width="280" height="142" rx="10" fill="#F5F3FF" stroke="#8B5CF6" stroke-width="1.5"/>
+<rect x="690" y="116" width="280" height="36" rx="10" fill="#8B5CF6" stroke="#8B5CF6" stroke-width="1.5"/>
+<rect x="690" y="142" width="280" height="14" rx="0" fill="#8B5CF6" stroke="none" stroke-width="1.5"/>
+<text x="830" y="139" font-size="12" fill="#fff" text-anchor="middle" font-weight="bold" font-family="inherit">Components</text>
+<text x="706" y="166" font-size="11" fill="#374151" text-anchor="start" font-weight="normal" font-family="inherit">·  features/  (12개 도메인)</text>
+<text x="706" y="188" font-size="11" fill="#374151" text-anchor="start" font-weight="normal" font-family="inherit">·  ui/  (Avatar · Badge 등)</text>
+<text x="706" y="210" font-size="11" fill="#374151" text-anchor="start" font-weight="normal" font-family="inherit">·  Custom Hooks (useJobs …)</text>
+<text x="706" y="232" font-size="11" fill="#374151" text-anchor="start" font-weight="normal" font-family="inherit">·  createPortal  (카카오맵 z-index)</text>
+<rect x="990" y="116" width="240" height="142" rx="10" fill="#FFFBEB" stroke="#F59E0B" stroke-width="1.5"/>
+<rect x="990" y="116" width="240" height="36" rx="10" fill="#F59E0B" stroke="#F59E0B" stroke-width="1.5"/>
+<rect x="990" y="142" width="240" height="14" rx="0" fill="#F59E0B" stroke="none" stroke-width="1.5"/>
+<text x="1110" y="139" font-size="12" fill="#fff" text-anchor="middle" font-weight="bold" font-family="inherit">Kakao Map SDK</text>
+<text x="1006" y="166" font-size="11" fill="#374151" text-anchor="start" font-weight="normal" font-family="inherit">·  지도 렌더링</text>
+<text x="1006" y="188" font-size="11" fill="#374151" text-anchor="start" font-weight="normal" font-family="inherit">·  주소 검색 UI</text>
+<text x="1006" y="210" font-size="11" fill="#374151" text-anchor="start" font-weight="normal" font-family="inherit">·  SDK 동적 로드</text>
+<rect x="1250" y="116" width="220" height="142" rx="10" fill="#F0FDF4" stroke="#86EFAC" stroke-width="1.5"/>
+<rect x="1250" y="116" width="220" height="36" rx="10" fill="#16A34A" stroke="#16A34A" stroke-width="1.5"/>
+<rect x="1250" y="142" width="220" height="14" rx="0" fill="#16A34A" stroke="none" stroke-width="1.5"/>
+<text x="1360" y="139" font-size="12" fill="#fff" text-anchor="middle" font-weight="bold" font-family="inherit">Dev Stack</text>
+<text x="1266" y="172" font-size="11" fill="#374151" text-anchor="start" font-weight="normal" font-family="inherit">·  Next.js 16</text>
+<text x="1266" y="194" font-size="11" fill="#374151" text-anchor="start" font-weight="normal" font-family="inherit">·  TypeScript (strict)</text>
+<text x="1266" y="216" font-size="11" fill="#374151" text-anchor="start" font-weight="normal" font-family="inherit">·  Tailwind CSS</text>
+<text x="1266" y="238" font-size="11" fill="#374151" text-anchor="start" font-weight="normal" font-family="inherit">·  Bun</text>
+<line x1="500" y1="278" x2="500" y2="335" stroke="#6366F1" stroke-width="1.8"/>
+<polygon points="495,335 505,335 500,343" fill="#6366F1"/>
+<text x="514" y="314" font-size="10" fill="#94A3B8" text-anchor="start" font-weight="normal" font-family="inherit">HTTPS / fetch</text>
+<line x1="560" y1="343" x2="560" y2="275" stroke="#6366F1" stroke-width="1.8" stroke-dasharray="6,4"/>
+<polygon points="555,275 565,275 560,283" fill="#6366F1"/>
+<line x1="1000" y1="278" x2="1000" y2="335" stroke="#10B981" stroke-width="1.8"/>
+<polygon points="995,335 1005,335 1000,343" fill="#10B981"/>
+<text x="1014" y="314" font-size="10" fill="#94A3B8" text-anchor="start" font-weight="normal" font-family="inherit">Realtime WS</text>
+<line x1="1060" y1="343" x2="1060" y2="275" stroke="#10B981" stroke-width="1.8" stroke-dasharray="6,4"/>
+<polygon points="1055,275 1065,275 1060,283" fill="#10B981"/>
+<rect x="30" y="348" width="1440" height="170" rx="12" fill="#F5F3FF" stroke="#DDD6FE" stroke-width="1.5"/>
+<text x="750" y="366" font-size="11" fill="#6D28D9" text-anchor="middle" font-weight="bold" font-family="inherit">SERVER  (Next.js 16 · Vercel)</text>
+<rect x="50" y="376" width="340" height="128" rx="10" fill="#F5F3FF" stroke="#7C3AED" stroke-width="1.5"/>
+<rect x="50" y="376" width="340" height="36" rx="10" fill="#7C3AED" stroke="#7C3AED" stroke-width="1.5"/>
+<rect x="50" y="402" width="340" height="14" rx="0" fill="#7C3AED" stroke="none" stroke-width="1.5"/>
+<text x="220" y="399" font-size="12" fill="#fff" text-anchor="middle" font-weight="bold" font-family="inherit">App Router</text>
+<text x="66" y="426" font-size="11" fill="#374151" text-anchor="start" font-weight="normal" font-family="inherit">·  SSR  /  PPR (Partial Prerender)</text>
+<text x="66" y="448" font-size="11" fill="#374151" text-anchor="start" font-weight="normal" font-family="inherit">·  Suspense wrapper  +  await params</text>
+<text x="66" y="470" font-size="11" fill="#374151" text-anchor="start" font-weight="normal" font-family="inherit">·  createClient()  →  'use no-store'</text>
+<rect x="410" y="376" width="340" height="128" rx="10" fill="#F5F3FF" stroke="#7C3AED" stroke-width="1.5"/>
+<rect x="410" y="376" width="340" height="36" rx="10" fill="#7C3AED" stroke="#7C3AED" stroke-width="1.5"/>
+<rect x="410" y="402" width="340" height="14" rx="0" fill="#7C3AED" stroke="none" stroke-width="1.5"/>
+<text x="580" y="399" font-size="12" fill="#fff" text-anchor="middle" font-weight="bold" font-family="inherit">API Routes  (/api)</text>
+<text x="426" y="426" font-size="11" fill="#374151" text-anchor="start" font-weight="normal" font-family="inherit">·  jobs · applications · chats</text>
+<text x="426" y="448" font-size="11" fill="#374151" text-anchor="start" font-weight="normal" font-family="inherit">·  ledger · profile · reviews</text>
+<text x="426" y="470" font-size="11" fill="#374151" text-anchor="start" font-weight="normal" font-family="inherit">·  certifications · notifications</text>
+<text x="426" y="492" font-size="11" fill="#374151" text-anchor="start" font-weight="normal" font-family="inherit">·  address (카카오 프록시)</text>
+<rect x="770" y="376" width="340" height="128" rx="10" fill="#F5F3FF" stroke="#7C3AED" stroke-width="1.5"/>
+<rect x="770" y="376" width="340" height="36" rx="10" fill="#7C3AED" stroke="#7C3AED" stroke-width="1.5"/>
+<rect x="770" y="402" width="340" height="14" rx="0" fill="#7C3AED" stroke="none" stroke-width="1.5"/>
+<text x="940" y="399" font-size="12" fill="#fff" text-anchor="middle" font-weight="bold" font-family="inherit">Cache Layer</text>
+<text x="786" y="426" font-size="11" fill="#374151" text-anchor="start" font-weight="normal" font-family="inherit">·  "use cache"  +  cacheComponents: true</text>
+<text x="786" y="448" font-size="11" fill="#374151" text-anchor="start" font-weight="normal" font-family="inherit">·  cacheLife('seconds' | 'minutes')</text>
+<text x="786" y="470" font-size="11" fill="#374151" text-anchor="start" font-weight="normal" font-family="inherit">·  cacheTag('jobs')  →  revalidateTag</text>
+<rect x="1130" y="376" width="340" height="128" rx="10" fill="#F5F3FF" stroke="#7C3AED" stroke-width="1.5"/>
+<rect x="1130" y="376" width="340" height="36" rx="10" fill="#7C3AED" stroke="#7C3AED" stroke-width="1.5"/>
+<rect x="1130" y="402" width="340" height="14" rx="0" fill="#7C3AED" stroke="none" stroke-width="1.5"/>
+<text x="1300" y="399" font-size="12" fill="#fff" text-anchor="middle" font-weight="bold" font-family="inherit">Supabase Clients</text>
+<text x="1146" y="426" font-size="11" fill="#374151" text-anchor="start" font-weight="normal" font-family="inherit">·  createBrowserClient  (CSR)</text>
+<text x="1146" y="448" font-size="11" fill="#374151" text-anchor="start" font-weight="normal" font-family="inherit">·  createServerClient   (SSR)</text>
+<text x="1146" y="470" font-size="11" fill="#374151" text-anchor="start" font-weight="normal" font-family="inherit">·  createAdminClient    (SERVICE_ROLE)</text>
+<line x1="300" y1="518" x2="300" y2="572" stroke="#10B981" stroke-width="1.8"/>
+<polygon points="295,572 305,572 300,580" fill="#10B981"/>
+<text x="314" y="553" font-size="10" fill="#94A3B8" text-anchor="start" font-weight="normal" font-family="inherit">SDK / REST</text>
+<line x1="700" y1="518" x2="700" y2="572" stroke="#10B981" stroke-width="1.8"/>
+<polygon points="695,572 705,572 700,580" fill="#10B981"/>
+<line x1="1440" y1="438" x2="1452" y2="438" stroke="#F59E0B" stroke-width="1.8"/>
+<polygon points="1452,433 1452,443 1460,438" fill="#F59E0B"/>
+<line x1="1200" y1="518" x2="1200" y2="572" stroke="#F59E0B" stroke-width="1.8"/>
+<polygon points="1195,572 1205,572 1200,580" fill="#F59E0B"/>
+<text x="1214" y="553" font-size="10" fill="#94A3B8" text-anchor="start" font-weight="normal" font-family="inherit">HTTP</text>
+<rect x="30" y="584" width="1070" height="180" rx="12" fill="#ECFDF5" stroke="#A7F3D0" stroke-width="1.5"/>
+<text x="565" y="602" font-size="11" fill="#047857" text-anchor="middle" font-weight="bold" font-family="inherit">SUPABASE  (BaaS Backend)</text>
+<rect x="50" y="612" width="230" height="136" rx="10" fill="#ECFDF5" stroke="#059669" stroke-width="1.5"/>
+<rect x="50" y="612" width="230" height="36" rx="10" fill="#059669" stroke="#059669" stroke-width="1.5"/>
+<rect x="50" y="638" width="230" height="14" rx="0" fill="#059669" stroke="none" stroke-width="1.5"/>
+<text x="165" y="635" font-size="12" fill="#fff" text-anchor="middle" font-weight="bold" font-family="inherit">Auth</text>
+<text x="66" y="662" font-size="11" fill="#374151" text-anchor="start" font-weight="normal" font-family="inherit">·  이메일 / 비밀번호</text>
+<text x="66" y="684" font-size="11" fill="#374151" text-anchor="start" font-weight="normal" font-family="inherit">·  JWT 세션 관리</text>
+<text x="66" y="706" font-size="11" fill="#374151" text-anchor="start" font-weight="normal" font-family="inherit">·  handle_new_user 트리거</text>
+<text x="66" y="728" font-size="11" fill="#374151" text-anchor="start" font-weight="normal" font-family="inherit">·  RLS  (역할별 접근제어)</text>
+<rect x="298" y="612" width="300" height="136" rx="10" fill="#ECFDF5" stroke="#059669" stroke-width="1.5"/>
+<rect x="298" y="612" width="300" height="36" rx="10" fill="#059669" stroke="#059669" stroke-width="1.5"/>
+<rect x="298" y="638" width="300" height="14" rx="0" fill="#059669" stroke="none" stroke-width="1.5"/>
+<text x="448" y="635" font-size="12" fill="#fff" text-anchor="middle" font-weight="bold" font-family="inherit">PostgreSQL  DB</text>
+<text x="314" y="662" font-size="11" fill="#374151" text-anchor="start" font-weight="normal" font-family="inherit">·  profiles · jobs · applications</text>
+<text x="314" y="684" font-size="11" fill="#374151" text-anchor="start" font-weight="normal" font-family="inherit">·  chat_rooms · messages</text>
+<text x="314" y="706" font-size="11" fill="#374151" text-anchor="start" font-weight="normal" font-family="inherit">·  reviews · ledger_expenses</text>
+<text x="314" y="728" font-size="11" fill="#374151" text-anchor="start" font-weight="normal" font-family="inherit">·  notifications · certifications</text>
+<rect x="616" y="612" width="216" height="136" rx="10" fill="#ECFDF5" stroke="#059669" stroke-width="1.5"/>
+<rect x="616" y="612" width="216" height="36" rx="10" fill="#059669" stroke="#059669" stroke-width="1.5"/>
+<rect x="616" y="638" width="216" height="14" rx="0" fill="#059669" stroke="none" stroke-width="1.5"/>
+<text x="724" y="635" font-size="12" fill="#fff" text-anchor="middle" font-weight="bold" font-family="inherit">Realtime</text>
+<text x="632" y="662" font-size="11" fill="#374151" text-anchor="start" font-weight="normal" font-family="inherit">·  채팅 메시지 구독</text>
+<text x="632" y="684" font-size="11" fill="#374151" text-anchor="start" font-weight="normal" font-family="inherit">·  알림 실시간 구독</text>
+<text x="632" y="706" font-size="11" fill="#374151" text-anchor="start" font-weight="normal" font-family="inherit">·  WebSocket 채널</text>
+<rect x="850" y="612" width="220" height="136" rx="10" fill="#ECFDF5" stroke="#059669" stroke-width="1.5"/>
+<rect x="850" y="612" width="220" height="36" rx="10" fill="#059669" stroke="#059669" stroke-width="1.5"/>
+<rect x="850" y="638" width="220" height="14" rx="0" fill="#059669" stroke="none" stroke-width="1.5"/>
+<text x="960" y="635" font-size="12" fill="#fff" text-anchor="middle" font-weight="bold" font-family="inherit">Storage</text>
+<text x="866" y="662" font-size="11" fill="#374151" text-anchor="start" font-weight="normal" font-family="inherit">·  avatars/  (프로필 사진)</text>
+<text x="866" y="684" font-size="11" fill="#374151" text-anchor="start" font-weight="normal" font-family="inherit">·  certifications/  (서류)</text>
+<text x="866" y="706" font-size="11" fill="#374151" text-anchor="start" font-weight="normal" font-family="inherit">·  Signed URL 발급</text>
+<rect x="1120" y="584" width="350" height="180" rx="12" fill="#FFFBEB" stroke="#FDE68A" stroke-width="1.5"/>
+<text x="1295" y="602" font-size="11" fill="#B45309" text-anchor="middle" font-weight="bold" font-family="inherit">EXTERNAL SERVICES</text>
+<rect x="1140" y="612" width="310" height="136" rx="10" fill="#FFFBEB" stroke="#F59E0B" stroke-width="1.5"/>
+<rect x="1140" y="612" width="310" height="36" rx="10" fill="#F59E0B" stroke="#F59E0B" stroke-width="1.5"/>
+<rect x="1140" y="638" width="310" height="14" rx="0" fill="#F59E0B" stroke="none" stroke-width="1.5"/>
+<text x="1295" y="635" font-size="12" fill="#fff" text-anchor="middle" font-weight="bold" font-family="inherit">Kakao Map REST API</text>
+<text x="1156" y="662" font-size="11" fill="#374151" text-anchor="start" font-weight="normal" font-family="inherit">·  주소 → 좌표 변환</text>
+<text x="1156" y="684" font-size="11" fill="#374151" text-anchor="start" font-weight="normal" font-family="inherit">·  /api/address/search 프록시</text>
+<text x="1156" y="706" font-size="11" fill="#374151" text-anchor="start" font-weight="normal" font-family="inherit">·  서버 전용 API 키 (비공개)</text>
+<rect x="30" y="776" width="1440" height="36" rx="8" fill="#F1F5F9" stroke="#E2E8F0" stroke-width="1.5"/>
+<circle cx="80" cy="794" r="5" fill="#3B82F6"/>
+<text x="90" y="798" font-size="10" fill="#64748B" text-anchor="start" font-weight="normal" font-family="inherit">Client Layer</text>
+<circle cx="310" cy="794" r="5" fill="#7C3AED"/>
+<text x="320" y="798" font-size="10" fill="#64748B" text-anchor="start" font-weight="normal" font-family="inherit">Server Layer</text>
+<circle cx="540" cy="794" r="5" fill="#059669"/>
+<text x="550" y="798" font-size="10" fill="#64748B" text-anchor="start" font-weight="normal" font-family="inherit">Supabase Backend</text>
+<circle cx="770" cy="794" r="5" fill="#F59E0B"/>
+<text x="780" y="798" font-size="10" fill="#64748B" text-anchor="start" font-weight="normal" font-family="inherit">External Services</text>
+<circle cx="1000" cy="794" r="5" fill="#94A3B8"/>
+<text x="1010" y="798" font-size="10" fill="#64748B" text-anchor="start" font-weight="normal" font-family="inherit">HTTP / API</text>
+<circle cx="1230" cy="794" r="5" fill="#6366F1"/>
+<text x="1240" y="798" font-size="10" fill="#64748B" text-anchor="start" font-weight="normal" font-family="inherit">Realtime WebSocket</text>
+</svg>

@@ -1,0 +1,475 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="2300" height="1750" viewBox="0 0 2300 1750">
+  <defs>
+  <marker id="arr" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+    <polygon points="0 0, 10 3.5, 0 7" fill="#475569"/>
+  </marker>
+  <style><![CDATA[
+    text { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+    .mono { font-family: "SF Mono", "Fira Code", Consolas, monospace; }
+  ]]></style>
+</defs>
+  <rect width="2300" height="1750" fill="#0f172a"/>
+  <line x1="0" y1="0" x2="0" y2="1750" stroke="#1e293b" stroke-width="0.4"/>
+  <line x1="60" y1="0" x2="60" y2="1750" stroke="#1e293b" stroke-width="0.4"/>
+  <line x1="120" y1="0" x2="120" y2="1750" stroke="#1e293b" stroke-width="0.4"/>
+  <line x1="180" y1="0" x2="180" y2="1750" stroke="#1e293b" stroke-width="0.4"/>
+  <line x1="240" y1="0" x2="240" y2="1750" stroke="#1e293b" stroke-width="0.4"/>
+  <line x1="300" y1="0" x2="300" y2="1750" stroke="#1e293b" stroke-width="0.4"/>
+  <line x1="360" y1="0" x2="360" y2="1750" stroke="#1e293b" stroke-width="0.4"/>
+  <line x1="420" y1="0" x2="420" y2="1750" stroke="#1e293b" stroke-width="0.4"/>
+  <line x1="480" y1="0" x2="480" y2="1750" stroke="#1e293b" stroke-width="0.4"/>
+  <line x1="540" y1="0" x2="540" y2="1750" stroke="#1e293b" stroke-width="0.4"/>
+  <line x1="600" y1="0" x2="600" y2="1750" stroke="#1e293b" stroke-width="0.4"/>
+  <line x1="660" y1="0" x2="660" y2="1750" stroke="#1e293b" stroke-width="0.4"/>
+  <line x1="720" y1="0" x2="720" y2="1750" stroke="#1e293b" stroke-width="0.4"/>
+  <line x1="780" y1="0" x2="780" y2="1750" stroke="#1e293b" stroke-width="0.4"/>
+  <line x1="840" y1="0" x2="840" y2="1750" stroke="#1e293b" stroke-width="0.4"/>
+  <line x1="900" y1="0" x2="900" y2="1750" stroke="#1e293b" stroke-width="0.4"/>
+  <line x1="960" y1="0" x2="960" y2="1750" stroke="#1e293b" stroke-width="0.4"/>
+  <line x1="1020" y1="0" x2="1020" y2="1750" stroke="#1e293b" stroke-width="0.4"/>
+  <line x1="1080" y1="0" x2="1080" y2="1750" stroke="#1e293b" stroke-width="0.4"/>
+  <line x1="1140" y1="0" x2="1140" y2="1750" stroke="#1e293b" stroke-width="0.4"/>
+  <line x1="1200" y1="0" x2="1200" y2="1750" stroke="#1e293b" stroke-width="0.4"/>
+  <line x1="1260" y1="0" x2="1260" y2="1750" stroke="#1e293b" stroke-width="0.4"/>
+  <line x1="1320" y1="0" x2="1320" y2="1750" stroke="#1e293b" stroke-width="0.4"/>
+  <line x1="1380" y1="0" x2="1380" y2="1750" stroke="#1e293b" stroke-width="0.4"/>
+  <line x1="1440" y1="0" x2="1440" y2="1750" stroke="#1e293b" stroke-width="0.4"/>
+  <line x1="1500" y1="0" x2="1500" y2="1750" stroke="#1e293b" stroke-width="0.4"/>
+  <line x1="1560" y1="0" x2="1560" y2="1750" stroke="#1e293b" stroke-width="0.4"/>
+  <line x1="1620" y1="0" x2="1620" y2="1750" stroke="#1e293b" stroke-width="0.4"/>
+  <line x1="1680" y1="0" x2="1680" y2="1750" stroke="#1e293b" stroke-width="0.4"/>
+  <line x1="1740" y1="0" x2="1740" y2="1750" stroke="#1e293b" stroke-width="0.4"/>
+  <line x1="1800" y1="0" x2="1800" y2="1750" stroke="#1e293b" stroke-width="0.4"/>
+  <line x1="1860" y1="0" x2="1860" y2="1750" stroke="#1e293b" stroke-width="0.4"/>
+  <line x1="1920" y1="0" x2="1920" y2="1750" stroke="#1e293b" stroke-width="0.4"/>
+  <line x1="1980" y1="0" x2="1980" y2="1750" stroke="#1e293b" stroke-width="0.4"/>
+  <line x1="2040" y1="0" x2="2040" y2="1750" stroke="#1e293b" stroke-width="0.4"/>
+  <line x1="2100" y1="0" x2="2100" y2="1750" stroke="#1e293b" stroke-width="0.4"/>
+  <line x1="2160" y1="0" x2="2160" y2="1750" stroke="#1e293b" stroke-width="0.4"/>
+  <line x1="2220" y1="0" x2="2220" y2="1750" stroke="#1e293b" stroke-width="0.4"/>
+  <line x1="2280" y1="0" x2="2280" y2="1750" stroke="#1e293b" stroke-width="0.4"/>
+  <line x1="0" y1="0" x2="2300" y2="0" stroke="#1e293b" stroke-width="0.4"/>
+  <line x1="0" y1="60" x2="2300" y2="60" stroke="#1e293b" stroke-width="0.4"/>
+  <line x1="0" y1="120" x2="2300" y2="120" stroke="#1e293b" stroke-width="0.4"/>
+  <line x1="0" y1="180" x2="2300" y2="180" stroke="#1e293b" stroke-width="0.4"/>
+  <line x1="0" y1="240" x2="2300" y2="240" stroke="#1e293b" stroke-width="0.4"/>
+  <line x1="0" y1="300" x2="2300" y2="300" stroke="#1e293b" stroke-width="0.4"/>
+  <line x1="0" y1="360" x2="2300" y2="360" stroke="#1e293b" stroke-width="0.4"/>
+  <line x1="0" y1="420" x2="2300" y2="420" stroke="#1e293b" stroke-width="0.4"/>
+  <line x1="0" y1="480" x2="2300" y2="480" stroke="#1e293b" stroke-width="0.4"/>
+  <line x1="0" y1="540" x2="2300" y2="540" stroke="#1e293b" stroke-width="0.4"/>
+  <line x1="0" y1="600" x2="2300" y2="600" stroke="#1e293b" stroke-width="0.4"/>
+  <line x1="0" y1="660" x2="2300" y2="660" stroke="#1e293b" stroke-width="0.4"/>
+  <line x1="0" y1="720" x2="2300" y2="720" stroke="#1e293b" stroke-width="0.4"/>
+  <line x1="0" y1="780" x2="2300" y2="780" stroke="#1e293b" stroke-width="0.4"/>
+  <line x1="0" y1="840" x2="2300" y2="840" stroke="#1e293b" stroke-width="0.4"/>
+  <line x1="0" y1="900" x2="2300" y2="900" stroke="#1e293b" stroke-width="0.4"/>
+  <line x1="0" y1="960" x2="2300" y2="960" stroke="#1e293b" stroke-width="0.4"/>
+  <line x1="0" y1="1020" x2="2300" y2="1020" stroke="#1e293b" stroke-width="0.4"/>
+  <line x1="0" y1="1080" x2="2300" y2="1080" stroke="#1e293b" stroke-width="0.4"/>
+  <line x1="0" y1="1140" x2="2300" y2="1140" stroke="#1e293b" stroke-width="0.4"/>
+  <line x1="0" y1="1200" x2="2300" y2="1200" stroke="#1e293b" stroke-width="0.4"/>
+  <line x1="0" y1="1260" x2="2300" y2="1260" stroke="#1e293b" stroke-width="0.4"/>
+  <line x1="0" y1="1320" x2="2300" y2="1320" stroke="#1e293b" stroke-width="0.4"/>
+  <line x1="0" y1="1380" x2="2300" y2="1380" stroke="#1e293b" stroke-width="0.4"/>
+  <line x1="0" y1="1440" x2="2300" y2="1440" stroke="#1e293b" stroke-width="0.4"/>
+  <line x1="0" y1="1500" x2="2300" y2="1500" stroke="#1e293b" stroke-width="0.4"/>
+  <line x1="0" y1="1560" x2="2300" y2="1560" stroke="#1e293b" stroke-width="0.4"/>
+  <line x1="0" y1="1620" x2="2300" y2="1620" stroke="#1e293b" stroke-width="0.4"/>
+  <line x1="0" y1="1680" x2="2300" y2="1680" stroke="#1e293b" stroke-width="0.4"/>
+  <line x1="0" y1="1740" x2="2300" y2="1740" stroke="#1e293b" stroke-width="0.4"/>
+  <rect x="0" y="0" width="2300" height="68" rx="0" fill="#0f172a" stroke="#0f172a" stroke-width="1.5"/>
+  <text x="1150" y="30" font-size="30" fill="#f8fafc" text-anchor="middle" font-weight="900" font-family="sans-serif">DIGGO</text>
+  <text x="1150" y="54" font-size="14" fill="#64748b" text-anchor="middle" font-weight="normal" font-family="sans-serif">굴착기 배차 플랫폼 - 전체 아키텍처 (System Architecture)</text>
+  <line x1="40" y1="68" x2="2260" y2="68" stroke="#1e293b" stroke-width="1"/>
+  <rect x="20" y="82" width="2260" height="448" rx="12" fill="#1e293b" stroke="#3b82f6" stroke-width="2"/>
+  <text x="1150" y="104" font-size="11" fill="#3b82f6" text-anchor="middle" font-weight="bold" font-family="sans-serif">BROWSER / CLIENT LAYER</text>
+  <rect x="40" y="116" width="575" height="404" rx="8" fill="#0f172a" stroke="#1e3a8a" stroke-width="1.5"/>
+  <text x="327" y="135" font-size="12" fill="#bfdbfe" text-anchor="middle" font-weight="bold" font-family="sans-serif">Pages (App Router)</text>
+  <rect x="52" y="152" width="551" height="34" rx="5" fill="#1e293b" stroke="#1e3a8a" stroke-width="1.5"/>
+  <text x="62" y="167" font-size="10" fill="#7dd3fc" text-anchor="start" font-weight="bold" font-family="monospace">/(auth)/</text>
+  <text x="217" y="167" font-size="9.5" fill="#94a3b8" text-anchor="start" font-weight="normal" font-family="sans-serif">login / signup / find-password / reset-password</text>
+  <rect x="52" y="193" width="551" height="34" rx="5" fill="#1e293b" stroke="#1e3a8a" stroke-width="1.5"/>
+  <text x="62" y="208" font-size="10" fill="#7dd3fc" text-anchor="start" font-weight="bold" font-family="monospace">/jobs/</text>
+  <text x="217" y="208" font-size="9.5" fill="#94a3b8" text-anchor="start" font-weight="normal" font-family="sans-serif">일감 목록 · 상세 · 등록 · 수정</text>
+  <rect x="52" y="234" width="551" height="34" rx="5" fill="#1e293b" stroke="#1e3a8a" stroke-width="1.5"/>
+  <text x="62" y="249" font-size="10" fill="#7dd3fc" text-anchor="start" font-weight="bold" font-family="monospace">/manager/</text>
+  <text x="217" y="249" font-size="9.5" fill="#94a3b8" text-anchor="start" font-weight="normal" font-family="sans-serif">소장 전용 · 지원자 관리 · 수락</text>
+  <rect x="52" y="275" width="551" height="34" rx="5" fill="#1e293b" stroke="#1e3a8a" stroke-width="1.5"/>
+  <text x="62" y="290" font-size="10" fill="#7dd3fc" text-anchor="start" font-weight="bold" font-family="monospace">/mypage/</text>
+  <text x="217" y="290" font-size="9.5" fill="#94a3b8" text-anchor="start" font-weight="normal" font-family="sans-serif">마이페이지 · 장부 · 지원내역 · 평가 · 인증</text>
+  <rect x="52" y="316" width="551" height="34" rx="5" fill="#1e293b" stroke="#1e3a8a" stroke-width="1.5"/>
+  <text x="62" y="331" font-size="10" fill="#7dd3fc" text-anchor="start" font-weight="bold" font-family="monospace">/chats/</text>
+  <text x="217" y="331" font-size="9.5" fill="#94a3b8" text-anchor="start" font-weight="normal" font-family="sans-serif">채팅 목록 · 채팅방</text>
+  <rect x="52" y="357" width="551" height="34" rx="5" fill="#1e293b" stroke="#1e3a8a" stroke-width="1.5"/>
+  <text x="62" y="372" font-size="10" fill="#7dd3fc" text-anchor="start" font-weight="bold" font-family="monospace">/admin/</text>
+  <text x="217" y="372" font-size="9.5" fill="#94a3b8" text-anchor="start" font-weight="normal" font-family="sans-serif">관리자 · 인증 심사</text>
+  <rect x="52" y="398" width="551" height="34" rx="5" fill="#1e293b" stroke="#1e3a8a" stroke-width="1.5"/>
+  <text x="62" y="413" font-size="10" fill="#7dd3fc" text-anchor="start" font-weight="bold" font-family="monospace">/notifications/</text>
+  <text x="217" y="413" font-size="9.5" fill="#94a3b8" text-anchor="start" font-weight="normal" font-family="sans-serif">알림 목록</text>
+  <rect x="52" y="439" width="551" height="34" rx="5" fill="#1e293b" stroke="#1e3a8a" stroke-width="1.5"/>
+  <text x="62" y="454" font-size="10" fill="#7dd3fc" text-anchor="start" font-weight="bold" font-family="monospace">/profiles/[id]</text>
+  <text x="217" y="454" font-size="9.5" fill="#94a3b8" text-anchor="start" font-weight="normal" font-family="sans-serif">공개 프로필</text>
+  <rect x="52" y="480" width="551" height="34" rx="5" fill="#1e293b" stroke="#1e3a8a" stroke-width="1.5"/>
+  <text x="62" y="495" font-size="10" fill="#7dd3fc" text-anchor="start" font-weight="bold" font-family="monospace">/ (홈)</text>
+  <text x="217" y="495" font-size="9.5" fill="#94a3b8" text-anchor="start" font-weight="normal" font-family="sans-serif">랜딩 페이지</text>
+  <rect x="635" y="116" width="460" height="404" rx="8" fill="#0f172a" stroke="#1d4ed8" stroke-width="1.5"/>
+  <text x="865" y="135" font-size="12" fill="#bfdbfe" text-anchor="middle" font-weight="bold" font-family="sans-serif">State Management</text>
+  <rect x="645" y="146" width="440" height="180" rx="6" fill="#0f2044" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="865" y="165" font-size="12" fill="#60a5fa" text-anchor="middle" font-weight="bold" font-family="sans-serif">Zustand</text>
+  <text x="655" y="179" font-size="10" fill="#93c5fd" text-anchor="start" font-weight="normal" font-family="monospace">store/auth.ts</text>
+  <text x="655" y="192" font-size="9" fill="#64748b" text-anchor="start" font-weight="normal" font-family="sans-serif">유저 세션, role, isLoading</text>
+  <text x="655" y="207" font-size="10" fill="#93c5fd" text-anchor="start" font-weight="normal" font-family="monospace">store/notifications.ts</text>
+  <text x="655" y="220" font-size="9" fill="#64748b" text-anchor="start" font-weight="normal" font-family="sans-serif">알림 카운트, 읽음 상태</text>
+  <text x="655" y="235" font-size="10" fill="#93c5fd" text-anchor="start" font-weight="normal" font-family="monospace">AuthInitializer</text>
+  <text x="655" y="248" font-size="9" fill="#64748b" text-anchor="start" font-weight="normal" font-family="sans-serif">onAuthStateChange 단일 구독</text>
+  <text x="655" y="263" font-size="10" fill="#93c5fd" text-anchor="start" font-weight="normal" font-family="monospace">useAuthStore()</text>
+  <text x="655" y="276" font-size="9" fill="#64748b" text-anchor="start" font-weight="normal" font-family="sans-serif">전역 세션 읽기 전용</text>
+  <text x="655" y="291" font-size="10" fill="#93c5fd" text-anchor="start" font-weight="normal" font-family="monospace">프로필 fetch</text>
+  <text x="655" y="304" font-size="9" fill="#64748b" text-anchor="start" font-weight="normal" font-family="sans-serif">세션 확인 후 백그라운드</text>
+  <rect x="645" y="334" width="440" height="176" rx="6" fill="#0f2044" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="865" y="353" font-size="12" fill="#60a5fa" text-anchor="middle" font-weight="bold" font-family="sans-serif">TanStack Query v5</text>
+  <text x="655" y="368" font-size="10" fill="#93c5fd" text-anchor="start" font-weight="normal" font-family="monospace">useJobs</text>
+  <text x="795" y="368" font-size="9.5" fill="#64748b" text-anchor="start" font-weight="normal" font-family="sans-serif">- 무한스크롤 · prefetchInfiniteQuery</text>
+  <text x="655" y="395" font-size="10" fill="#93c5fd" text-anchor="start" font-weight="normal" font-family="monospace">useLedger</text>
+  <text x="795" y="395" font-size="9.5" fill="#64748b" text-anchor="start" font-weight="normal" font-family="sans-serif">- 장부 월별 데이터 캐싱</text>
+  <text x="655" y="422" font-size="10" fill="#93c5fd" text-anchor="start" font-weight="normal" font-family="monospace">useNotifications</text>
+  <text x="795" y="422" font-size="9.5" fill="#64748b" text-anchor="start" font-weight="normal" font-family="sans-serif">- 알림 목록 구독</text>
+  <text x="655" y="449" font-size="10" fill="#93c5fd" text-anchor="start" font-weight="normal" font-family="monospace">staleTime: 30s</text>
+  <text x="795" y="449" font-size="9.5" fill="#64748b" text-anchor="start" font-weight="normal" font-family="sans-serif">- gcTime: 5m</text>
+  <text x="655" y="476" font-size="10" fill="#93c5fd" text-anchor="start" font-weight="normal" font-family="monospace">낙관적 업데이트</text>
+  <text x="795" y="476" font-size="9.5" fill="#64748b" text-anchor="start" font-weight="normal" font-family="sans-serif">- queryClient.setQueryData</text>
+  <rect x="1115" y="116" width="500" height="404" rx="8" fill="#0f172a" stroke="#1d4ed8" stroke-width="1.5"/>
+  <text x="1365" y="135" font-size="12" fill="#bfdbfe" text-anchor="middle" font-weight="bold" font-family="sans-serif">Components</text>
+  <rect x="1125" y="146" width="480" height="225" rx="6" fill="#0f2044" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="1365" y="165" font-size="11" fill="#60a5fa" text-anchor="middle" font-weight="bold" font-family="monospace">components/features/</text>
+  <text x="1135" y="180" font-size="9" fill="#94a3b8" text-anchor="start" font-weight="normal" font-family="sans-serif">· admin/  - 인증 심사 UI</text>
+  <text x="1135" y="196" font-size="9" fill="#94a3b8" text-anchor="start" font-weight="normal" font-family="sans-serif">· auth/   - AuthInitializer</text>
+  <text x="1135" y="212" font-size="9" fill="#94a3b8" text-anchor="start" font-weight="normal" font-family="sans-serif">· chat/   - ChatRoom, ChatList, ChatInput</text>
+  <text x="1135" y="228" font-size="9" fill="#94a3b8" text-anchor="start" font-weight="normal" font-family="sans-serif">· driver/ - DriverApplicationsList</text>
+  <text x="1135" y="244" font-size="9" fill="#94a3b8" text-anchor="start" font-weight="normal" font-family="sans-serif">· home/   - AnimatedFeatures</text>
+  <text x="1135" y="260" font-size="9" fill="#94a3b8" text-anchor="start" font-weight="normal" font-family="sans-serif">· jobs/   - JobCard, JobForm, JobFilter</text>
+  <text x="1135" y="276" font-size="9" fill="#94a3b8" text-anchor="start" font-weight="normal" font-family="sans-serif">· ledger/ - LedgerCalendar, DayPanel</text>
+  <text x="1135" y="292" font-size="9" fill="#94a3b8" text-anchor="start" font-weight="normal" font-family="sans-serif">· manager/ - 지원자 수락</text>
+  <text x="1135" y="308" font-size="9" fill="#94a3b8" text-anchor="start" font-weight="normal" font-family="sans-serif">· mypage/ - 프로필 편집</text>
+  <text x="1135" y="324" font-size="9" fill="#94a3b8" text-anchor="start" font-weight="normal" font-family="sans-serif">· notifications/ - 알림 아이템</text>
+  <text x="1135" y="340" font-size="9" fill="#94a3b8" text-anchor="start" font-weight="normal" font-family="sans-serif">· profile/ - ProfileCard, ReviewForm</text>
+  <text x="1135" y="356" font-size="9" fill="#94a3b8" text-anchor="start" font-weight="normal" font-family="sans-serif">· reviews/ - 평가 목록</text>
+  <rect x="1125" y="379" width="480" height="131" rx="6" fill="#0f2044" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="1365" y="398" font-size="11" fill="#60a5fa" text-anchor="middle" font-weight="bold" font-family="monospace">components/ui/</text>
+  <text x="1135" y="414" font-size="9.5" fill="#94a3b8" text-anchor="start" font-weight="normal" font-family="sans-serif">· Avatar</text>
+  <text x="1375" y="414" font-size="9.5" fill="#94a3b8" text-anchor="start" font-weight="normal" font-family="sans-serif">· CertBadge</text>
+  <text x="1135" y="436" font-size="9.5" fill="#94a3b8" text-anchor="start" font-weight="normal" font-family="sans-serif">· CopyButton</text>
+  <text x="1375" y="436" font-size="9.5" fill="#94a3b8" text-anchor="start" font-weight="normal" font-family="sans-serif">· EmptyState</text>
+  <text x="1135" y="458" font-size="9.5" fill="#94a3b8" text-anchor="start" font-weight="normal" font-family="sans-serif">· EquipmentBadge</text>
+  <text x="1375" y="458" font-size="9.5" fill="#94a3b8" text-anchor="start" font-weight="normal" font-family="sans-serif">· ExcavatorIcon</text>
+  <text x="1135" y="480" font-size="9.5" fill="#94a3b8" text-anchor="start" font-weight="normal" font-family="sans-serif">· RatingDisplay</text>
+  <rect x="1635" y="116" width="630" height="200" rx="8" fill="#1a1200" stroke="#713f12" stroke-width="1.5"/>
+  <text x="1950" y="135" font-size="12" fill="#fef08a" text-anchor="middle" font-weight="bold" font-family="sans-serif">Kakao Map API (클라이언트)</text>
+  <rect x="1647" y="152" width="606" height="30" rx="4" fill="#1c1000" stroke="#78350f" stroke-width="1.5"/>
+  <text x="1657" y="166" font-size="10" fill="#fbbf24" text-anchor="start" font-weight="bold" font-family="sans-serif">SDK 로드</text>
+  <text x="1767" y="166" font-size="9.5" fill="#92400e" text-anchor="start" font-weight="normal" font-family="sans-serif">app/layout.tsx script 태그</text>
+  <rect x="1647" y="188" width="606" height="30" rx="4" fill="#1c1000" stroke="#78350f" stroke-width="1.5"/>
+  <text x="1657" y="202" font-size="10" fill="#fbbf24" text-anchor="start" font-weight="bold" font-family="sans-serif">주소 검색</text>
+  <text x="1767" y="202" font-size="9.5" fill="#92400e" text-anchor="start" font-weight="normal" font-family="sans-serif">/api/address/search (서버 프록시)</text>
+  <rect x="1647" y="224" width="606" height="30" rx="4" fill="#1c1000" stroke="#78350f" stroke-width="1.5"/>
+  <text x="1657" y="238" font-size="10" fill="#fbbf24" text-anchor="start" font-weight="bold" font-family="sans-serif">지도 렌더링</text>
+  <text x="1767" y="238" font-size="9.5" fill="#92400e" text-anchor="start" font-weight="normal" font-family="sans-serif">KakaoMap 컴포넌트 (jobs/[id])</text>
+  <rect x="1647" y="260" width="606" height="30" rx="4" fill="#1c1000" stroke="#78350f" stroke-width="1.5"/>
+  <text x="1657" y="274" font-size="10" fill="#fbbf24" text-anchor="start" font-weight="bold" font-family="sans-serif">createPortal</text>
+  <text x="1767" y="274" font-size="9.5" fill="#92400e" text-anchor="start" font-weight="normal" font-family="sans-serif">stacking context z-index 우회</text>
+  <rect x="1635" y="326" width="630" height="194" rx="8" fill="#0f172a" stroke="#1d4ed8" stroke-width="1.5"/>
+  <text x="1950" y="345" font-size="12" fill="#bfdbfe" text-anchor="middle" font-weight="bold" font-family="sans-serif">Custom Hooks</text>
+  <text x="1655" y="361" font-size="10" fill="#93c5fd" text-anchor="start" font-weight="normal" font-family="monospace">useAuth()</text>
+  <text x="1800" y="361" font-size="9.5" fill="#64748b" text-anchor="start" font-weight="normal" font-family="sans-serif">- Supabase 세션 구독 (AuthInitializer 전용)</text>
+  <text x="1655" y="387" font-size="10" fill="#93c5fd" text-anchor="start" font-weight="normal" font-family="monospace">useJobs()</text>
+  <text x="1800" y="387" font-size="9.5" fill="#64748b" text-anchor="start" font-weight="normal" font-family="sans-serif">- TQ 무한스크롤 일감 목록</text>
+  <text x="1655" y="413" font-size="10" fill="#93c5fd" text-anchor="start" font-weight="normal" font-family="monospace">useJobForm()</text>
+  <text x="1800" y="413" font-size="9.5" fill="#64748b" text-anchor="start" font-weight="normal" font-family="sans-serif">- 일감 등록/수정 폼 상태</text>
+  <text x="1655" y="439" font-size="10" fill="#93c5fd" text-anchor="start" font-weight="normal" font-family="monospace">useLedger()</text>
+  <text x="1800" y="439" font-size="9.5" fill="#64748b" text-anchor="start" font-weight="normal" font-family="sans-serif">- 장부 월별 데이터</text>
+  <text x="1655" y="465" font-size="10" fill="#93c5fd" text-anchor="start" font-weight="normal" font-family="monospace">useNotifications()</text>
+  <text x="1800" y="465" font-size="9.5" fill="#64748b" text-anchor="start" font-weight="normal" font-family="sans-serif">- 실시간 알림 구독</text>
+  <text x="1655" y="491" font-size="10" fill="#93c5fd" text-anchor="start" font-weight="normal" font-family="monospace">useHorizontalScroll()</text>
+  <text x="1800" y="491" font-size="9.5" fill="#64748b" text-anchor="start" font-weight="normal" font-family="sans-serif">- 장비 필터 스크롤</text>
+  <line x1="300" y1="530" x2="300" y2="574" stroke="#334155" stroke-width="1.5" stroke-dasharray="6,4"/>
+  <polygon points="294,572 306,572 300,582" fill="#475569"/>
+  <line x1="850" y1="530" x2="850" y2="574" stroke="#334155" stroke-width="1.5" stroke-dasharray="6,4"/>
+  <polygon points="844,572 856,572 850,582" fill="#475569"/>
+  <line x1="1350" y1="530" x2="1350" y2="574" stroke="#334155" stroke-width="1.5" stroke-dasharray="6,4"/>
+  <polygon points="1344,572 1356,572 1350,582" fill="#475569"/>
+  <line x1="1950" y1="530" x2="1950" y2="574" stroke="#334155" stroke-width="1.5" stroke-dasharray="6,4"/>
+  <polygon points="1944,572 1956,572 1950,582" fill="#475569"/>
+  <text x="1150" y="555" font-size="11" fill="#64748b" text-anchor="middle" font-weight="normal" font-family="sans-serif">HTTP 요청 (fetch / TanStack Query)  |  Supabase Realtime WebSocket</text>
+  <rect x="20" y="590" width="2260" height="455" rx="12" fill="#172033" stroke="#06b6d4" stroke-width="2"/>
+  <text x="1150" y="612" font-size="11" fill="#06b6d4" text-anchor="middle" font-weight="bold" font-family="sans-serif">NEXT.JS 16  -  VERCEL DEPLOY</text>
+  <rect x="40" y="626" width="700" height="210" rx="8" fill="#0f1f2e" stroke="#0891b2" stroke-width="1.5"/>
+  <text x="390" y="645" font-size="12" fill="#a5f3fc" text-anchor="middle" font-weight="bold" font-family="sans-serif">App Router + Cache Layer</text>
+  <text x="56" y="661" font-size="10" fill="#22d3ee" text-anchor="start" font-weight="normal" font-family="monospace">· cacheComponents: true</text>
+  <text x="278" y="661" font-size="9.5" fill="#64748b" text-anchor="start" font-weight="normal" font-family="sans-serif">next.config.mjs (Next.js 16)</text>
+  <text x="56" y="686" font-size="10" fill="#22d3ee" text-anchor="start" font-weight="normal" font-family="monospace">· "use cache"</text>
+  <text x="278" y="686" font-size="9.5" fill="#64748b" text-anchor="start" font-weight="normal" font-family="sans-serif">jobs-cache.ts 공개 데이터</text>
+  <text x="56" y="711" font-size="10" fill="#22d3ee" text-anchor="start" font-weight="normal" font-family="monospace">· cacheLife('seconds')</text>
+  <text x="278" y="711" font-size="9.5" fill="#64748b" text-anchor="start" font-weight="normal" font-family="sans-serif">getCachedJobsFirstPage()</text>
+  <text x="56" y="736" font-size="10" fill="#22d3ee" text-anchor="start" font-weight="normal" font-family="monospace">· cacheLife('minutes')</text>
+  <text x="278" y="736" font-size="9.5" fill="#64748b" text-anchor="start" font-weight="normal" font-family="sans-serif">getCachedJobDetail(id)</text>
+  <text x="56" y="761" font-size="10" fill="#22d3ee" text-anchor="start" font-weight="normal" font-family="monospace">· cacheTag('jobs')</text>
+  <text x="278" y="761" font-size="9.5" fill="#64748b" text-anchor="start" font-weight="normal" font-family="sans-serif">revalidateTag('jobs', 'max')</text>
+  <text x="56" y="786" font-size="10" fill="#22d3ee" text-anchor="start" font-weight="normal" font-family="monospace">· 'use no-store'</text>
+  <text x="278" y="786" font-size="9.5" fill="#64748b" text-anchor="start" font-weight="normal" font-family="sans-serif">createClient() -&gt; auto dynamic</text>
+  <text x="56" y="811" font-size="10" fill="#22d3ee" text-anchor="start" font-weight="normal" font-family="monospace">· Suspense wrapper</text>
+  <text x="278" y="811" font-size="9.5" fill="#64748b" text-anchor="start" font-weight="normal" font-family="sans-serif">[id] 라우트 PPR 패턴</text>
+  <rect x="40" y="846" width="700" height="189" rx="8" fill="#0f1f2e" stroke="#0891b2" stroke-width="1.5"/>
+  <text x="390" y="865" font-size="12" fill="#a5f3fc" text-anchor="middle" font-weight="bold" font-family="sans-serif">Vercel / 인프라 / 환경변수</text>
+  <rect x="52" y="881" width="676" height="25" rx="4" fill="#0a1628" stroke="#164e63" stroke-width="1.5"/>
+  <text x="60" y="894" font-size="10" fill="#67e8f9" text-anchor="start" font-weight="normal" font-family="monospace">main branch</text>
+  <text x="320" y="894" font-size="9.5" fill="#64748b" text-anchor="start" font-weight="normal" font-family="sans-serif">자동 배포 트리거</text>
+  <rect x="52" y="911" width="676" height="25" rx="4" fill="#0a1628" stroke="#164e63" stroke-width="1.5"/>
+  <text x="60" y="924" font-size="10" fill="#67e8f9" text-anchor="start" font-weight="normal" font-family="monospace">NEXT_PUBLIC_SUPABASE_URL</text>
+  <text x="320" y="924" font-size="9.5" fill="#64748b" text-anchor="start" font-weight="normal" font-family="sans-serif">Supabase 공개 URL</text>
+  <rect x="52" y="941" width="676" height="25" rx="4" fill="#0a1628" stroke="#164e63" stroke-width="1.5"/>
+  <text x="60" y="954" font-size="10" fill="#67e8f9" text-anchor="start" font-weight="normal" font-family="monospace">NEXT_PUBLIC_SUPABASE_ANON_KEY</text>
+  <text x="320" y="954" font-size="9.5" fill="#64748b" text-anchor="start" font-weight="normal" font-family="sans-serif">Supabase 공개 키</text>
+  <rect x="52" y="971" width="676" height="25" rx="4" fill="#0a1628" stroke="#164e63" stroke-width="1.5"/>
+  <text x="60" y="984" font-size="10" fill="#67e8f9" text-anchor="start" font-weight="normal" font-family="monospace">SUPABASE_SERVICE_ROLE_KEY</text>
+  <text x="320" y="984" font-size="9.5" fill="#64748b" text-anchor="start" font-weight="normal" font-family="sans-serif">admin 클라이언트 전용 (비공개)</text>
+  <rect x="52" y="1001" width="676" height="25" rx="4" fill="#0a1628" stroke="#164e63" stroke-width="1.5"/>
+  <text x="60" y="1014" font-size="10" fill="#67e8f9" text-anchor="start" font-weight="normal" font-family="monospace">KAKAO_REST_API_KEY</text>
+  <text x="320" y="1014" font-size="9.5" fill="#64748b" text-anchor="start" font-weight="normal" font-family="sans-serif">서버 전용 (NEXT_PUBLIC 없음)</text>
+  <rect x="760" y="626" width="900" height="409" rx="8" fill="#0f1f2e" stroke="#0891b2" stroke-width="1.5"/>
+  <text x="1210" y="645" font-size="12" fill="#a5f3fc" text-anchor="middle" font-weight="bold" font-family="sans-serif">API Routes  (app/api/)</text>
+  <rect x="770" y="660" width="435" height="31" rx="5" fill="#0a1628" stroke="#164e63" stroke-width="1.5"/>
+  <text x="778" y="672" font-size="9.5" fill="#22d3ee" text-anchor="start" font-weight="normal" font-family="monospace">/api/jobs</text>
+  <text x="778" y="684" font-size="8.5" fill="#64748b" text-anchor="start" font-weight="normal" font-family="sans-serif">목록 · 상세 · 내 일감</text>
+  <rect x="770" y="697" width="435" height="31" rx="5" fill="#0a1628" stroke="#164e63" stroke-width="1.5"/>
+  <text x="778" y="709" font-size="9.5" fill="#22d3ee" text-anchor="start" font-weight="normal" font-family="monospace">/api/jobs/[id]</text>
+  <text x="778" y="721" font-size="8.5" fill="#64748b" text-anchor="start" font-weight="normal" font-family="sans-serif">CRUD · equipment-status</text>
+  <rect x="770" y="734" width="435" height="31" rx="5" fill="#0a1628" stroke="#164e63" stroke-width="1.5"/>
+  <text x="778" y="746" font-size="9.5" fill="#22d3ee" text-anchor="start" font-weight="normal" font-family="monospace">/api/applications</text>
+  <text x="778" y="758" font-size="8.5" fill="#64748b" text-anchor="start" font-weight="normal" font-family="sans-serif">지원 · 수락 · 취소</text>
+  <rect x="770" y="771" width="435" height="31" rx="5" fill="#0a1628" stroke="#164e63" stroke-width="1.5"/>
+  <text x="778" y="783" font-size="9.5" fill="#22d3ee" text-anchor="start" font-weight="normal" font-family="monospace">/api/chats</text>
+  <text x="778" y="795" font-size="8.5" fill="#64748b" text-anchor="start" font-weight="normal" font-family="sans-serif">채팅방 생성 · 목록</text>
+  <rect x="770" y="808" width="435" height="31" rx="5" fill="#0a1628" stroke="#164e63" stroke-width="1.5"/>
+  <text x="778" y="820" font-size="9.5" fill="#22d3ee" text-anchor="start" font-weight="normal" font-family="monospace">/api/chats/[id]</text>
+  <text x="778" y="832" font-size="8.5" fill="#64748b" text-anchor="start" font-weight="normal" font-family="sans-serif">메시지 · 배차 · 퇴장</text>
+  <rect x="770" y="845" width="435" height="31" rx="5" fill="#0a1628" stroke="#164e63" stroke-width="1.5"/>
+  <text x="778" y="857" font-size="9.5" fill="#22d3ee" text-anchor="start" font-weight="normal" font-family="monospace">/api/ledger/monthly</text>
+  <text x="778" y="869" font-size="8.5" fill="#64748b" text-anchor="start" font-weight="normal" font-family="sans-serif">월별 집계</text>
+  <rect x="770" y="882" width="435" height="31" rx="5" fill="#0a1628" stroke="#164e63" stroke-width="1.5"/>
+  <text x="778" y="894" font-size="9.5" fill="#22d3ee" text-anchor="start" font-weight="normal" font-family="monospace">/api/ledger/daily/[date]</text>
+  <text x="778" y="906" font-size="8.5" fill="#64748b" text-anchor="start" font-weight="normal" font-family="sans-serif">일별 상세</text>
+  <rect x="770" y="919" width="435" height="31" rx="5" fill="#0a1628" stroke="#164e63" stroke-width="1.5"/>
+  <text x="778" y="931" font-size="9.5" fill="#22d3ee" text-anchor="start" font-weight="normal" font-family="monospace">/api/ledger/expenses</text>
+  <text x="778" y="943" font-size="8.5" fill="#64748b" text-anchor="start" font-weight="normal" font-family="sans-serif">지출 CRUD</text>
+  <rect x="770" y="956" width="435" height="31" rx="5" fill="#0a1628" stroke="#164e63" stroke-width="1.5"/>
+  <text x="778" y="968" font-size="9.5" fill="#22d3ee" text-anchor="start" font-weight="normal" font-family="monospace">/api/profile</text>
+  <text x="778" y="980" font-size="8.5" fill="#64748b" text-anchor="start" font-weight="normal" font-family="sans-serif">내 프로필 · 아바타</text>
+  <rect x="770" y="993" width="435" height="31" rx="5" fill="#0a1628" stroke="#164e63" stroke-width="1.5"/>
+  <text x="778" y="1005" font-size="9.5" fill="#22d3ee" text-anchor="start" font-weight="normal" font-family="monospace">/api/profiles/[id]</text>
+  <text x="778" y="1017" font-size="8.5" fill="#64748b" text-anchor="start" font-weight="normal" font-family="sans-serif">공개 프로필</text>
+  <rect x="1215" y="660" width="435" height="35" rx="5" fill="#0a1628" stroke="#164e63" stroke-width="1.5"/>
+  <text x="1223" y="673" font-size="9.5" fill="#22d3ee" text-anchor="start" font-weight="normal" font-family="monospace">/api/reviews</text>
+  <text x="1223" y="686" font-size="8.5" fill="#64748b" text-anchor="start" font-weight="normal" font-family="sans-serif">평가 작성 · 목록</text>
+  <rect x="1215" y="701" width="435" height="35" rx="5" fill="#0a1628" stroke="#164e63" stroke-width="1.5"/>
+  <text x="1223" y="714" font-size="9.5" fill="#22d3ee" text-anchor="start" font-weight="normal" font-family="monospace">/api/notifications</text>
+  <text x="1223" y="727" font-size="8.5" fill="#64748b" text-anchor="start" font-weight="normal" font-family="sans-serif">알림 · 읽음 처리</text>
+  <rect x="1215" y="742" width="435" height="35" rx="5" fill="#0a1628" stroke="#164e63" stroke-width="1.5"/>
+  <text x="1223" y="755" font-size="9.5" fill="#22d3ee" text-anchor="start" font-weight="normal" font-family="monospace">/api/admin/certifications</text>
+  <text x="1223" y="768" font-size="8.5" fill="#64748b" text-anchor="start" font-weight="normal" font-family="sans-serif">인증 심사</text>
+  <rect x="1215" y="783" width="435" height="35" rx="5" fill="#0a1628" stroke="#164e63" stroke-width="1.5"/>
+  <text x="1223" y="796" font-size="9.5" fill="#22d3ee" text-anchor="start" font-weight="normal" font-family="monospace">/api/auth/password</text>
+  <text x="1223" y="809" font-size="8.5" fill="#64748b" text-anchor="start" font-weight="normal" font-family="sans-serif">비밀번호 변경</text>
+  <rect x="1215" y="824" width="435" height="35" rx="5" fill="#0a1628" stroke="#164e63" stroke-width="1.5"/>
+  <text x="1223" y="837" font-size="9.5" fill="#22d3ee" text-anchor="start" font-weight="normal" font-family="monospace">/api/auth/reset-password</text>
+  <text x="1223" y="850" font-size="8.5" fill="#64748b" text-anchor="start" font-weight="normal" font-family="sans-serif">이메일 재설정</text>
+  <rect x="1215" y="865" width="435" height="35" rx="5" fill="#0a1628" stroke="#164e63" stroke-width="1.5"/>
+  <text x="1223" y="878" font-size="9.5" fill="#22d3ee" text-anchor="start" font-weight="normal" font-family="monospace">/api/address/search</text>
+  <text x="1223" y="891" font-size="8.5" fill="#64748b" text-anchor="start" font-weight="normal" font-family="sans-serif">카카오 주소 프록시</text>
+  <rect x="1215" y="906" width="435" height="35" rx="5" fill="#0a1628" stroke="#164e63" stroke-width="1.5"/>
+  <text x="1223" y="919" font-size="9.5" fill="#22d3ee" text-anchor="start" font-weight="normal" font-family="monospace">/api/certifications</text>
+  <text x="1223" y="932" font-size="8.5" fill="#64748b" text-anchor="start" font-weight="normal" font-family="sans-serif">서류 업로드</text>
+  <rect x="1215" y="947" width="435" height="35" rx="5" fill="#0a1628" stroke="#164e63" stroke-width="1.5"/>
+  <text x="1223" y="960" font-size="9.5" fill="#22d3ee" text-anchor="start" font-weight="normal" font-family="monospace">/api/certifications/signed-url</text>
+  <text x="1223" y="973" font-size="8.5" fill="#64748b" text-anchor="start" font-weight="normal" font-family="sans-serif">Signed URL</text>
+  <rect x="1215" y="988" width="435" height="35" rx="5" fill="#0a1628" stroke="#164e63" stroke-width="1.5"/>
+  <text x="1223" y="1001" font-size="9.5" fill="#22d3ee" text-anchor="start" font-weight="normal" font-family="monospace">/api/equipments</text>
+  <text x="1223" y="1014" font-size="8.5" fill="#64748b" text-anchor="start" font-weight="normal" font-family="sans-serif">장비 목록</text>
+  <rect x="1680" y="626" width="590" height="409" rx="8" fill="#0f1f2e" stroke="#0891b2" stroke-width="1.5"/>
+  <text x="1975" y="645" font-size="12" fill="#a5f3fc" text-anchor="middle" font-weight="bold" font-family="sans-serif">lib / types / store</text>
+  <rect x="1690" y="661" width="570" height="29" rx="5" fill="#0a1628" stroke="#164e63" stroke-width="1.5"/>
+  <text x="1698" y="672" font-size="9.5" fill="#67e8f9" text-anchor="start" font-weight="normal" font-family="monospace">lib/supabase/client.ts</text>
+  <text x="1698" y="685" font-size="9" fill="#64748b" text-anchor="start" font-weight="normal" font-family="sans-serif">createBrowserClient (CSR)</text>
+  <rect x="1690" y="696" width="570" height="29" rx="5" fill="#0a1628" stroke="#164e63" stroke-width="1.5"/>
+  <text x="1698" y="707" font-size="9.5" fill="#67e8f9" text-anchor="start" font-weight="normal" font-family="monospace">lib/supabase/server.ts</text>
+  <text x="1698" y="720" font-size="9" fill="#64748b" text-anchor="start" font-weight="normal" font-family="sans-serif">createServerClient 'use no-store'</text>
+  <rect x="1690" y="731" width="570" height="29" rx="5" fill="#0a1628" stroke="#164e63" stroke-width="1.5"/>
+  <text x="1698" y="742" font-size="9.5" fill="#67e8f9" text-anchor="start" font-weight="normal" font-family="monospace">lib/supabase/admin.ts</text>
+  <text x="1698" y="755" font-size="9" fill="#64748b" text-anchor="start" font-weight="normal" font-family="sans-serif">createAdminClient (SERVICE_ROLE)</text>
+  <rect x="1690" y="766" width="570" height="29" rx="5" fill="#0a1628" stroke="#164e63" stroke-width="1.5"/>
+  <text x="1698" y="777" font-size="9.5" fill="#67e8f9" text-anchor="start" font-weight="normal" font-family="monospace">lib/utils/jobs-cache.ts</text>
+  <text x="1698" y="790" font-size="9" fill="#64748b" text-anchor="start" font-weight="normal" font-family="sans-serif">'use cache' 공개 일감 SSR</text>
+  <rect x="1690" y="801" width="570" height="29" rx="5" fill="#0a1628" stroke="#164e63" stroke-width="1.5"/>
+  <text x="1698" y="812" font-size="9.5" fill="#67e8f9" text-anchor="start" font-weight="normal" font-family="monospace">lib/utils/ledger.ts</text>
+  <text x="1698" y="825" font-size="9" fill="#64748b" text-anchor="start" font-weight="normal" font-family="sans-serif">buildMonthData · buildIncomeEntries</text>
+  <rect x="1690" y="836" width="570" height="29" rx="5" fill="#0a1628" stroke="#164e63" stroke-width="1.5"/>
+  <text x="1698" y="847" font-size="9.5" fill="#67e8f9" text-anchor="start" font-weight="normal" font-family="monospace">lib/utils/date.ts</text>
+  <text x="1698" y="860" font-size="9" fill="#64748b" text-anchor="start" font-weight="normal" font-family="sans-serif">KST 날짜 포맷 헬퍼</text>
+  <rect x="1690" y="871" width="570" height="29" rx="5" fill="#0a1628" stroke="#164e63" stroke-width="1.5"/>
+  <text x="1698" y="882" font-size="9.5" fill="#67e8f9" text-anchor="start" font-weight="normal" font-family="monospace">lib/utils/dispatch.ts</text>
+  <text x="1698" y="895" font-size="9" fill="#64748b" text-anchor="start" font-weight="normal" font-family="sans-serif">배차 유틸</text>
+  <rect x="1690" y="906" width="570" height="29" rx="5" fill="#0a1628" stroke="#164e63" stroke-width="1.5"/>
+  <text x="1698" y="917" font-size="9.5" fill="#67e8f9" text-anchor="start" font-weight="normal" font-family="monospace">lib/constants.ts</text>
+  <text x="1698" y="930" font-size="9" fill="#64748b" text-anchor="start" font-weight="normal" font-family="sans-serif">EQUIPMENT_LABELS 등 상수</text>
+  <rect x="1690" y="941" width="570" height="29" rx="5" fill="#0a1628" stroke="#164e63" stroke-width="1.5"/>
+  <text x="1698" y="952" font-size="9.5" fill="#67e8f9" text-anchor="start" font-weight="normal" font-family="monospace">types/index.ts</text>
+  <text x="1698" y="965" font-size="9" fill="#64748b" text-anchor="start" font-weight="normal" font-family="sans-serif">Profile · Job · Application 타입</text>
+  <rect x="1690" y="976" width="570" height="29" rx="5" fill="#0a1628" stroke="#164e63" stroke-width="1.5"/>
+  <text x="1698" y="987" font-size="9.5" fill="#67e8f9" text-anchor="start" font-weight="normal" font-family="monospace">store/auth.ts</text>
+  <text x="1698" y="1000" font-size="9" fill="#64748b" text-anchor="start" font-weight="normal" font-family="sans-serif">Zustand 인증 스토어</text>
+  <rect x="1690" y="1011" width="570" height="29" rx="5" fill="#0a1628" stroke="#164e63" stroke-width="1.5"/>
+  <text x="1698" y="1022" font-size="9.5" fill="#67e8f9" text-anchor="start" font-weight="normal" font-family="monospace">store/notifications.ts</text>
+  <text x="1698" y="1035" font-size="9" fill="#64748b" text-anchor="start" font-weight="normal" font-family="sans-serif">Zustand 알림 스토어</text>
+  <line x1="300" y1="1045" x2="300" y2="1089" stroke="#334155" stroke-width="1.5" stroke-dasharray="6,4"/>
+  <polygon points="294,1087 306,1087 300,1097" fill="#475569"/>
+  <line x1="1000" y1="1045" x2="1000" y2="1089" stroke="#334155" stroke-width="1.5" stroke-dasharray="6,4"/>
+  <polygon points="994,1087 1006,1087 1000,1097" fill="#475569"/>
+  <line x1="1800" y1="1045" x2="1800" y2="1089" stroke="#334155" stroke-width="1.5" stroke-dasharray="6,4"/>
+  <polygon points="1794,1087 1806,1087 1800,1097" fill="#475569"/>
+  <text x="1150" y="1070" font-size="11" fill="#64748b" text-anchor="middle" font-weight="normal" font-family="sans-serif">Supabase SDK  |  REST API  |  Realtime WebSocket</text>
+  <rect x="20" y="1104" width="2260" height="600" rx="12" fill="#0f2318" stroke="#10b981" stroke-width="2"/>
+  <text x="1150" y="1126" font-size="11" fill="#10b981" text-anchor="middle" font-weight="bold" font-family="sans-serif">SUPABASE  (BaaS Backend)</text>
+  <rect x="40" y="1138" width="395" height="550" rx="8" fill="#071c0e" stroke="#059669" stroke-width="1.5"/>
+  <text x="237" y="1157" font-size="13" fill="#a7f3d0" text-anchor="middle" font-weight="bold" font-family="sans-serif">Auth</text>
+  <rect x="50" y="1174" width="375" height="55" rx="5" fill="#0a1f10" stroke="#065f46" stroke-width="1.5"/>
+  <text x="60" y="1190" font-size="10.5" fill="#34d399" text-anchor="start" font-weight="bold" font-family="sans-serif">이메일 / 비밀번호</text>
+  <text x="60" y="1208" font-size="9.5" fill="#6ee7b7" text-anchor="start" font-weight="normal" font-family="sans-serif">기본 Supabase Auth</text>
+  <rect x="50" y="1236" width="375" height="55" rx="5" fill="#0a1f10" stroke="#065f46" stroke-width="1.5"/>
+  <text x="60" y="1252" font-size="10.5" fill="#34d399" text-anchor="start" font-weight="bold" font-family="sans-serif">JWT 세션</text>
+  <text x="60" y="1270" font-size="9.5" fill="#6ee7b7" text-anchor="start" font-weight="normal" font-family="sans-serif">onAuthStateChange</text>
+  <rect x="50" y="1298" width="375" height="55" rx="5" fill="#0a1f10" stroke="#065f46" stroke-width="1.5"/>
+  <text x="60" y="1314" font-size="10.5" fill="#34d399" text-anchor="start" font-weight="bold" font-family="sans-serif">handle_new_user</text>
+  <text x="60" y="1332" font-size="9.5" fill="#6ee7b7" text-anchor="start" font-weight="normal" font-family="sans-serif">회원가입 profiles INSERT 트리거</text>
+  <rect x="50" y="1360" width="375" height="55" rx="5" fill="#0a1f10" stroke="#065f46" stroke-width="1.5"/>
+  <text x="60" y="1376" font-size="10.5" fill="#34d399" text-anchor="start" font-weight="bold" font-family="sans-serif">set search_path = public</text>
+  <text x="60" y="1394" font-size="9.5" fill="#6ee7b7" text-anchor="start" font-weight="normal" font-family="sans-serif">security definer 필수</text>
+  <rect x="50" y="1422" width="375" height="55" rx="5" fill="#0a1f10" stroke="#065f46" stroke-width="1.5"/>
+  <text x="60" y="1438" font-size="10.5" fill="#34d399" text-anchor="start" font-weight="bold" font-family="sans-serif">enumeration 방지</text>
+  <text x="60" y="1456" font-size="9.5" fill="#6ee7b7" text-anchor="start" font-weight="normal" font-family="sans-serif">resetPassword 성공 위장</text>
+  <rect x="50" y="1484" width="375" height="55" rx="5" fill="#0a1f10" stroke="#065f46" stroke-width="1.5"/>
+  <text x="60" y="1500" font-size="10.5" fill="#34d399" text-anchor="start" font-weight="bold" font-family="sans-serif">admin REST API</text>
+  <text x="60" y="1518" font-size="9.5" fill="#6ee7b7" text-anchor="start" font-weight="normal" font-family="sans-serif">유저 존재 확인 (서버)</text>
+  <rect x="50" y="1546" width="375" height="55" rx="5" fill="#0a1f10" stroke="#065f46" stroke-width="1.5"/>
+  <text x="60" y="1562" font-size="10.5" fill="#34d399" text-anchor="start" font-weight="bold" font-family="sans-serif">RLS 역할 제어</text>
+  <text x="60" y="1580" font-size="9.5" fill="#6ee7b7" text-anchor="start" font-weight="normal" font-family="sans-serif">driver · manager · admin</text>
+  <rect x="50" y="1608" width="375" height="55" rx="5" fill="#0a1f10" stroke="#065f46" stroke-width="1.5"/>
+  <text x="60" y="1624" font-size="10.5" fill="#34d399" text-anchor="start" font-weight="bold" font-family="sans-serif">GRANT 명시 필수</text>
+  <text x="60" y="1642" font-size="9.5" fill="#6ee7b7" text-anchor="start" font-weight="normal" font-family="sans-serif">SQL 직접 생성 테이블</text>
+  <rect x="455" y="1138" width="640" height="550" rx="8" fill="#071c0e" stroke="#059669" stroke-width="1.5"/>
+  <text x="775" y="1157" font-size="13" fill="#a7f3d0" text-anchor="middle" font-weight="bold" font-family="sans-serif">PostgreSQL DB  (10 tables)</text>
+  <rect x="465" y="1174" width="620" height="45" rx="5" fill="#0a1f10" stroke="#065f46" stroke-width="1.5"/>
+  <text x="475" y="1189" font-size="10.5" fill="#34d399" text-anchor="start" font-weight="bold" font-family="monospace">profiles</text>
+  <text x="475" y="1206" font-size="8" fill="#6ee7b7" text-anchor="start" font-weight="normal" font-family="monospace">id · name · role · phone · equipment_codes · is_certified · rating</text>
+  <rect x="465" y="1225" width="620" height="45" rx="5" fill="#0a1f10" stroke="#065f46" stroke-width="1.5"/>
+  <text x="475" y="1240" font-size="10.5" fill="#34d399" text-anchor="start" font-weight="bold" font-family="monospace">jobs</text>
+  <text x="475" y="1257" font-size="8" fill="#6ee7b7" text-anchor="start" font-weight="normal" font-family="monospace">id · manager_id · title · work_date · location · status · pay_amount</text>
+  <rect x="465" y="1276" width="620" height="45" rx="5" fill="#0a1f10" stroke="#065f46" stroke-width="1.5"/>
+  <text x="475" y="1291" font-size="10.5" fill="#34d399" text-anchor="start" font-weight="bold" font-family="monospace">equipments</text>
+  <text x="475" y="1308" font-size="8" fill="#6ee7b7" text-anchor="start" font-weight="normal" font-family="monospace">id · job_id · model_code · is_filled</text>
+  <rect x="465" y="1327" width="620" height="45" rx="5" fill="#0a1f10" stroke="#065f46" stroke-width="1.5"/>
+  <text x="475" y="1342" font-size="10.5" fill="#34d399" text-anchor="start" font-weight="bold" font-family="monospace">applications</text>
+  <text x="475" y="1359" font-size="8" fill="#6ee7b7" text-anchor="start" font-weight="normal" font-family="monospace">id · job_id · driver_id · equipment_id · applied_equipment_code · status</text>
+  <rect x="465" y="1378" width="620" height="45" rx="5" fill="#0a1f10" stroke="#065f46" stroke-width="1.5"/>
+  <text x="475" y="1393" font-size="10.5" fill="#34d399" text-anchor="start" font-weight="bold" font-family="monospace">chat_rooms</text>
+  <text x="475" y="1410" font-size="8" fill="#6ee7b7" text-anchor="start" font-weight="normal" font-family="monospace">id · job_id · manager_id · driver_id · is_active</text>
+  <rect x="465" y="1429" width="620" height="45" rx="5" fill="#0a1f10" stroke="#065f46" stroke-width="1.5"/>
+  <text x="475" y="1444" font-size="10.5" fill="#34d399" text-anchor="start" font-weight="bold" font-family="monospace">messages</text>
+  <text x="475" y="1461" font-size="8" fill="#6ee7b7" text-anchor="start" font-weight="normal" font-family="monospace">id · room_id · sender_id · content · is_deleted · is_read</text>
+  <rect x="465" y="1480" width="620" height="45" rx="5" fill="#0a1f10" stroke="#065f46" stroke-width="1.5"/>
+  <text x="475" y="1495" font-size="10.5" fill="#34d399" text-anchor="start" font-weight="bold" font-family="monospace">notifications</text>
+  <text x="475" y="1512" font-size="8" fill="#6ee7b7" text-anchor="start" font-weight="normal" font-family="monospace">id · user_id · type · content · is_read · related_id</text>
+  <rect x="465" y="1531" width="620" height="45" rx="5" fill="#0a1f10" stroke="#065f46" stroke-width="1.5"/>
+  <text x="475" y="1546" font-size="10.5" fill="#34d399" text-anchor="start" font-weight="bold" font-family="monospace">reviews</text>
+  <text x="475" y="1563" font-size="8" fill="#6ee7b7" text-anchor="start" font-weight="normal" font-family="monospace">id · job_id · reviewer_id · reviewee_id · rating · comment</text>
+  <rect x="465" y="1582" width="620" height="45" rx="5" fill="#0a1f10" stroke="#065f46" stroke-width="1.5"/>
+  <text x="475" y="1597" font-size="10.5" fill="#34d399" text-anchor="start" font-weight="bold" font-family="monospace">ledger_expenses</text>
+  <text x="475" y="1614" font-size="8" fill="#6ee7b7" text-anchor="start" font-weight="normal" font-family="monospace">id · user_id · job_id · amount · category · description · date</text>
+  <rect x="465" y="1633" width="620" height="45" rx="5" fill="#0a1f10" stroke="#065f46" stroke-width="1.5"/>
+  <text x="475" y="1648" font-size="10.5" fill="#34d399" text-anchor="start" font-weight="bold" font-family="monospace">certifications</text>
+  <text x="475" y="1665" font-size="8" fill="#6ee7b7" text-anchor="start" font-weight="normal" font-family="monospace">id · driver_id · status · file_url · reviewed_at</text>
+  <rect x="1115" y="1138" width="395" height="550" rx="8" fill="#071c0e" stroke="#059669" stroke-width="1.5"/>
+  <text x="1312" y="1157" font-size="13" fill="#a7f3d0" text-anchor="middle" font-weight="bold" font-family="sans-serif">Realtime</text>
+  <rect x="1125" y="1174" width="375" height="55" rx="5" fill="#0a1f10" stroke="#065f46" stroke-width="1.5"/>
+  <text x="1135" y="1190" font-size="10.5" fill="#34d399" text-anchor="start" font-weight="bold" font-family="sans-serif">채팅 메시지</text>
+  <text x="1135" y="1208" font-size="9.5" fill="#6ee7b7" text-anchor="start" font-weight="normal" font-family="sans-serif">messages INSERT 구독</text>
+  <rect x="1125" y="1236" width="375" height="55" rx="5" fill="#0a1f10" stroke="#065f46" stroke-width="1.5"/>
+  <text x="1135" y="1252" font-size="10.5" fill="#34d399" text-anchor="start" font-weight="bold" font-family="sans-serif">메시지 삭제</text>
+  <text x="1135" y="1270" font-size="9.5" fill="#6ee7b7" text-anchor="start" font-weight="normal" font-family="sans-serif">is_deleted UPDATE 이벤트</text>
+  <rect x="1125" y="1298" width="375" height="55" rx="5" fill="#0a1f10" stroke="#065f46" stroke-width="1.5"/>
+  <text x="1135" y="1314" font-size="10.5" fill="#34d399" text-anchor="start" font-weight="bold" font-family="sans-serif">읽음 처리</text>
+  <text x="1135" y="1332" font-size="9.5" fill="#6ee7b7" text-anchor="start" font-weight="normal" font-family="sans-serif">is_read UPDATE 이벤트</text>
+  <rect x="1125" y="1360" width="375" height="55" rx="5" fill="#0a1f10" stroke="#065f46" stroke-width="1.5"/>
+  <text x="1135" y="1376" font-size="10.5" fill="#34d399" text-anchor="start" font-weight="bold" font-family="sans-serif">알림 구독</text>
+  <text x="1135" y="1394" font-size="9.5" fill="#6ee7b7" text-anchor="start" font-weight="normal" font-family="sans-serif">notifications INSERT</text>
+  <rect x="1125" y="1422" width="375" height="55" rx="5" fill="#0a1f10" stroke="#065f46" stroke-width="1.5"/>
+  <text x="1135" y="1438" font-size="10.5" fill="#34d399" text-anchor="start" font-weight="bold" font-family="sans-serif">REPLICA IDENTITY</text>
+  <text x="1135" y="1456" font-size="9.5" fill="#6ee7b7" text-anchor="start" font-weight="normal" font-family="sans-serif">DEFAULT - ID 기반 확인</text>
+  <rect x="1125" y="1484" width="375" height="55" rx="5" fill="#0a1f10" stroke="#065f46" stroke-width="1.5"/>
+  <text x="1135" y="1500" font-size="10.5" fill="#34d399" text-anchor="start" font-weight="bold" font-family="sans-serif">payload.new</text>
+  <text x="1135" y="1518" font-size="9.5" fill="#6ee7b7" text-anchor="start" font-weight="normal" font-family="sans-serif">변경 컬럼만 포함 (주의)</text>
+  <rect x="1125" y="1546" width="375" height="55" rx="5" fill="#0a1f10" stroke="#065f46" stroke-width="1.5"/>
+  <text x="1135" y="1562" font-size="10.5" fill="#34d399" text-anchor="start" font-weight="bold" font-family="sans-serif">안전한 UPDATE</text>
+  <text x="1135" y="1580" font-size="9.5" fill="#6ee7b7" text-anchor="start" font-weight="normal" font-family="sans-serif">prev.some(m =&gt; m.id === id)</text>
+  <rect x="1125" y="1608" width="375" height="55" rx="5" fill="#0a1f10" stroke="#065f46" stroke-width="1.5"/>
+  <text x="1135" y="1624" font-size="10.5" fill="#34d399" text-anchor="start" font-weight="bold" font-family="sans-serif">채팅 filter</text>
+  <text x="1135" y="1642" font-size="9.5" fill="#6ee7b7" text-anchor="start" font-weight="normal" font-family="sans-serif">room_id=eq.{id}</text>
+  <rect x="1530" y="1138" width="370" height="550" rx="8" fill="#071c0e" stroke="#059669" stroke-width="1.5"/>
+  <text x="1715" y="1157" font-size="13" fill="#a7f3d0" text-anchor="middle" font-weight="bold" font-family="sans-serif">Storage</text>
+  <rect x="1540" y="1174" width="350" height="64" rx="5" fill="#0a1f10" stroke="#065f46" stroke-width="1.5"/>
+  <text x="1550" y="1194" font-size="10.5" fill="#34d399" text-anchor="start" font-weight="bold" font-family="monospace">avatars/</text>
+  <text x="1550" y="1214" font-size="9.5" fill="#6ee7b7" text-anchor="start" font-weight="normal" font-family="sans-serif">프로필 사진</text>
+  <rect x="1540" y="1246" width="350" height="64" rx="5" fill="#0a1f10" stroke="#065f46" stroke-width="1.5"/>
+  <text x="1550" y="1266" font-size="10.5" fill="#34d399" text-anchor="start" font-weight="bold" font-family="monospace">certifications/</text>
+  <text x="1550" y="1286" font-size="9.5" fill="#6ee7b7" text-anchor="start" font-weight="normal" font-family="sans-serif">인증 서류 파일</text>
+  <rect x="1540" y="1318" width="350" height="64" rx="5" fill="#0a1f10" stroke="#065f46" stroke-width="1.5"/>
+  <text x="1550" y="1338" font-size="10.5" fill="#34d399" text-anchor="start" font-weight="bold" font-family="monospace">Signed URL</text>
+  <text x="1550" y="1358" font-size="9.5" fill="#6ee7b7" text-anchor="start" font-weight="normal" font-family="sans-serif">/api/certifications/signed-url</text>
+  <rect x="1540" y="1390" width="350" height="64" rx="5" fill="#0a1f10" stroke="#065f46" stroke-width="1.5"/>
+  <text x="1550" y="1410" font-size="10.5" fill="#34d399" text-anchor="start" font-weight="bold" font-family="monospace">업로드 흐름</text>
+  <text x="1550" y="1430" font-size="9.5" fill="#6ee7b7" text-anchor="start" font-weight="normal" font-family="sans-serif">PUT presigned -&gt; DB URL</text>
+  <rect x="1540" y="1462" width="350" height="64" rx="5" fill="#0a1f10" stroke="#065f46" stroke-width="1.5"/>
+  <text x="1550" y="1482" font-size="10.5" fill="#34d399" text-anchor="start" font-weight="bold" font-family="monospace">접근 제어</text>
+  <text x="1550" y="1502" font-size="9.5" fill="#6ee7b7" text-anchor="start" font-weight="normal" font-family="sans-serif">RLS + Storage 정책</text>
+  <rect x="1540" y="1534" width="350" height="64" rx="5" fill="#0a1f10" stroke="#065f46" stroke-width="1.5"/>
+  <text x="1550" y="1554" font-size="10.5" fill="#34d399" text-anchor="start" font-weight="bold" font-family="monospace">형식 제한</text>
+  <text x="1550" y="1574" font-size="9.5" fill="#6ee7b7" text-anchor="start" font-weight="normal" font-family="sans-serif">JPG / PNG / PDF</text>
+  <rect x="1540" y="1606" width="350" height="64" rx="5" fill="#0a1f10" stroke="#065f46" stroke-width="1.5"/>
+  <text x="1550" y="1626" font-size="10.5" fill="#34d399" text-anchor="start" font-weight="bold" font-family="monospace">교체 시</text>
+  <text x="1550" y="1646" font-size="9.5" fill="#6ee7b7" text-anchor="start" font-weight="normal" font-family="sans-serif">이전 파일 삭제 후 업로드</text>
+  <rect x="1920" y="1138" width="355" height="550" rx="8" fill="#1a1025" stroke="#a855f7" stroke-width="1.5"/>
+  <text x="2097" y="1157" font-size="13" fill="#e9d5ff" text-anchor="middle" font-weight="bold" font-family="sans-serif">Dev Tools / Infra</text>
+  <rect x="1930" y="1174" width="335" height="64" rx="5" fill="#0f0b1f" stroke="#6d28d9" stroke-width="1.5"/>
+  <text x="1940" y="1194" font-size="10.5" fill="#c084fc" text-anchor="start" font-weight="bold" font-family="sans-serif">Bun</text>
+  <text x="1940" y="1214" font-size="9.5" fill="#a78bfa" text-anchor="start" font-weight="normal" font-family="sans-serif">패키지 매니저 / 런타임</text>
+  <rect x="1930" y="1246" width="335" height="64" rx="5" fill="#0f0b1f" stroke="#6d28d9" stroke-width="1.5"/>
+  <text x="1940" y="1266" font-size="10.5" fill="#c084fc" text-anchor="start" font-weight="bold" font-family="sans-serif">TypeScript</text>
+  <text x="1940" y="1286" font-size="9.5" fill="#a78bfa" text-anchor="start" font-weight="normal" font-family="sans-serif">strict 모드 · unknown &gt; any</text>
+  <rect x="1930" y="1318" width="335" height="64" rx="5" fill="#0f0b1f" stroke="#6d28d9" stroke-width="1.5"/>
+  <text x="1940" y="1338" font-size="10.5" fill="#c084fc" text-anchor="start" font-weight="bold" font-family="sans-serif">Tailwind CSS</text>
+  <text x="1940" y="1358" font-size="9.5" fill="#a78bfa" text-anchor="start" font-weight="normal" font-family="sans-serif">인라인 style 금지</text>
+  <rect x="1930" y="1390" width="335" height="64" rx="5" fill="#0f0b1f" stroke="#6d28d9" stroke-width="1.5"/>
+  <text x="1940" y="1410" font-size="10.5" fill="#c084fc" text-anchor="start" font-weight="bold" font-family="sans-serif">ESLint</text>
+  <text x="1940" y="1430" font-size="9.5" fill="#a78bfa" text-anchor="start" font-weight="normal" font-family="sans-serif">next/core-web-vitals</text>
+  <rect x="1930" y="1462" width="335" height="64" rx="5" fill="#0f0b1f" stroke="#6d28d9" stroke-width="1.5"/>
+  <text x="1940" y="1482" font-size="10.5" fill="#c084fc" text-anchor="start" font-weight="bold" font-family="sans-serif">브랜치 전략</text>
+  <text x="1940" y="1502" font-size="9.5" fill="#a78bfa" text-anchor="start" font-weight="normal" font-family="sans-serif">main(배포) · dev · feat/xxx</text>
+  <rect x="1930" y="1534" width="335" height="64" rx="5" fill="#0f0b1f" stroke="#6d28d9" stroke-width="1.5"/>
+  <text x="1940" y="1554" font-size="10.5" fill="#c084fc" text-anchor="start" font-weight="bold" font-family="sans-serif">커밋 컨벤션</text>
+  <text x="1940" y="1574" font-size="9.5" fill="#a78bfa" text-anchor="start" font-weight="normal" font-family="sans-serif">feat / fix / style / refactor</text>
+  <rect x="1930" y="1606" width="335" height="64" rx="5" fill="#0f0b1f" stroke="#6d28d9" stroke-width="1.5"/>
+  <text x="1940" y="1626" font-size="10.5" fill="#c084fc" text-anchor="start" font-weight="bold" font-family="sans-serif">Notion 연동</text>
+  <text x="1940" y="1646" font-size="9.5" fill="#a78bfa" text-anchor="start" font-weight="normal" font-family="sans-serif">개발 로그 · 작업 관리 자동 업데이트</text>
+  <line x1="40" y1="1706" x2="2260" y2="1706" stroke="#1e293b" stroke-width="1"/>
+  <text x="1150" y="1728" font-size="10" fill="#334155" text-anchor="middle" font-weight="normal" font-family="sans-serif">Diggo  |  Next.js 16  ·  Supabase  ·  Vercel  ·  Bun  ·  TypeScript  ·  Tailwind CSS  ·  Zustand  ·  TanStack Query v5</text>
+</svg>

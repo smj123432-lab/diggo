@@ -159,3 +159,4 @@ vite.config.ts.timestamp-*
 .vite/
 .superpowers
 .claude/
+.vercel
