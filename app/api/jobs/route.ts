@@ -1,15 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
 import { revalidatePath, revalidateTag } from 'next/cache'
+import { getServerTodayStr } from '@/lib/utils/date'
+import { getAuthUser, getAuthUserWithProfile, unauthorizedResponse, forbiddenResponse, isBanned } from '@/lib/api/auth'
+import { JOBS_FIRST_PAGE_LIMIT, MAX_PAY_AMOUNT } from '@/lib/constants'
 
 // GET /api/jobs — 일감 목록 (필터, 페이지네이션)
 export async function GET(request: NextRequest) {
   try {
-    const supabase = await createClient()
+    const { supabase } = await getAuthUser()
     const { searchParams } = new URL(request.url)
 
     const offset = parseInt(searchParams.get('offset') ?? '0')
-    const limit = parseInt(searchParams.get('limit') ?? '12')
+    const limit = parseInt(searchParams.get('limit') ?? String(JOBS_FIRST_PAGE_LIMIT))
     const equipment_codes = searchParams.getAll('equipment_code')
     const job_types = searchParams.getAll('job_type')
     const status = searchParams.get('status')
@@ -34,7 +36,7 @@ export async function GET(request: NextRequest) {
     if (status) {
       query = query.eq('status', status)
     } else {
-      const today = new Date().toISOString().split('T')[0]
+      const today = getServerTodayStr()
       query = query.eq('status', 'open').gte('work_date', today)
     }
 
@@ -56,27 +58,17 @@ export async function GET(request: NextRequest) {
 // POST /api/jobs — 일감 등록 (소장 전용)
 export async function POST(request: NextRequest) {
   try {
-    const supabase = await createClient()
-    const {
-      data: { user },
-    } = await supabase.auth.getUser()
+    const auth = await getAuthUserWithProfile()
+    if ('error' in auth) return auth.error
 
-    if (!user) {
-      return NextResponse.json({ error: '로그인이 필요합니다.' }, { status: 401 })
-    }
-
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('role, banned_until')
-      .eq('id', user.id)
-      .single()
+    const { supabase, user, profile } = auth
 
     if (profile?.role !== 'manager' && profile?.role !== 'admin') {
-      return NextResponse.json({ error: '소장만 일감을 등록할 수 있습니다.' }, { status: 403 })
+      return forbiddenResponse('소장만 일감을 등록할 수 있습니다.')
     }
 
-    if (profile.banned_until && new Date(profile.banned_until) > new Date()) {
-      const until = new Date(profile.banned_until).toLocaleDateString('ko-KR', { month: 'long', day: 'numeric' })
+    if (profile && isBanned(profile)) {
+      const until = new Date(profile.banned_until!).toLocaleDateString('ko-KR', { month: 'long', day: 'numeric' })
       return NextResponse.json({ error: `패널티 누적으로 ${until}까지 일감 등록이 제한됩니다.`, banned_until: profile.banned_until }, { status: 403 })
     }
 
@@ -97,6 +89,12 @@ export async function POST(request: NextRequest) {
       equipment_codes.some((c: string) => !pay_amounts[c])
     ) {
       return NextResponse.json({ error: '필수 항목을 모두 입력해주세요.' }, { status: 400 })
+    }
+
+    // pay_amounts 각 값 범위 검사 (int4 overflow 방지)
+    const amountValues = Object.values(pay_amounts as Record<string, unknown>)
+    if (amountValues.some((v) => typeof v !== 'number' || v < 0 || v > MAX_PAY_AMOUNT)) {
+      return NextResponse.json({ error: `금액은 0원 이상 ${MAX_PAY_AMOUNT.toLocaleString()}원 이하로 입력해주세요.` }, { status: 400 })
     }
 
     const { data, error } = await supabase

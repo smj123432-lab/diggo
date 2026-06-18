@@ -3,9 +3,7 @@ import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
 import { createClient as createAdminClient } from '@supabase/supabase-js'
-import { ExcavatorIcon } from '@/components/ui/ExcavatorIcon'
-import { NavButtons } from '@/components/features/home/NavButtons'
-import { NavRoleLink } from '@/components/features/home/NavRoleLink'
+import { AppNav } from '@/components/features/home/AppNav'
 import { DeleteAccountButton } from '@/components/features/mypage/MypageActions'
 import { InlineProfileCard } from '@/components/features/mypage/InlineProfileCard'
 import { DriverInfoCard } from '@/components/features/mypage/DriverInfoCard'
@@ -130,9 +128,9 @@ export default async function MypagePage({
     const rawReviews = reviewResult.data ?? []
 
     // 리뷰에서 참조하는 profile ID·job ID 수집
-    const reviewerIds = [...new Set(rawReviews.map(r => r.reviewer_id).filter(Boolean))] as string[]
-    const revieweeIds = [...new Set(rawReviews.map(r => r.reviewee_id).filter(Boolean))] as string[]
-    const jobIdsForReview = [...new Set(rawReviews.map(r => r.job_id).filter(Boolean))] as string[]
+    const reviewerIds = [...new Set(rawReviews.map(r => r.reviewer_id).filter((id): id is string => id !== null && id !== undefined))]
+    const revieweeIds = [...new Set(rawReviews.map(r => r.reviewee_id).filter((id): id is string => id !== null && id !== undefined))]
+    const jobIdsForReview = [...new Set(rawReviews.map(r => r.job_id).filter((id): id is string => id !== null && id !== undefined))]
     const allProfileIds = [...new Set([...reviewerIds, ...revieweeIds])]
 
     // 관련 profiles, jobs 병렬 fetch
@@ -222,24 +220,8 @@ export default async function MypagePage({
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* NAV */}
-      <nav className="fixed top-0 inset-x-0 z-50 border-b border-white/10 bg-slate-900/90 backdrop-blur-md">
-        <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-2.5">
-            <ExcavatorIcon className="w-10 h-8 text-blue-400" />
-            <span className="text-lg font-black tracking-tight text-white">
-              Diggo<span className="text-blue-400">.</span>
-            </span>
-          </Link>
-          <div className="hidden md:flex items-center gap-1">
-            <Link href="/jobs" className="px-4 py-2 text-sm text-slate-400 hover:text-white hover:bg-white/5 rounded-lg transition-colors">
-              일감 찾기
-            </Link>
-            <NavRoleLink />
-          </div>
-          <NavButtons />
-        </div>
-      </nav>
+      {/* NAV — admin은 장부/역할 링크 숨김 */}
+      <AppNav hideLinks={profile.role === 'admin' ? ['ledger', 'role'] : undefined} />
 
       <div className="pt-16">
         <div className="max-w-5xl mx-auto px-4 py-6 space-y-6">

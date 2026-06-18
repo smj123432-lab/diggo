@@ -5,7 +5,7 @@ import { createClient } from '@/lib/supabase/server'
 import { ApplicantCard } from '@/components/features/manager/ApplicantCard'
 import type { ApplicationStatus, JobStatus, EquipmentCode } from '@/types'
 import { EQUIPMENT_LABELS, JOB_STATUS_LABELS } from '@/types'
-import { formatLongDate } from '@/lib/utils/date'
+import { formatLongDate, getServerTodayStr } from '@/lib/utils/date'
 
 interface MappedApplication {
   id: string
@@ -55,8 +55,8 @@ export default async function ApplicantsPage({ params }: Props) {
     .eq('job_id', id)
     .order('applied_at', { ascending: false })
 
-  const driverIds = (rawApps ?? []).map((a) => a.driver_id).filter(Boolean)
-  const equipmentIds = (rawApps ?? []).map((a) => a.equipment_id).filter(Boolean)
+  const driverIds = (rawApps ?? []).map((a) => a.driver_id).filter((id): id is string => id !== null && id !== undefined)
+  const equipmentIds = (rawApps ?? []).map((a) => a.equipment_id).filter((id): id is string => id !== null && id !== undefined)
 
   const [{ data: profiles }, { data: equipments }, { data: driverEquipments }] = await Promise.all([
     driverIds.length > 0
@@ -89,7 +89,7 @@ export default async function ApplicantsPage({ params }: Props) {
 
   const workDate = formatLongDate(job.work_date)
 
-  const today = new Date().toISOString().split('T')[0]
+  const today = getServerTodayStr()
   const effectiveStatus: JobStatus =
     job.status === 'open' && job.work_date < today ? 'closed' : job.status as JobStatus
 

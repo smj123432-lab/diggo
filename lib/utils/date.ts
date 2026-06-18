@@ -1,10 +1,22 @@
 // 날짜 포맷 유틸 — toISOString()은 UTC 변환으로 KST 자정에 하루 차이가 발생하므로
-// 클라이언트 코드에서 오늘 날짜가 필요할 때는 getTodayStr()을 사용한다.
+// 클라이언트 코드에서 오늘 날짜가 필요할 때는 getTodayStr()을,
+// 서버(API Route, 서버 컴포넌트, 캐시 함수)에서는 getServerTodayStr()을 사용한다.
 
-/** KST 기준 오늘 날짜 (YYYY-MM-DD) */
+/** KST 기준 오늘 날짜 (YYYY-MM-DD) — 클라이언트용 */
 export function getTodayStr(): string {
   const d = new Date()
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+}
+
+/** KST 기준 오늘 날짜 (YYYY-MM-DD) — 서버용 (API Route, 서버 컴포넌트, 캐시 함수). Vercel은 UTC 동작이므로 +9h 보정. */
+export function getServerTodayStr(): string {
+  const kst = new Date(Date.now() + 9 * 60 * 60 * 1000)
+  return kst.toISOString().slice(0, 10)
+}
+
+/** 임의 Date 객체를 YYYY-MM-DD 문자열로 변환 — 서버용. toISOString()을 쓰지 않아 KST 오프셋 문제 없음. */
+export function getServerDateStr(date: Date): string {
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`
 }
 
 /** 작업일: "6/15(일)" */

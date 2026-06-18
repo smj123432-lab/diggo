@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
+import { getAuthUser, unauthorizedResponse } from '@/lib/api/auth'
 
 // GET /api/chats/[roomId] — 채팅방 상세 (참여자만)
 export async function GET(
@@ -7,9 +7,8 @@ export async function GET(
   { params }: { params: Promise<{ roomId: string }> }
 ) {
   try {
-    const supabase = await createClient()
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) return NextResponse.json({ error: '로그인이 필요합니다.' }, { status: 401 })
+    const { supabase, user } = await getAuthUser()
+    if (!user) return unauthorizedResponse()
 
     const { roomId } = await params
 

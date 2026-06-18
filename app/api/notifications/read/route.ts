@@ -1,16 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
+import { getAuthUser, unauthorizedResponse } from '@/lib/api/auth'
 
 // PATCH /api/notifications/read — 알림 읽음 처리
 export async function PATCH(request: NextRequest) {
   try {
-    const supabase = await createClient()
-    const {
-      data: { user },
-    } = await supabase.auth.getUser()
+    const { supabase, user } = await getAuthUser()
 
     if (!user) {
-      return NextResponse.json({ error: '로그인이 필요합니다.' }, { status: 401 })
+      return unauthorizedResponse()
     }
 
     const { ids } = await request.json()

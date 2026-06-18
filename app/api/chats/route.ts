@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
+import { getAuthUser, unauthorizedResponse } from '@/lib/api/auth'
 
 /**
  * GET /api/chats
@@ -16,9 +16,8 @@ import { createClient } from '@/lib/supabase/server'
  */
 export async function GET() {
   try {
-    const supabase = await createClient()
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) return NextResponse.json({ error: '로그인이 필요합니다.' }, { status: 401 })
+    const { supabase, user } = await getAuthUser()
+    if (!user) return unauthorizedResponse()
 
     const { data: rooms } = await supabase
       .from('chat_rooms')
@@ -104,9 +103,8 @@ export async function GET() {
  */
 export async function POST(request: NextRequest) {
   try {
-    const supabase = await createClient()
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) return NextResponse.json({ error: '로그인이 필요합니다.' }, { status: 401 })
+    const { supabase, user } = await getAuthUser()
+    if (!user) return unauthorizedResponse()
 
     const { job_id, driver_id } = await request.json() as { job_id: string; driver_id: string }
     if (!job_id || !driver_id) {

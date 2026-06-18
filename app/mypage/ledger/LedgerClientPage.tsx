@@ -2,7 +2,6 @@
 'use client'
 
 import { useState, useMemo, useRef } from 'react'
-import Link from 'next/link'
 import { toast } from 'sonner'
 import type { UserRole, LedgerMonthData, LedgerFilterTab } from '@/types'
 import { useLedger, useDeleteExpense } from '@/hooks/useLedger'
@@ -11,9 +10,7 @@ import { LedgerDayPanel } from '@/components/features/ledger/LedgerDayPanel'
 import { LedgerMonthSummary } from '@/components/features/ledger/LedgerMonthSummary'
 import { AddExpenseModal } from '@/components/features/ledger/AddExpenseModal'
 import { MonthPicker } from '@/components/features/ledger/MonthPicker'
-import { ExcavatorIcon } from '@/components/ui/ExcavatorIcon'
-import { NavButtons } from '@/components/features/home/NavButtons'
-import { NavRoleLink } from '@/components/features/home/NavRoleLink'
+import { AppNav } from '@/components/features/home/AppNav'
 
 interface Props {
   role: UserRole
@@ -132,23 +129,7 @@ export function LedgerClientPage({ role }: Props) {
   return (
     <div className="min-h-screen bg-gray-50 overflow-x-hidden">
       {/* 상단 네비게이션 바 */}
-      <nav className="fixed top-0 inset-x-0 z-50 border-b border-white/10 bg-slate-900/90 backdrop-blur-md">
-        <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-2.5">
-            <ExcavatorIcon className="w-10 h-8 text-blue-400" />
-            <span className="text-lg font-black tracking-tight text-white">
-              Diggo<span className="text-blue-400">.</span>
-            </span>
-          </Link>
-          <div className="hidden md:flex items-center gap-1">
-            <Link href="/jobs" className="px-4 py-2 text-sm text-slate-400 hover:text-white hover:bg-white/5 rounded-lg transition-colors">
-              일감 찾기
-            </Link>
-            <NavRoleLink />
-          </div>
-          <NavButtons />
-        </div>
-      </nav>
+      <AppNav activeLink="ledger" />
 
       <div className="pt-16">
         <div className="max-w-5xl mx-auto px-4 py-5">

@@ -1,16 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
+import { getAuthUser, unauthorizedResponse } from '@/lib/api/auth'
 
 // PATCH /api/auth/password — 비밀번호 변경 (현재 비밀번호 검증 후 변경)
 export async function PATCH(request: NextRequest) {
   try {
-    const supabase = await createClient()
-    const {
-      data: { user },
-    } = await supabase.auth.getUser()
+    const { supabase, user } = await getAuthUser()
 
     if (!user || !user.email) {
-      return NextResponse.json({ error: '로그인이 필요합니다.' }, { status: 401 })
+      return unauthorizedResponse()
     }
 
     const { currentPassword, newPassword } = await request.json()
