@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="500" viewBox="0 0 960 500">
+  <defs>
+    <style>text{font-family:-apple-system,"Segoe UI",sans-serif}</style>
+    <marker id="a" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L8,3 z" fill="#333"/>
+    </marker>
+    <marker id="ad" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L8,3 z" fill="#999"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="960" height="500" fill="#ffffff"/>
+<text x="480" y="38" font-size="16" fill="#111" text-anchor="middle" font-weight="bold">TBT 최적화  —  Total Blocking Time  70ms → 0ms</text>
+<line x1="480" y1="55" x2="480" y2="430" stroke="#ddd" stroke-width="1.5" stroke-dasharray="4,4"/>
+<text x="220" y="68" font-size="13" fill="#C62828" text-anchor="middle" font-weight="bold">BEFORE  ·  70ms</text>
+<rect x="60" y="140" width="110" height="46" rx="8" fill="#fff" stroke="#333" stroke-width="1.5"/>
+<text x="115" y="168" font-size="13" fill="#222" text-anchor="middle" font-weight="normal">Server</text>
+<rect x="230" y="110" width="210" height="180" rx="10" fill="#FFF8F8" stroke="#E57373" stroke-width="1.5"/>
+<text x="335" y="128" font-size="11" fill="#C62828" text-anchor="middle" font-weight="bold">Browser</text>
+<rect x="248" y="136" width="172" height="44" rx="6" fill="#FFEBEE" stroke="#E57373" stroke-width="1.5"/>
+<text x="334" y="155" font-size="12" fill="#C62828" text-anchor="middle" font-weight="bold">JS Engine</text>
+<text x="334" y="170" font-size="10" fill="#C62828" text-anchor="middle" font-weight="normal">JS bundle 파싱·실행</text>
+<rect x="248" y="192" width="172" height="44" rx="6" fill="#FFEBEE" stroke="#C62828" stroke-width="2"/>
+<text x="334" y="211" font-size="12" fill="#C62828" text-anchor="middle" font-weight="bold">Main Thread</text>
+<text x="334" y="226" font-size="11" fill="#C62828" text-anchor="middle" font-weight="normal">BLOCKED  70ms</text>
+<line x1="170" y1="160" x2="228" y2="155" stroke="#333" stroke-width="1.4" marker-end="url(#a)"/>
+<text x="200" y="149" font-size="10" fill="#555" text-anchor="middle" font-weight="normal">GET /jobs</text>
+<line x1="228" y1="170" x2="170" y2="168" stroke="#333" stroke-width="1.4" marker-end="url(#a)"/>
+<text x="197" y="163" font-size="10" fill="#C62828" text-anchor="middle" font-weight="normal">1  large JS bundle</text>
+<line x1="334" y1="180" x2="334" y2="190" stroke="#C62828" stroke-width="1.4" marker-end="url(#a)"/>
+<text x="355" y="187" font-size="10" fill="#C62828" text-anchor="start" font-weight="normal">2  파싱</text>
+<text x="335" y="315" font-size="11" fill="#C62828" text-anchor="middle" font-weight="normal">매 요청마다 재렌더 → 무거운 JS 전송</text>
+<text x="335" y="332" font-size="12" fill="#C62828" text-anchor="middle" font-weight="bold">→ 브라우저 메인 스레드 블로킹  70ms</text>
+<rect x="50" y="356" width="390" height="30" rx="6" fill="#f5f5f5" stroke="#e0e0e0" stroke-width="1.5"/>
+<text x="245" y="375" font-size="10" fill="#888" text-anchor="middle" font-weight="normal">cacheComponents: false  —  매 요청 서버 재렌더</text>
+<text x="710" y="68" font-size="13" fill="#2E7D32" text-anchor="middle" font-weight="bold">AFTER  ·  0ms</text>
+<rect x="510" y="140" width="110" height="46" rx="8" fill="#fff" stroke="#333" stroke-width="1.5"/>
+<text x="565" y="168" font-size="13" fill="#222" text-anchor="middle" font-weight="normal">Server</text>
+<rect x="510" y="210" width="110" height="46" rx="8" fill="#E8F5E9" stroke="#43A047" stroke-width="1.5"/>
+<text x="565" y="234" font-size="13" fill="#2E7D32" text-anchor="middle" font-weight="bold">Cache</text>
+<line x1="565" y1="186" x2="565" y2="208" stroke="#43A047" stroke-width="1.4" marker-end="url(#a)"/>
+<text x="580" y="200" font-size="10" fill="#2E7D32" text-anchor="start" font-weight="normal">HIT</text>
+<rect x="680" y="110" width="230" height="180" rx="10" fill="#F1F8E9" stroke="#81C784" stroke-width="1.5"/>
+<text x="795" y="128" font-size="11" fill="#2E7D32" text-anchor="middle" font-weight="bold">Browser</text>
+<rect x="698" y="136" width="192" height="44" rx="6" fill="#E8F5E9" stroke="#43A047" stroke-width="1.5"/>
+<text x="794" y="155" font-size="11" fill="#2E7D32" text-anchor="middle" font-weight="bold">Min JS  (하이드레이션만)</text>
+<text x="794" y="170" font-size="10" fill="#2E7D32" text-anchor="middle" font-weight="normal">캐시된 RSC payload 재사용</text>
+<rect x="698" y="192" width="192" height="44" rx="6" fill="#E8F5E9" stroke="#2E7D32" stroke-width="2"/>
+<text x="794" y="211" font-size="12" fill="#2E7D32" text-anchor="middle" font-weight="bold">Main Thread</text>
+<text x="794" y="226" font-size="11" fill="#2E7D32" text-anchor="middle" font-weight="normal">FREE  —  0ms</text>
+<line x1="622" y1="155" x2="678" y2="152" stroke="#333" stroke-width="1.4" marker-end="url(#a)"/>
+<text x="650" y="144" font-size="10" fill="#2E7D32" text-anchor="middle" font-weight="normal">1  캐시된 결과</text>
+<line x1="794" y1="180" x2="794" y2="190" stroke="#2E7D32" stroke-width="1.4" marker-end="url(#a)"/>
+<text x="815" y="187" font-size="10" fill="#2E7D32" text-anchor="start" font-weight="normal">2  경량</text>
+<text x="755" y="315" font-size="11" fill="#2E7D32" text-anchor="middle" font-weight="normal">캐시 HIT → 최소 JS만 브라우저로 전송</text>
+<text x="755" y="332" font-size="12" fill="#2E7D32" text-anchor="middle" font-weight="bold">→ 메인 스레드 블로킹 없음  0ms</text>
+<rect x="500" y="356" width="420" height="30" rx="6" fill="#f5f5f5" stroke="#e0e0e0" stroke-width="1.5"/>
+<text x="710" y="375" font-size="10" fill="#555" text-anchor="middle" font-weight="normal">cacheComponents: true  —  렌더 결과 캐싱 → JS 전송량 감소</text>
+<line x1="40" y1="400" x2="920" y2="400" stroke="#eee" stroke-width="1"/>
+<text x="480" y="420" font-size="11" fill="#999" text-anchor="middle" font-weight="normal">TBT는 브라우저 메인 스레드 블로킹 시간 — 서버 캐싱으로 전송 JS를 줄이면 클라이언트 블로킹이 감소한다</text>
+</svg>
