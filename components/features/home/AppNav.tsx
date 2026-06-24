@@ -37,19 +37,7 @@ export function AppNav({ activeLink, hideLinks }: Props) {
               일감 찾기
             </Link>
           )}
-          {!hideLinks?.includes('ledger') && (
-            <Link
-              href="/mypage/ledger"
-              className={`px-4 py-2 text-sm rounded-lg transition-colors ${
-                activeLink === 'ledger'
-                  ? 'font-semibold text-white bg-white/10'
-                  : 'text-slate-400 hover:text-white hover:bg-white/5'
-              }`}
-            >
-              장부
-            </Link>
-          )}
-          {!hideLinks?.includes('role') && <NavRoleLink />}
+{!hideLinks?.includes('role') && <NavRoleLink />}
         </div>
 
         {/* 우측 버튼 */}
