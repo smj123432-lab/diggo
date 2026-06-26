@@ -34,9 +34,9 @@
 
 | 항목 | 내용 |
 |------|------|
-| 배포 URL | [https://diggo-zr4b.vercel.app](https://diggo-zr4b.vercel.app) |
+| 배포 URL | https://diggo.vercel.app/|
 | 개발 기간 | 2026.03 ~ 2026.06 |
-| 개발 인원 | 1인 (풀스택 -> 백엔드 supabase) |
+| 개발 인원 | 1인 (풀스택 -> 백엔드는 supabase 이용) |
 
 **테스트 계정**
 
