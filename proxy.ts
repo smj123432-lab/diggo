@@ -1,8 +1,7 @@
 import { createServerClient, type CookieOptions } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
-export async function middleware(request: NextRequest) {
-  // .env.local 미설정 시 미들웨어 건너뜀 (로컬 개발 초기 단계)
+export async function proxy(request: NextRequest) {
   if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
     return NextResponse.next({ request })
   }
@@ -28,13 +27,17 @@ export async function middleware(request: NextRequest) {
     }
   )
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
+  // 만료된 토큰으로 인한 콘솔 에러 방지 — 실패 시 user = null로 처리
+  let user = null
+  try {
+    const { data } = await supabase.auth.getUser()
+    user = data.user
+  } catch {
+    // refresh token 만료 등 — 비로그인으로 처리
+  }
 
   const pathname = request.nextUrl.pathname
 
-  // 인증 필요 경로
   const protectedPaths = ['/mypage', '/chats', '/notifications', '/manager', '/admin']
   const isProtected = protectedPaths.some((p) => pathname.startsWith(p))
 
@@ -45,7 +48,6 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(url)
   }
 
-  // 이미 로그인된 상태에서 인증 페이지 접근 시 홈으로 리디렉션
   if (user && (pathname === '/login' || pathname === '/signup')) {
     const url = request.nextUrl.clone()
     url.pathname = '/'
