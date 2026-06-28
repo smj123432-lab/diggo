@@ -19,10 +19,11 @@ export async function GET() {
     const { supabase, user } = await getAuthUser()
     if (!user) return unauthorizedResponse()
 
+    // 나가지 않은 채팅방만 조회 (manager_left / driver_left 소프트 딜리트 적용)
     const { data: rooms } = await supabase
       .from('chat_rooms')
       .select('id, job_id, manager_id, driver_id, created_at')
-      .or(`manager_id.eq.${user.id},driver_id.eq.${user.id}`)
+      .or(`and(manager_id.eq.${user.id},manager_left.eq.false),and(driver_id.eq.${user.id},driver_left.eq.false)`)
       .order('created_at', { ascending: false })
 
     if (!rooms || rooms.length === 0) return NextResponse.json({ data: [] })
