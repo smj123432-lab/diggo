@@ -38,7 +38,7 @@ export function AnimatedHero() {
         <p className="text-slate-300 text-base sm:text-lg max-w-lg mx-auto leading-loose tracking-wide mb-14">
           나이가 아닌 실력으로 선택받는 배차 플랫폼
           <br />
-          검증된 기사와 신뢰할 수 있는 소장을 잇습니다
+          검증된 기사와 신뢰할 수 있는 소장을 있습니다
         </p>
 
       </motion.div>

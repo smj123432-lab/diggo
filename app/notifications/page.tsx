@@ -63,6 +63,17 @@ function timeAgo(dateStr: string): string {
   return formatLongDate(dateStr)
 }
 
+// 알림 타입별 이동 경로
+function getNotificationHref(type: NotificationType | string): string {
+  switch (type) {
+    case 'new_application': return '/manager'
+    case 'application_accepted':
+    case 'application_rejected':
+    case 'application_cancelled': return '/mypage'
+    default: return '/mypage'
+  }
+}
+
 export default function NotificationsPage() {
   const { user, isLoading } = useAuthStore()
   const { notifications, setUnreadCount, markAllAsRead } = useNotificationStore()
@@ -136,10 +147,11 @@ export default function NotificationsPage() {
               return (
                 <div
                   key={n.id}
-                  className={`rounded-2xl p-4 border transition-colors ${
+                  onClick={() => router.push(getNotificationHref(n.type))}
+                  className={`rounded-2xl p-4 border transition-colors cursor-pointer ${
                     n.is_read
-                      ? 'bg-white border-gray-100'
-                      : 'bg-blue-50 border-blue-100'
+                      ? 'bg-white border-gray-100 hover:bg-gray-50'
+                      : 'bg-blue-50 border-blue-100 hover:bg-blue-100'
                   }`}
                 >
                   <div className="flex items-start gap-3">

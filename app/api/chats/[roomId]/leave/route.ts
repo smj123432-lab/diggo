@@ -1,17 +1,19 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getAuthUser, unauthorizedResponse } from '@/lib/api/auth'
+import { createAdminClient } from '@/lib/supabase/admin'
 
 type Params = { params: Promise<{ roomId: string }> }
 
 // POST /api/chats/[roomId]/leave — 채팅방 나가기 (소프트 딜리트)
 export async function POST(_: NextRequest, { params }: Params) {
   try {
-    const { supabase, user } = await getAuthUser()
+    const { user } = await getAuthUser()
     if (!user) return unauthorizedResponse()
 
     const { roomId } = await params
+    const admin = createAdminClient()
 
-    const { data: room } = await supabase
+    const { data: room } = await admin
       .from('chat_rooms')
       .select('manager_id, driver_id')
       .eq('id', roomId)
@@ -28,7 +30,7 @@ export async function POST(_: NextRequest, { params }: Params) {
 
     const updateField = isManager ? { manager_left: true } : { driver_left: true }
 
-    const { error } = await supabase
+    const { error } = await admin
       .from('chat_rooms')
       .update(updateField)
       .eq('id', roomId)
