@@ -4,11 +4,14 @@
 import { useState, useEffect } from 'react'
 import { createPortal } from 'react-dom'
 
-const KEYS = [
-  { key: 'new_application',      label: '새 지원자 알림',      desc: '기사가 내 일감에 지원할 때' },
-  { key: 'application_accepted', label: '지원 수락 알림',      desc: '소장이 내 지원을 수락할 때' },
-  { key: 'application_rejected', label: '지원 거절 알림',      desc: '소장이 내 지원을 거절할 때' },
-  { key: 'application_cancelled',label: '배차 취소 알림',      desc: '상대방이 배차를 취소할 때' },
+const DRIVER_KEYS = [
+  { key: 'application_accepted', label: '지원 수락 알림', desc: '소장이 내 지원을 수락할 때' },
+  { key: 'application_rejected', label: '지원 거절 알림', desc: '소장이 내 지원을 거절할 때' },
+] as const
+
+const MANAGER_KEYS = [
+  { key: 'new_application',       label: '새 지원자 알림', desc: '기사가 내 일감에 지원할 때' },
+  { key: 'application_cancelled', label: '배차 취소 알림', desc: '상대방이 배차를 취소할 때' },
 ] as const
 
 const STORAGE_KEY = 'diggo:notification_settings'
@@ -18,7 +21,7 @@ function loadSettings(): Record<string, boolean> {
     const raw = localStorage.getItem(STORAGE_KEY)
     if (raw) return JSON.parse(raw) as Record<string, boolean>
   } catch {}
-  return Object.fromEntries(KEYS.map(k => [k.key, true]))
+  return {}
 }
 
 function saveSettings(settings: Record<string, boolean>) {
@@ -28,11 +31,14 @@ function saveSettings(settings: Record<string, boolean>) {
 interface Props {
   open: boolean
   onClose: () => void
+  role: 'driver' | 'manager'
 }
 
-export function NotificationSettingsModal({ open, onClose }: Props) {
+export function NotificationSettingsModal({ open, onClose, role }: Props) {
   const [settings, setSettings] = useState<Record<string, boolean>>({})
   const [mounted, setMounted] = useState(false)
+
+  const keys = role === 'driver' ? DRIVER_KEYS : MANAGER_KEYS
 
   useEffect(() => { setMounted(true) }, [])
   useEffect(() => { if (open) setSettings(loadSettings()) }, [open])
@@ -61,7 +67,7 @@ export function NotificationSettingsModal({ open, onClose }: Props) {
         </div>
 
         <div className="space-y-1">
-          {KEYS.map(({ key, label, desc }) => (
+          {keys.map(({ key, label, desc }) => (
             <div
               key={key}
               className="flex items-center justify-between py-3.5 border-b border-gray-100 last:border-0"

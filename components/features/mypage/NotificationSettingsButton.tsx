@@ -4,7 +4,11 @@
 import { useState } from 'react'
 import { NotificationSettingsModal } from './NotificationSettingsModal'
 
-export function NotificationSettingsButton() {
+interface Props {
+  role: 'driver' | 'manager'
+}
+
+export function NotificationSettingsButton({ role }: Props) {
   const [open, setOpen] = useState(false)
 
   return (
@@ -25,7 +29,7 @@ export function NotificationSettingsButton() {
         </svg>
       </button>
 
-      <NotificationSettingsModal open={open} onClose={() => setOpen(false)} />
+      <NotificationSettingsModal open={open} onClose={() => setOpen(false)} role={role} />
     </>
   )
 }

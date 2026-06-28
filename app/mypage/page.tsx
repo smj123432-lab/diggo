@@ -495,7 +495,9 @@ export default async function MypagePage({
                 <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden divide-y divide-gray-100">
                   <p className="px-5 pt-4 pb-2 text-sm font-bold text-slate-800">계정 설정</p>
 
-                  {profile.role !== 'admin' && <NotificationSettingsButton />}
+                  {(profile.role === 'driver' || profile.role === 'manager') && (
+                    <NotificationSettingsButton role={profile.role} />
+                  )}
 
                   <Link href="/mypage/password" className="flex items-center gap-3 px-4 py-3.5 hover:bg-blue-50 transition-colors group">
                     <span className="w-8 h-8 rounded-lg bg-blue-50 group-hover:bg-blue-100 flex items-center justify-center transition-colors shrink-0">
