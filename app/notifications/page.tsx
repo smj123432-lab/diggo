@@ -66,10 +66,10 @@ function timeAgo(dateStr: string): string {
 // 알림 타입별 이동 경로
 function getNotificationHref(type: NotificationType | string): string {
   switch (type) {
-    case 'new_application': return '/manager'
+    case 'new_application': return '/manager/jobs'
     case 'application_accepted':
     case 'application_rejected':
-    case 'application_cancelled': return '/mypage'
+    case 'application_cancelled': return '/mypage/applications'
     default: return '/mypage'
   }
 }

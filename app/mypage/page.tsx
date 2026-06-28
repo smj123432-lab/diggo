@@ -5,6 +5,7 @@ import { createClient } from '@/lib/supabase/server'
 import { createClient as createAdminClient } from '@supabase/supabase-js'
 import { AppNav } from '@/components/features/home/AppNav'
 import { DeleteAccountButton } from '@/components/features/mypage/MypageActions'
+import { NotificationSettingsButton } from '@/components/features/mypage/NotificationSettingsButton'
 import { InlineProfileCard } from '@/components/features/mypage/InlineProfileCard'
 import { DriverInfoCard } from '@/components/features/mypage/DriverInfoCard'
 import { CertDriverList, type DriverEntry } from '@/components/features/admin/CertDriverList'
@@ -494,18 +495,7 @@ export default async function MypagePage({
                 <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden divide-y divide-gray-100">
                   <p className="px-5 pt-4 pb-2 text-sm font-bold text-slate-800">계정 설정</p>
 
-                  {profile.role !== 'admin' && (
-                    <div className="flex items-center gap-3 px-4 py-3.5 opacity-50 cursor-not-allowed" title="준비 중인 기능입니다">
-                      <span className="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center shrink-0">
-                        <svg className="w-4 h-4 text-blue-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
-                          <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
-                          <path d="M13.73 21a2 2 0 0 1-3.46 0" />
-                        </svg>
-                      </span>
-                      <span className="text-sm font-semibold text-gray-700">알림 설정</span>
-                      <span className="ml-auto text-xs text-gray-400 bg-gray-100 px-2 py-0.5 rounded-full">준비 중</span>
-                    </div>
-                  )}
+                  {profile.role !== 'admin' && <NotificationSettingsButton />}
 
                   <Link href="/mypage/password" className="flex items-center gap-3 px-4 py-3.5 hover:bg-blue-50 transition-colors group">
                     <span className="w-8 h-8 rounded-lg bg-blue-50 group-hover:bg-blue-100 flex items-center justify-center transition-colors shrink-0">
