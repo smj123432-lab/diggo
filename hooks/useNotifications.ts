@@ -6,9 +6,20 @@ import { useAuthStore } from '@/store/auth'
 import { useNotificationStore } from '@/store/notifications'
 import type { Notification } from '@/types'
 
-// PPR 모드에서 usePathname()은 Suspense 밖의 uncached dynamic data로 처리되어 prerender 실패 → window.location.pathname으로 대체
 const isOnNotificationsPage = () =>
   typeof window !== 'undefined' && window.location.pathname === '/notifications'
+
+// localStorage 알림 설정에서 해당 type이 활성화되어 있는지 확인
+function isNotificationEnabled(type: string): boolean {
+  try {
+    const raw = localStorage.getItem('diggo:notification_settings')
+    if (!raw) return true
+    const settings = JSON.parse(raw) as Record<string, boolean>
+    return settings[type] !== false
+  } catch {
+    return true
+  }
+}
 
 export function useNotifications() {
   const { user } = useAuthStore()
@@ -52,8 +63,9 @@ export function useNotifications() {
         },
         (payload) => {
           const newNotification = payload.new as Notification
+          // 알림 설정에서 해당 type이 꺼져 있으면 무시
+          if (!isNotificationEnabled(newNotification.type)) return
           addNotification(newNotification)
-          // /notifications 페이지 열람 중이면 사용자가 이미 알림을 소비하고 있으므로 카운트 증가 불필요
           if (!isOnNotificationsPage()) {
             setUnreadCount(useNotificationStore.getState().unreadCount + 1)
           }
