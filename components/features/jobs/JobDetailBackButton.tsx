@@ -9,8 +9,7 @@ export function JobDetailBackButton() {
   const role = useAuthStore((s) => s.role)
 
   function handleBack() {
-    if (window.history.length > 1) router.back()
-    else router.push('/jobs')
+    router.push('/jobs')
   }
 
   return (
