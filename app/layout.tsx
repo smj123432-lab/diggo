@@ -3,6 +3,7 @@ import { Noto_Sans_KR, DM_Mono } from 'next/font/google'
 import { Suspense } from 'react'
 import './globals.css'
 import Providers from './providers'
+import { Analytics } from '@vercel/analytics/next'
 
 const notoSansKR = Noto_Sans_KR({
   subsets: ['latin'],
@@ -47,6 +48,7 @@ export default function RootLayout({
       <body className="font-sans antialiased">
         <Providers>
           <Suspense>{children}</Suspense>
+          <Analytics />
         </Providers>
       </body>
     </html>

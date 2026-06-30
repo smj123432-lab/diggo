@@ -134,8 +134,8 @@ export function useJobForm({ mode = 'create', jobId, initialValues }: UseJobForm
         throw new Error(err.error ?? (mode === 'edit' ? '수정 실패' : '등록 실패'))
       }
       toast.success(mode === 'edit' ? '일감이 수정되었습니다.' : '일감이 등록되었습니다.')
-      router.push(mode === 'edit' ? `/jobs/${jobId}` : '/jobs')
       router.refresh()
+      router.push(mode === 'edit' ? `/jobs/${jobId}` : '/jobs')
     } catch (e) {
       toast.error(
         e instanceof Error

@@ -9,8 +9,7 @@ export function JobDetailBackButton() {
   const role = useAuthStore((s) => s.role)
 
   function handleBack() {
-    if (role === 'driver') router.push('/mypage/applications')
-    else if (role === 'manager') router.push('/manager/jobs')
+    if (window.history.length > 1) router.back()
     else router.push('/jobs')
   }
 
