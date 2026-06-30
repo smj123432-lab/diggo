@@ -39,32 +39,40 @@ export default async function ChatsLayout({ children }: { children: React.ReactN
     const jobMap = new Map((jobs ?? []).map((j) => [j.id, j]))
     const profileMap = new Map((profiles ?? []).map((p) => [p.id, p]))
 
-    enriched = await Promise.all(
-      rooms.map(async (room) => {
-        const [{ data: lastMsgs }, { count: unread }] = await Promise.all([
-          supabase
-            .from('chat_messages')
-            .select('id, message, sender_id, created_at')
-            .eq('room_id', room.id)
-            .order('created_at', { ascending: false })
-            .limit(1),
-          supabase
-            .from('chat_messages')
-            .select('*', { count: 'exact', head: true })
-            .eq('room_id', room.id)
-            .eq('is_read', false)
-            .neq('sender_id', user.id),
-        ])
-        return {
-          ...room,
-          jobs: jobMap.get(room.job_id) as ChatRoomWithDetails['jobs'],
-          manager: profileMap.get(room.manager_id) as ChatRoomWithDetails['manager'],
-          driver: profileMap.get(room.driver_id) as ChatRoomWithDetails['driver'],
-          last_message: (lastMsgs?.[0] as ChatRoomWithDetails['last_message']) ?? null,
-          unread_count: unread ?? 0,
-        }
-      })
-    )
+    // N+1 제거 — 마지막 메시지·미읽음 수를 IN 절로 일괄 조회 후 Map으로 조립
+    const roomIds = rooms.map((r) => r.id)
+    const [{ data: allMessages }, { data: allUnread }] = await Promise.all([
+      supabase
+        .from('chat_messages')
+        .select('id, room_id, message, sender_id, created_at, is_deleted')
+        .in('room_id', roomIds)
+        .order('created_at', { ascending: false }),
+      supabase
+        .from('chat_messages')
+        .select('room_id')
+        .in('room_id', roomIds)
+        .eq('is_read', false)
+        .neq('sender_id', user.id),
+    ])
+
+    type LastMsg = ChatRoomWithDetails['last_message']
+    const lastMsgMap = new Map<string, LastMsg>()
+    for (const msg of (allMessages ?? []) as NonNullable<LastMsg>[]) {
+      if (!lastMsgMap.has(msg.room_id)) lastMsgMap.set(msg.room_id, msg)
+    }
+    const unreadMap = new Map<string, number>()
+    for (const msg of allUnread ?? []) {
+      unreadMap.set(msg.room_id, (unreadMap.get(msg.room_id) ?? 0) + 1)
+    }
+
+    enriched = rooms.map((room) => ({
+      ...room,
+      jobs: jobMap.get(room.job_id) as ChatRoomWithDetails['jobs'],
+      manager: profileMap.get(room.manager_id) as ChatRoomWithDetails['manager'],
+      driver: profileMap.get(room.driver_id) as ChatRoomWithDetails['driver'],
+      last_message: lastMsgMap.get(room.id) ?? null,
+      unread_count: unreadMap.get(room.id) ?? 0,
+    }))
   }
 
   return (
