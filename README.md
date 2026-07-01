@@ -108,9 +108,16 @@ graph LR
 소장은 장비 종류, 작업일, 금액, 위치를 등록합니다. 기사는 장비·유형 필터와 마감임박순 정렬로 일감을 탐색하고 지원합니다. 소장이 지원자를 검토 중으로 전환하면 채팅방이 자동 생성되어 배차 협의로 이어집니다.
 
 <table><tr>
+<td align="center"><b>기사 화면</b></td>
+<td align="center"><b>소장 화면</b></td>
+</tr><tr>
 <td><img src="docs/feature-job-list.png" width="100%"></td>
-<td><img src="docs/feature-kakaomap.png" width="100%"></td>
+<td><img src="docs/feature-job-list-manager.png" width="100%"></td>
 </tr></table>
+
+**카카오맵 주소 연동** — 일감 상세에서 작업 위치를 지도로 확인할 수 있습니다. REST API 키는 서버 전용 환경변수로 관리해 클라이언트에 노출되지 않습니다.
+
+![일감 상세 — 카카오맵](docs/feature-kakaomap.png)
 
 ---
 
