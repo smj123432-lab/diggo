@@ -182,7 +182,7 @@ export default function ChatRoom({ room, initialMessages, currentUserId, initial
     if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend() }
   }
 
-  // 이미지 선택 → Storage 업로드 → 메시지 전송
+  // 이미지 선택 → API Route(service_role) 업로드 → 메시지 전송
   const handleImageSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     e.target.value = ''
@@ -198,20 +198,17 @@ export default function ChatRoom({ room, initialMessages, currentUserId, initial
     }
 
     setIsUploading(true)
-    const supabase = createClient()
-    const ext = file.name.split('.').pop() ?? 'jpg'
-    const path = `${room.id}/${Date.now()}.${ext}`
-
     try {
-      const { data: uploadData, error: uploadError } = await supabase.storage
-        .from('chat-images')
-        .upload(path, file)
+      const formData = new FormData()
+      formData.append('file', file)
+      formData.append('roomId', room.id)
 
-      if (uploadError) throw uploadError
-
-      const { data: { publicUrl } } = supabase.storage
-        .from('chat-images')
-        .getPublicUrl(uploadData.path)
+      const res = await fetch('/api/chats/upload-image', { method: 'POST', body: formData })
+      if (!res.ok) {
+        const err = await res.json()
+        throw new Error(err.error ?? '업로드 실패')
+      }
+      const { publicUrl } = await res.json()
 
       const saved = await postMessage(`${IMG_PREFIX}${publicUrl}`)
       setMessages((prev) => {
@@ -219,8 +216,7 @@ export default function ChatRoom({ room, initialMessages, currentUserId, initial
         return [...prev, saved]
       })
     } catch (err) {
-      const msg = err instanceof Error ? err.message : String(err)
-      toast.error(`이미지 전송에 실패했습니다. (${msg})`)
+      toast.error(err instanceof Error ? err.message : '이미지 전송에 실패했습니다.')
     } finally {
       setIsUploading(false)
       textareaRef.current?.focus()
