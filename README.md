@@ -107,9 +107,10 @@ graph LR
 
 소장은 장비 종류, 작업일, 금액, 위치를 등록합니다. 기사는 장비·유형 필터와 마감임박순 정렬로 일감을 탐색하고 지원합니다. 소장이 지원자를 검토 중으로 전환하면 채팅방이 자동 생성되어 배차 협의로 이어집니다.
 
-![일감 탐색](docs/feature-job-list.png)
-
-![일감 상세 — 카카오맵 위치](docs/feature-kakaomap.png)
+<table><tr>
+<td><img src="docs/feature-job-list.png" width="100%"></td>
+<td><img src="docs/feature-kakaomap.png" width="100%"></td>
+</tr></table>
 
 ---
 
@@ -117,9 +118,10 @@ graph LR
 
 배차 협의를 위한 기사-소장 간 실시간 채팅입니다. 낙관적 업데이트로 메시지가 즉시 표시되고, 읽음 처리와 미읽음 배지가 Realtime으로 실시간 반영됩니다.
 
-![채팅 — 기사 화면](docs/feature-chat-driver.png)
-
-![채팅 — 소장 화면](docs/feature-chat-manager.png)
+<table><tr>
+<td><img src="docs/feature-chat-driver.png" width="100%"></td>
+<td><img src="docs/feature-chat-manager.png" width="100%"></td>
+</tr></table>
 
 ---
 
@@ -127,9 +129,10 @@ graph LR
 
 작업 완료 후 기사와 소장이 서로 평가합니다. 리뷰가 쌓일 때마다 서버에서 평점을 재집계해 `rating_avg >= 4.5 && review_count >= 5`이면 우수 뱃지가, `rating_avg <= 2.0 && review_count >= 5`이면 저평점 뱃지가 자동으로 부여됩니다.
 
-![우수 뱃지 — 소장](docs/feature-badge-certified.png)
-
-![저평점 뱃지 — 기사](docs/feature-badge-low-rating.png)
+<table><tr>
+<td><img src="docs/feature-badge-certified.png" width="100%"></td>
+<td><img src="docs/feature-badge-low-rating.png" width="100%"></td>
+</tr></table>
 
 ---
 
@@ -137,9 +140,10 @@ graph LR
 
 기사는 배차 완료 일감의 수입이 자동 집계되고 유류비 등 지출을 직접 입력합니다. 소장은 배차한 기사별 지급액 합산이 지출로 잡히고, 수주 금액에서 빼면 마진이 자동으로 계산됩니다.
 
-![장부 — 기사](docs/feature-ledger.png)
-
-![장부 — 소장](docs/feature-ledger-manager.png)
+<table><tr>
+<td><img src="docs/feature-ledger.png" width="100%"></td>
+<td><img src="docs/feature-ledger-manager.png" width="100%"></td>
+</tr></table>
 
 ---
 
