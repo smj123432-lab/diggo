@@ -543,83 +543,97 @@ export function createAdminClient() {
 
 ## 기술적 도전 및 트러블슈팅
 
-### 1. Next.js 16 PPR 빌드 실패: `usePathname()` in Global Initializer
+### 1. LCP 9.0s → 4.4s: SSR 캐시 부재와 리전 불일치로 인한 초기 로딩 지연
 
-`cacheComponents: true` 모드에서 빌드하면 `/chats/[id]` 같은 동적 라우트에서 "Uncached data was accessed outside of Suspense" 에러가 발생했습니다. 해당 페이지에 `<Suspense>` 래퍼를 추가해도 에러가 반복됐습니다.
-
-`--debug-prerender` 플래그로 원인 컴포넌트를 추적했더니 `NotificationInitializer`였습니다. 이 컴포넌트가 내부적으로 `usePathname()`을 사용하고 있었는데, Next.js 16 PPR 모드에서 `usePathname()`은 uncached dynamic data로 분류됩니다. `NotificationInitializer`가 루트 레이아웃의 `Providers` 안에서 `{children}` 바깥에 위치해 있어서, 어떤 페이지의 Suspense 래퍼와도 관계없이 빌드가 실패했습니다.
-
-해결은 단순했습니다. `usePathname()` 임포트를 제거하고 `window.location.pathname`을 반환하는 순수 헬퍼 함수로 교체했습니다. 클라이언트 전용 경로 감지에 Next.js 라우팅 훅은 필요하지 않습니다.
+배포 후 Lighthouse로 측정하니 LCP가 9.0s였습니다. 원인은 두 가지가 겹쳤습니다.
+<br/>첫째, 일감 목록 페이지 진입마다 캐시 없이 Supabase를 3회 조회했습니다 (일감 목록, 총 개수, 사용자 프로필).
+<br/>둘째, Vercel 배포 리전이 미국 동부였고 Supabase DB는 서울이었습니다. 왕복 지연이 쿼리마다 200~300ms씩 누적되어 세 쿼리만으로 최소 600~900ms가 소요됐습니다.
 
 ```typescript
-// 변경 전 (PPR 빌드 실패)
-import { usePathname } from 'next/navigation'
-const pathname = usePathname()
-if (pathname === '/notifications') return
-
-// 변경 후 (PPR 호환)
-const isOnNotificationsPage = () =>
-  typeof window !== 'undefined' && window.location.pathname === '/notifications'
-if (isOnNotificationsPage()) return
+// 변경 전: 매 요청마다 캐시 없이 Supabase 3회 조회
+// Vercel(미국 동부) ↔ Supabase(서울) 왕복 지연 200~300ms × 3 = 600~900ms 누적
 ```
 
-이후 `/jobs`, `/jobs/[id]`, `/chats/[id]` 세 경로 모두 `◐ Partial Prerender` 상태로 빌드 성공을 확인했습니다.
+세 가지를 함께 적용했습니다. `"use cache"` + `cacheLife('seconds')` + `cacheTag('jobs')`로 공개 일감 데이터를 서버 캐싱해 반복 요청 시 DB를 조회하지 않도록 했습니다. `vercel.json`의 배포 리전을 `icn1`(인천)으로 전환해 Supabase와의 왕복 지연을 수십 ms 수준으로 단축했습니다. Next.js 16 `cacheComponents: true`로 PPR을 활성화해 캐시된 정적 쉘을 즉시 응답하도록 했습니다.
+
+```typescript
+// 변경 후: "use cache"로 서버 캐싱, 리전 icn1 전환
+export async function getCachedJobsFirstPage() {
+  'use cache'
+  cacheLife('seconds')  // 30초 TTL
+  cacheTag('jobs')
+  // 반복 요청은 DB 조회 없이 캐시에서 응답
+}
+```
+
+Lighthouse 재측정 결과 LCP 9.0s → 4.4s (51% 감소), TBT 70ms → 0ms, Performance 점수 73 → 83으로 개선됐습니다.
 
 ---
 
-### 2. Supabase Realtime UPDATE: REPLICA IDENTITY DEFAULT payload 누락
+### 2. 채팅 목록 N+1 쿼리: 배차 채팅방이 늘수록 목록 로딩이 선형으로 느려지는 문제
 
-채팅에서 메시지를 보낸 쪽은 화면에 "1" 표시(읽지 않음)가 남아 있었는데, 상대방이 채팅방에 들어가도 실시간으로 사라지지 않았습니다. `is_read`가 `true`로 바뀌는 UPDATE 이벤트가 수신 측에 반영되지 않는 상태였습니다.
-
-원인은 Supabase의 기본 설정인 `REPLICA IDENTITY DEFAULT`에 있었습니다. 
-<br/>이 모드에서 UPDATE 이벤트의 `payload.new`에는 PK(`id`)와 실제로 변경된 컬럼만 포함됩니다. `room_id`처럼 변경되지 않은 컬럼은 payload에 없어서 `undefined`가 됩니다. 
-<br/>기존 코드는 `updated.room_id !== currentRoom.id`로 귀속 여부를 판단하고 있었는데, `updated.room_id`가 항상 `undefined`이므로 이 조건이 항상 `true`가 되어 early return이 발생했고, `setMessages`가 호출되지 않았습니다.
+배차 협의 채팅방이 늘어날수록 채팅 목록 진입이 느려졌습니다. 코드를 보니 채팅방 목록을 조회한 뒤 각 방마다 마지막 메시지와 미읽음 수를 개별 쿼리로 추가 호출하는 구조였습니다. N개 방에서 2N+4번 DB를 호출하는 N+1 패턴이었습니다.
 
 ```typescript
-// 문제가 있던 코드: room_id가 payload에 없으면 undefined → 항상 early return
-if (updated.room_id !== currentRoom.id) return
-setMessages(prev => prev.map(m => m.id === updated.id ? { ...m, ...updated } : m))
+// 변경 전: 방마다 개별 쿼리 (N개 방 → 2N+4번 DB 호출)
+enriched = await Promise.all(
+  rooms.map(async (room) => {
+    const [{ data: lastMsgs }, { count: unread }] = await Promise.all([
+      supabase.from('chat_messages').select('...').eq('room_id', room.id).limit(1),
+      supabase.from('chat_messages').select('*', { count: 'exact', head: true }).eq('room_id', room.id).eq('is_read', false),
+    ])
+    return { ...room, last_message: lastMsgs?.[0], unread_count: unread ?? 0 }
+  })
+)
 ```
 
-`room_id` 체크를 제거하고, 해당 메시지 ID가 현재 state에 존재하는지 여부로 귀속을 판단하도록 바꿨습니다.
+전체 채팅방 ID를 수집해 마지막 메시지와 미읽음 수를 IN절 단일 쿼리로 일괄 조회하고, 결과를 `room_id` 기준 Map으로 변환해 O(1)로 조립하는 방식으로 교체했습니다. 서버 로그에 카운터를 추가해 실측했고, 방 개수와 무관하게 6개 고정임을 확인했습니다.
 
 ```typescript
-// 변경 후: ID 존재 여부로 귀속 판단
-setMessages(prev => {
-  if (!prev.some(m => m.id === updated.id)) return prev
-  return prev.map(m => m.id === updated.id ? { ...m, ...updated } : m)
-})
+// 변경 후: IN절 일괄 조회 후 Map 조립 (채팅방 수와 무관하게 6개 고정)
+const roomIds = rooms.map((r) => r.id)
+const [{ data: allMessages }, { data: allUnread }] = await Promise.all([
+  supabase.from('chat_messages').select('id, room_id, message, sender_id, created_at, is_deleted')
+    .in('room_id', roomIds).order('created_at', { ascending: false }),
+  supabase.from('chat_messages').select('room_id')
+    .in('room_id', roomIds).eq('is_read', false).neq('sender_id', user.id),
+])
+
+const lastMsgMap = new Map<string, LastMsg>()
+for (const msg of allMessages ?? []) {
+  if (!lastMsgMap.has(msg.room_id)) lastMsgMap.set(msg.room_id, msg)
+}
+const unreadMap = new Map<string, number>()
+for (const msg of allUnread ?? []) {
+  unreadMap.set(msg.room_id, (unreadMap.get(msg.room_id) ?? 0) + 1)
+}
 ```
 
-`REPLICA IDENTITY FULL`을 설정하면 payload에 모든 컬럼이 포함되지만, 테이블 단위 설정이 필요하고 WAL 크기가 늘어납니다. ID 기반 존재 확인이 더 가볍고 안전한 대안이었습니다.
+채팅방 수가 늘어도 쿼리 수가 6개로 고정되어 로딩 시간이 선형 증가하지 않습니다. 배차가 활발한 소장 계정일수록 절감 효과가 커지는 구조입니다 (N=10 기준 24→6, 75% 감소).
 
 ---
 
-### 3. SSR 프리페치 정렬 기준과 TanStack Query staleTime 불일치
+### 3. 정산 장부 수입 집계 버그: 수동 수입이 지출로 집계되는 오류
 
-`/jobs` 페이지에 진입한 후 30초가 지나 창 포커스를 전환하면 일감 목록 순서가 갑자기 바뀌었습니다. 
-<br/>또한, 새로 고침하면 다시 원래 순서로 돌아왔습니다. 재현 조건이 시간 지연에 의존해서 초반에 원인을 특정하기 어려웠습니다.
-
-서버 프리페치와 클라이언트 TanStack Query의 정렬 기준이 달랐던 게 문제였습니다. 서버 `getCachedJobsFirstPage()`는 `.order('created_at', { ascending: false })`(최신 등록순)으로 데이터를 내려줬고, 클라이언트 `DEFAULT_FILTERS.sortBy`는 `'deadline'`(마감임박순 = `work_date ASC`)으로 설정되어 있었습니다.
-
-TanStack Query의 `staleTime`은 30초입니다. 페이지 진입 직후에는 서버에서 받은 데이터가 그대로 표시되지만, 30초 이후 포커스 이벤트가 발생하면 TanStack Query가 클라이언트 queryKey와 정렬 기준(`sortBy=deadline`)으로 `/api/jobs`를 재요청합니다. 이 응답이 오면 `work_date ASC` 순서로 목록이 교체됩니다.
+기사가 전자 장부에 현장 수입을 직접 입력하면 월간 요약 카드에서 수입이 지출로 표시되는 버그가 있었습니다. `ledger_expenses` 테이블에 수입과 지출을 `category` 값으로 구분해 함께 저장하는 구조인데, 집계 로직이 `buildMonthData`, `computePanelNet`, `summaryValues` 세 곳에 분산되어 있었습니다. 한 곳만 수정하면 나머지 화면에서 수치가 또 달라지는 구조적 문제였습니다.
 
 ```typescript
-// 서버 프리페치 (기존) — created_at 내림차순
-.order('created_at', { ascending: false })
-
-// 클라이언트 재요청 — work_date 오름차순 (정렬 기준 불일치)
-DEFAULT_FILTERS = { sortBy: 'deadline' }  // → work_date ASC
+// 변경 전: category 구분 없이 무조건 totalExpense에 가산
+day.totalExpense += Number(entry.amount) || 0
 ```
 
-Hydration 직후 즉시 나타나는 문제가 아니라 staleTime 만료 시점에 트리거되는 버그라 발견하기 어려웠습니다. `getCachedJobsFirstPage()`의 정렬을 `work_date ASC`로 통일하는 것으로 해결했습니다.
+세 곳 모두에 `category === '수입'` 분기를 추가해 동시에 수정했습니다. `computePanelNet`에서는 수동 수입(`manualInc`)을 별도 집계 후 순수익 계산에 포함하고, `summaryValues`의 income·net 계산에도 동일하게 반영했습니다.
 
 ```typescript
-// 변경 후: 클라이언트 DEFAULT_FILTERS.sortBy = 'deadline'과 일치
-.order('work_date', { ascending: true })
+// 변경 후: category === '수입'이면 totalIncome에 가산 (세 곳 동시 적용)
+if (entry.category === '수입') {
+  day.totalIncome += Number(entry.amount) || 0
+} else {
+  day.totalExpense += Number(entry.amount) || 0
+}
 ```
 
-SSR 프리페치의 queryKey, 정렬 기준, 필터 조건이 클라이언트 TanStack Query 설정과 완전히 일치하지 않으면, staleTime 만료 시점에 목록이 교체되는 UX 버그가 발생합니다. 명세가 아닌 타이밍에 의존하는 버그라 발견하기 어렵습니다.
+월간 요약 카드, 날짜 패널, 달력 배지 세 화면의 수입·지출·순수익 수치가 모두 일치하게 정상화됐습니다. 수입·지출을 같은 테이블에 저장하는 구조에서는 집계 로직이 분산된 모든 지점을 동시에 수정해야 한다는 패턴을 문서화했습니다.
 
 ---
 
