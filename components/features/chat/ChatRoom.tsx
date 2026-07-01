@@ -193,7 +193,7 @@ export default function ChatRoom({ room, initialMessages, currentUserId, initial
       return
     }
     if (file.size > CHAT_IMAGE_MAX_SIZE) {
-      toast.error('10MB 이하의 이미지만 전송할 수 있습니다.')
+      toast.error('4MB 이하의 이미지만 전송할 수 있습니다.')
       return
     }
 
@@ -205,8 +205,11 @@ export default function ChatRoom({ room, initialMessages, currentUserId, initial
 
       const res = await fetch('/api/chats/upload-image', { method: 'POST', body: formData })
       if (!res.ok) {
-        const err = await res.json()
-        throw new Error(err.error ?? '업로드 실패')
+        const contentType = res.headers.get('content-type') ?? ''
+        const errMsg = contentType.includes('application/json')
+          ? (await res.json()).error
+          : await res.text()
+        throw new Error(errMsg || '업로드 실패')
       }
       const { publicUrl } = await res.json()
 

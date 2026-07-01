@@ -20,8 +20,8 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: '이미지 파일만 전송할 수 있습니다.' }, { status: 400 })
   }
 
-  if (file.size > 10 * 1024 * 1024) {
-    return NextResponse.json({ error: '10MB 이하의 이미지만 전송할 수 있습니다.' }, { status: 400 })
+  if (file.size > 4 * 1024 * 1024) {
+    return NextResponse.json({ error: '4MB 이하의 이미지만 전송할 수 있습니다.' }, { status: 400 })
   }
 
   const ext = file.name.split('.').pop() ?? 'jpg'
