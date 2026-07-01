@@ -164,7 +164,13 @@ graph LR
 
 지원, 배차 수락·거절, 평가 이벤트가 발생하면 Supabase Realtime으로 즉시 알림이 전달됩니다. 역할별로 수신할 알림 종류를 설정할 수 있습니다.
 
-![실시간 알림](docs/feature-notifications.png)
+<table><tr>
+<td align="center"><b>기사 화면</b></td>
+<td align="center"><b>소장 화면</b></td>
+</tr><tr>
+<td><img src="docs/feature-notifications.png" width="100%"></td>
+<td><img src="docs/feature-notifications-manager.png" width="100%"></td>
+</tr></table>
 
 ---
 
