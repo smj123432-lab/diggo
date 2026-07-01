@@ -218,8 +218,9 @@ export default function ChatRoom({ room, initialMessages, currentUserId, initial
         if (prev.some((m) => m.id === saved.id)) return prev
         return [...prev, saved]
       })
-    } catch {
-      toast.error('이미지 전송에 실패했습니다.')
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err)
+      toast.error(`이미지 전송에 실패했습니다. (${msg})`)
     } finally {
       setIsUploading(false)
       textareaRef.current?.focus()
