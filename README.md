@@ -119,6 +119,9 @@ graph LR
 배차 협의를 위한 기사-소장 간 실시간 채팅입니다. 낙관적 업데이트로 메시지가 즉시 표시되고, 읽음 처리와 미읽음 배지가 Realtime으로 실시간 반영됩니다.
 
 <table><tr>
+<td align="center"><b>기사 화면</b></td>
+<td align="center"><b>소장 화면</b></td>
+</tr><tr>
 <td><img src="docs/feature-chat-driver.png" width="100%"></td>
 <td><img src="docs/feature-chat-manager.png" width="100%"></td>
 </tr></table>
@@ -141,6 +144,9 @@ graph LR
 기사는 배차 완료 일감의 수입이 자동 집계되고 유류비 등 지출을 직접 입력합니다. 소장은 배차한 기사별 지급액 합산이 지출로 잡히고, 수주 금액에서 빼면 마진이 자동으로 계산됩니다.
 
 <table><tr>
+<td align="center"><b>기사 화면</b></td>
+<td align="center"><b>소장 화면</b></td>
+</tr><tr>
 <td><img src="docs/feature-ledger.png" width="100%"></td>
 <td><img src="docs/feature-ledger-manager.png" width="100%"></td>
 </tr></table>
