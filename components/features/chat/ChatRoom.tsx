@@ -297,6 +297,11 @@ export default function ChatRoom({ room, initialMessages, currentUserId, initial
                 currentUserId={currentUserId}
                 opponentAvatarUrl={opponent?.avatar_url}
                 opponentName={opponent?.name}
+                onDelete={(id) =>
+                  setMessages((prev) =>
+                    prev.map((m) => m.id === id ? { ...m, is_deleted: true } : m)
+                  )
+                }
               />
             ))}
             <div ref={bottomRef} />

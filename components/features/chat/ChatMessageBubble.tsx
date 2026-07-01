@@ -2,6 +2,7 @@
 
 // 채팅 메시지 버블 — 내 메시지(우측 파란색) / 상대방 메시지(좌측 회색) 분기 렌더링
 import Image from 'next/image'
+import { useState } from 'react'
 import { DefaultAvatar } from '@/components/ui/Avatar'
 import type { ChatMessage } from '@/types'
 
@@ -43,6 +44,7 @@ interface ChatMessageBubbleProps {
   currentUserId: string
   opponentAvatarUrl: string | null | undefined
   opponentName: string | null | undefined
+  onDelete: (id: string) => void
 }
 
 export function ChatMessageBubble({
@@ -52,11 +54,25 @@ export function ChatMessageBubble({
   currentUserId,
   opponentAvatarUrl,
   opponentName,
+  onDelete,
 }: ChatMessageBubbleProps) {
   const isMine = msg.sender_id === currentUserId
   const isTemp = msg.id.startsWith('temp-')
   const isImg = msg.message.startsWith(IMG_PREFIX)
   const isDeletedMsg = msg.is_deleted
+  const [hovered, setHovered] = useState(false)
+  const [deleting, setDeleting] = useState(false)
+
+  async function handleDelete() {
+    if (deleting) return
+    setDeleting(true)
+    try {
+      const res = await fetch(`/api/chats/messages/${msg.id}`, { method: 'DELETE' })
+      if (res.ok) onDelete(msg.id)
+    } finally {
+      setDeleting(false)
+    }
+  }
 
   const prevMsg = index > 0 ? messages[index - 1] : null
   const nextMsg = index < messages.length - 1 ? messages[index + 1] : null
@@ -84,7 +100,11 @@ export function ChatMessageBubble({
 
   if (isMine) {
     return (
-      <div className={`flex items-end justify-end gap-1.5 ${marginTop}`}>
+      <div
+        className={`flex items-end justify-end gap-1.5 ${marginTop}`}
+        onMouseEnter={() => setHovered(true)}
+        onMouseLeave={() => setHovered(false)}
+      >
         {(showTime || (!msg.is_read && !isTemp && !isDeletedMsg)) && (
           <div className="flex flex-col items-end justify-end select-none shrink-0 pb-0.5 gap-0.5">
             {!msg.is_read && !isTemp && !isDeletedMsg && (
@@ -97,10 +117,22 @@ export function ChatMessageBubble({
             )}
           </div>
         )}
-        <div className="max-w-[70%] min-w-0">
+        <div className="flex items-end gap-1.5 max-w-[70%] min-w-0">
           <div className={`min-w-[50px] ${isTemp ? 'opacity-60' : ''} ${bubbleClass}`}>
             {bubbleContent}
           </div>
+          {!isTemp && !isDeletedMsg && (
+            <button
+              onClick={handleDelete}
+              disabled={deleting}
+              className={`shrink-0 p-1 rounded-full text-gray-400 hover:text-red-400 hover:bg-gray-100 transition-all ${hovered ? 'opacity-100' : 'opacity-0'}`}
+              aria-label="메시지 삭제"
+            >
+              <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+                <path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            </button>
+          )}
         </div>
       </div>
     )
