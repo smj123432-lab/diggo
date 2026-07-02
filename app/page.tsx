@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { ExcavatorIcon } from "@/components/ui/ExcavatorIcon";
 import { AnimatedHero } from "@/components/features/home/AnimatedHero";
 import { AnimatedStats } from "@/components/features/home/AnimatedStats";
@@ -7,13 +8,10 @@ import { AnimatedSplitCTA } from "@/components/features/home/AnimatedSplitCTA";
 import { NavButtons } from "@/components/features/home/NavButtons"
 import { FooterAuthLink } from "@/components/features/home/FooterAuthLink";
 
-const HERO_IMG = 'https://images.unsplash.com/photo-1504307651254-35680f356dfd?auto=format&fit=crop&w=1600&q=80'
 
 export default function HomePage() {
   return (
     <div className="bg-[#f5f5f0] text-stone-900 min-h-screen">
-      {/* Hero 배경 이미지 preload — CSS background-image는 파서가 늦게 발견해 LCP 지연 */}
-      <link rel="preload" as="image" href={HERO_IMG} />
 
       {/* NAV */}
       <nav className="fixed top-0 inset-x-0 z-50 border-b border-white/10 bg-slate-900/80 backdrop-blur-md">
@@ -39,19 +37,23 @@ export default function HomePage() {
       {/* HERO */}
       <section className="relative min-h-screen flex flex-col justify-center pt-16 overflow-hidden">
 
-        {/* 배경 사진 */}
-        <div
-          className="absolute inset-0"
-          style={{
-            backgroundImage:
-              "url('https://images.unsplash.com/photo-1504307651254-35680f356dfd?auto=format&fit=crop&w=1600&q=80')",
-            backgroundSize: "cover",
-            backgroundPosition: "center 60%",
-            backgroundColor: "#0f172a",
-            filter: "blur(8px)",
-            transform: "scale(1.08)",
-          }}
-        />
+        {/* 배경 사진 — priority로 LCP 조기 로드, Next.js Image로 WebP 자동 변환 */}
+        <div className="absolute inset-0 overflow-hidden">
+          <Image
+            src="https://images.unsplash.com/photo-1504307651254-35680f356dfd?auto=format&fit=crop&w=1600&q=80"
+            alt=""
+            fill
+            priority
+            sizes="100vw"
+            quality={80}
+            style={{
+              objectFit: "cover",
+              objectPosition: "center 60%",
+              filter: "blur(8px)",
+              transform: "scale(1.08)",
+            }}
+          />
+        </div>
 
         {/* 파란 오버레이 */}
         <div
