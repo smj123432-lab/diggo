@@ -42,7 +42,7 @@
 
 | 역할 | 이메일 | 비밀번호 |
 |------|--------|---------|
-| 기사 | test@naver.com | test1234! |
+| 기사 | test2@naver.com | test1234! |
 | 소장 | manager1234@naver.com | manager1234! |
 | 관리자 | admin1234@naver.com | admin1234! |
 
