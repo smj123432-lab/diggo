@@ -2,15 +2,21 @@
 'use client'
 
 import { useState, useMemo, useRef } from 'react'
+import dynamic from 'next/dynamic'
 import { toast } from 'sonner'
 import type { UserRole, LedgerMonthData, LedgerFilterTab } from '@/types'
 import { useLedger, useDeleteExpense } from '@/hooks/useLedger'
-import { LedgerCalendar } from '@/components/features/ledger/LedgerCalendar'
-import { LedgerDayPanel } from '@/components/features/ledger/LedgerDayPanel'
-import { LedgerMonthSummary } from '@/components/features/ledger/LedgerMonthSummary'
-import { AddExpenseModal } from '@/components/features/ledger/AddExpenseModal'
 import { MonthPicker } from '@/components/features/ledger/MonthPicker'
 import { AppNav } from '@/components/features/home/AppNav'
+
+// 무거운 장부 컴포넌트를 lazy load해 초기 JS 번들 감소
+const LedgerCalendar = dynamic(() => import('@/components/features/ledger/LedgerCalendar').then(m => ({ default: m.LedgerCalendar })), {
+  loading: () => <div className="w-full aspect-[7/6] bg-gray-100 animate-pulse rounded-xl" />,
+  ssr: false,
+})
+const LedgerDayPanel = dynamic(() => import('@/components/features/ledger/LedgerDayPanel').then(m => ({ default: m.LedgerDayPanel })), { ssr: false })
+const LedgerMonthSummary = dynamic(() => import('@/components/features/ledger/LedgerMonthSummary').then(m => ({ default: m.LedgerMonthSummary })), { ssr: false })
+const AddExpenseModal = dynamic(() => import('@/components/features/ledger/AddExpenseModal').then(m => ({ default: m.AddExpenseModal })), { ssr: false })
 
 interface Props {
   role: UserRole

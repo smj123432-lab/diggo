@@ -32,6 +32,9 @@ export function useNotifications() {
       return
     }
 
+    // 이미 로드된 경우 재요청 스킵 (페이지 이동마다 중복 호출 방지)
+    if (useNotificationStore.getState().notifications.length > 0) return
+
     fetch('/api/notifications')
       .then((r) => r.json())
       .then(({ data }) => {

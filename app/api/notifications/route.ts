@@ -19,7 +19,9 @@ export async function GET() {
 
     if (error) throw error
 
-    return NextResponse.json({ data })
+    return NextResponse.json({ data }, {
+      headers: { 'Cache-Control': 'private, max-age=30, stale-while-revalidate=60' },
+    })
   } catch (error) {
     console.error('[GET /api/notifications]', error)
     return NextResponse.json({ error: '알림을 불러오지 못했습니다.' }, { status: 500 })

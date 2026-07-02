@@ -1,7 +1,7 @@
 'use client'
 
-// 카카오맵 SDK로 좌표 기반 지도 렌더링
-import { useEffect, useRef } from 'react'
+// 카카오맵 SDK로 좌표 기반 지도 렌더링 — IntersectionObserver로 뷰포트 진입 시 스크립트 로드
+import { useEffect, useRef, useState } from 'react'
 
 declare global {
   interface Window {
@@ -23,9 +23,24 @@ interface Props {
 }
 
 export function KakaoMap({ latitude, longitude, label }: Props) {
+  const wrapperRef = useRef<HTMLDivElement>(null)
   const containerRef = useRef<HTMLDivElement>(null)
+  const [visible, setVisible] = useState(false)
+
+  // 뷰포트 진입 시에만 카카오맵 스크립트 로드 (초기 LCP/TBT 감소)
+  useEffect(() => {
+    const el = wrapperRef.current
+    if (!el) return
+    const observer = new IntersectionObserver(
+      ([entry]) => { if (entry.isIntersecting) { setVisible(true); observer.disconnect() } },
+      { rootMargin: '200px' }
+    )
+    observer.observe(el)
+    return () => observer.disconnect()
+  }, [])
 
   useEffect(() => {
+    if (!visible) return
     const appKey = process.env.NEXT_PUBLIC_KAKAO_MAP_APP_KEY
     if (!appKey || !containerRef.current) return
 
@@ -43,12 +58,7 @@ export function KakaoMap({ latitude, longitude, label }: Props) {
 
     const existing = document.getElementById(scriptId) as HTMLScriptElement | null
     if (existing) {
-      // 스크립트 태그는 있지만 kakao 객체가 아직 준비 안 된 경우
-      if (window.kakao) {
-        initMap()
-      } else {
-        existing.addEventListener('load', initMap)
-      }
+      if (window.kakao) { initMap() } else { existing.addEventListener('load', initMap) }
       return
     }
 
@@ -57,11 +67,14 @@ export function KakaoMap({ latitude, longitude, label }: Props) {
     script.src = `//dapi.kakao.com/v2/maps/sdk.js?appkey=${appKey}&autoload=false`
     script.onload = initMap
     document.head.appendChild(script)
-  }, [latitude, longitude])
+  }, [visible, latitude, longitude])
 
   return (
-    <div className="mt-3 rounded-xl overflow-hidden border border-gray-100">
-      <div ref={containerRef} className="w-full h-44" />
+    // 고정 높이로 CLS 방지 — 지도가 로드되기 전에도 공간을 확보
+    <div ref={wrapperRef} className="mt-3 rounded-xl overflow-hidden border border-gray-100" style={{ height: '176px' }}>
+      <div ref={containerRef} className="w-full h-44 bg-gray-100">
+        {!visible && <div className="w-full h-full bg-gray-100 animate-pulse" />}
+      </div>
       {label && (
         <div className="px-3 py-2 bg-gray-50 border-t border-gray-100">
           <p className="text-xs text-gray-500 truncate">{label}</p>

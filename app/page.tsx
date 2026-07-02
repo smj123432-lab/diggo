@@ -7,9 +7,13 @@ import { AnimatedSplitCTA } from "@/components/features/home/AnimatedSplitCTA";
 import { NavButtons } from "@/components/features/home/NavButtons"
 import { FooterAuthLink } from "@/components/features/home/FooterAuthLink";
 
+const HERO_IMG = 'https://images.unsplash.com/photo-1504307651254-35680f356dfd?auto=format&fit=crop&w=1600&q=80'
+
 export default function HomePage() {
   return (
     <div className="bg-[#f5f5f0] text-stone-900 min-h-screen">
+      {/* Hero 배경 이미지 preload — CSS background-image는 파서가 늦게 발견해 LCP 지연 */}
+      <link rel="preload" as="image" href={HERO_IMG} />
 
       {/* NAV */}
       <nav className="fixed top-0 inset-x-0 z-50 border-b border-white/10 bg-slate-900/80 backdrop-blur-md">
