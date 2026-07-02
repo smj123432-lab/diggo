@@ -97,7 +97,7 @@ export default function HomePage() {
       </div>
 
       {/* FEATURES */}
-      <section className="bg-slate-50 max-w-full px-6 py-32">
+      <section className="bg-slate-50 max-w-full px-6 pt-28 pb-16">
         <AnimatedFeatures />
       </section>
 

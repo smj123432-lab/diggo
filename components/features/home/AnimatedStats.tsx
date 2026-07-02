@@ -11,12 +11,15 @@ interface CountUpProps {
 }
 
 function CountUp({ to, decimals = 0, suffix = "", duration = 1.8 }: CountUpProps) {
-  const [count, setCount] = useState(0);
+  const [count, setCount] = useState(to); // SSR/초기 렌더에서 최종값 표시 — 플리커 방지
+  const [animated, setAnimated] = useState(false);
   const ref = useRef<HTMLSpanElement>(null);
   const isInView = useInView(ref, { once: true });
 
   useEffect(() => {
-    if (!isInView) return;
+    if (!isInView || animated) return;
+    setAnimated(true);
+    setCount(0); // 뷰포트 진입 시점에 0으로 리셋 후 애니메이션 시작
 
     const totalSteps = 60;
     const stepTime = (duration * 1000) / totalSteps;
@@ -24,7 +27,6 @@ function CountUp({ to, decimals = 0, suffix = "", duration = 1.8 }: CountUpProps
 
     const timer = setInterval(() => {
       step++;
-      /* easeOut 커브 적용 */
       const progress = 1 - Math.pow(1 - step / totalSteps, 3);
       const current = parseFloat((to * progress).toFixed(decimals));
 
@@ -37,7 +39,7 @@ function CountUp({ to, decimals = 0, suffix = "", duration = 1.8 }: CountUpProps
     }, stepTime);
 
     return () => clearInterval(timer);
-  }, [isInView, to, duration, decimals]);
+  }, [isInView, animated, to, duration, decimals]);
 
   const formatted =
     decimals > 0

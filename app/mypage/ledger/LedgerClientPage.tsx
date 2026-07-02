@@ -47,6 +47,7 @@ const EMPTY_MONTH_DATA: LedgerMonthData = {
 
 export function LedgerClientPage({ role }: Props) {
   const now = new Date()
+  const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`
   const [year, setYear] = useState(now.getFullYear())
   const [month, setMonth] = useState(now.getMonth() + 1)
   const [selectedDate, setSelectedDate] = useState<string | null>(null)
@@ -200,16 +201,10 @@ export function LedgerClientPage({ role }: Props) {
                       </button>
                     ))}
                   </div>
-                  {/* 날짜 선택 시에만 활성화 */}
+                  {/* 날짜 미선택 시 오늘 날짜로 모달 열기 */}
                   <button
-                    onClick={() => selectedDate && setShowAddModal(true)}
-                    disabled={!selectedDate}
-                    title={selectedDate ? '내역 추가' : '날짜를 먼저 선택해주세요'}
-                    className={`text-xs font-semibold px-3 py-2 rounded-xl transition-all whitespace-nowrap shrink-0 ${
-                      selectedDate
-                        ? 'text-white bg-blue-500 hover:bg-blue-600 cursor-pointer'
-                        : 'text-gray-400 bg-gray-200 cursor-not-allowed'
-                    }`}
+                    onClick={() => setShowAddModal(true)}
+                    className="text-xs font-semibold px-3 py-2 rounded-xl transition-all whitespace-nowrap shrink-0 text-white bg-blue-500 hover:bg-blue-600 cursor-pointer"
                   >
                     <span className="sm:hidden">+</span>
                     <span className="hidden sm:inline">+ 내역 추가</span>
@@ -282,7 +277,7 @@ export function LedgerClientPage({ role }: Props) {
       {/* 내역 추가 모달 */}
       {showAddModal && (
         <AddExpenseModal
-          defaultDate={selectedDate ?? undefined}
+          defaultDate={selectedDate ?? todayStr}
           onClose={() => setShowAddModal(false)}
           onSaved={() => refetch()}
         />
