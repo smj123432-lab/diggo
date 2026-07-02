@@ -15,7 +15,7 @@ export interface JobFilters {
 
 export const DEFAULT_FILTERS: JobFilters = { equipment_codes: [], job_types: [], sortBy: 'deadline' }
 
-interface JobsPage {
+export interface JobsPage {
   data: JobWithManager[]
   count: number
   offset: number
@@ -39,7 +39,7 @@ async function fetchJobs({ pageParam, filters }: { pageParam: number; filters: J
   return res.json()
 }
 
-export function useJobs(filters: JobFilters = DEFAULT_FILTERS) {
+export function useJobs(filters: JobFilters = DEFAULT_FILTERS, serverInitialData?: JobsPage) {
   return useInfiniteQuery({
     queryKey: ['jobs', filters],
     queryFn: ({ pageParam }) => fetchJobs({ pageParam: pageParam as number, filters }),
@@ -48,6 +48,9 @@ export function useJobs(filters: JobFilters = DEFAULT_FILTERS) {
       const { offset, count, limit } = lastPage
       return offset + limit < count ? offset + limit : undefined
     },
+    initialData: serverInitialData
+      ? { pages: [serverInitialData], pageParams: [0] }
+      : undefined,
     staleTime: DEFAULT_STALE_TIME,
   })
 }

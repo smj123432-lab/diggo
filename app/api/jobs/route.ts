@@ -42,7 +42,7 @@ export async function GET(request: NextRequest) {
 
     if (equipment_codes.length > 0) query = query.overlaps('equipment_codes', equipment_codes)
     if (job_types.length > 0) query = query.in('job_type', job_types)
-    if (keyword) query = query.ilike('location', `%${keyword}%`)
+    if (keyword) query = query.or(`location.ilike.%${keyword}%,title.ilike.%${keyword}%`)
 
     const { data, error, count } = await query
 

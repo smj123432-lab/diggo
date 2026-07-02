@@ -12,8 +12,13 @@ import { JobCard } from './JobCard'
 import { JobFilters as JobFiltersPanel } from './JobFilters'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { useHorizontalScroll } from '@/hooks/useHorizontalScroll'
+import type { JobsPage } from '@/hooks/useJobs'
 
-export function JobList() {
+interface Props {
+  initialData?: JobsPage
+}
+
+export function JobList({ initialData }: Props) {
   const { profile, role } = useAuthStore()
   const [filters, setFilters] = useState<JobFilters>(DEFAULT_FILTERS)
   const [searchInput, setSearchInput] = useState('')
@@ -30,7 +35,9 @@ export function JobList() {
     setFilters((f) => ({ ...f, keyword: undefined }))
   }
 
-  const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading, isFetching, isError } = useJobs(filters)
+  // 필터가 기본값일 때 서버에서 받은 initialData를 TanStack Query initialData로 사용
+  const isDefaultFilter = !filters.keyword && filters.equipment_codes.length === 0 && filters.job_types.length === 0 && filters.sortBy === 'deadline'
+  const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading, isFetching, isError } = useJobs(filters, isDefaultFilter ? initialData : undefined)
 
   // 필터/정렬 변경 시 리패치 중 (기존 데이터 있는 상태)
   const isRefetching = isFetching && !isLoading && !isFetchingNextPage
