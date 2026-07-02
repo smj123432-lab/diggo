@@ -109,6 +109,13 @@ export function JobApplyButton({
         body: JSON.stringify({ job_id: jobId, applied_equipment_code: equipmentCode }),
       })
       const json = await res.json()
+      if (res.status === 409) {
+        // 이미 지원한 상태인데 UI가 미반영된 경우 — 버튼 상태 강제 동기화
+        setApplied({ id: json.data?.id ?? 'existing', status: 'pending' })
+        toast.info('이미 지원한 일감입니다.')
+        router.refresh()
+        return
+      }
       if (!res.ok) throw new Error(json.error ?? '지원 신청에 실패했습니다.')
 
       setApplied({ id: json.data.id, status: json.data.status as ApplicationStatus })

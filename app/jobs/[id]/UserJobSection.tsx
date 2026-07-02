@@ -32,6 +32,8 @@ export function UserJobSection({ job, effectiveStatus, payDueDate }: Props) {
         .then((r) => r.json())
         .then((r) => r.data ?? null),
     enabled: !!user && profile?.role === 'driver',
+    staleTime: 0,   // 항상 최신값 유지
+    retry: 2,
   })
 
   // 장비별 배차 현황 — 모집중이고 다중 장비일 때만 fetch
